@@ -141,55 +141,65 @@ distribusikan, memastikan proyek Anda berdiri kokoh, aman, dan tahan lama.</p>
 
 <!-- Products -->
 <section id="product" class="py-24 px-6 bg-red-50">
-    <h2 class="text-3xl font-bold mb-12 text-center text-red-800">Our Products</h2>
+    <h2 class="text-3xl font-bold mb-16 text-center text-red-800">
+        Our Products
+    </h2>
 
-    <div class="overflow-x-auto scrollbar-hide">
-        <div class="flex gap-8 w-max px-4">
+    <!-- ================= PRODUCT A ================= -->
+    <div class="max-w-7xl mx-auto mb-20">
 
-            <!-- Card -->
-            <div class="min-w-[280px] group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500">
+        <!-- Title -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-semibold text-red-800">Beton</h3>
+            <p class="text-gray-500 text-sm">Kategori produk A</p>
+        </div>
 
-                <!-- Image -->
-                <div class="h-44 bg-gray-200 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-                </div>
+        <!-- Cards -->
+        <div class="grid md:grid-cols-3 gap-8">
 
-                <!-- Content -->
-                <div class="p-5">
-                    <h3 class="font-semibold text-lg text-red-800 group-hover:text-red-600 transition">
-                        Product 1
-                    </h3>
-
-                    <p class="text-sm text-gray-500 mt-2">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    </p>
-
-                    <!-- Button -->
-                    <div class="mt-4">
-                        <button class="text-sm font-medium text-red-700 flex items-center gap-2 group-hover:gap-3 transition-all">
-                            View Detail →
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Copy card 5x lagi -->
-            <div class="min-w-[280px] group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition duration-500">
-                <div class="h-44 bg-gray-200 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-                </div>
-                <div class="p-5">
-                    <h3 class="font-semibold text-lg text-red-800 group-hover:text-red-600 transition">Product 2</h3>
-                    <p class="text-sm text-gray-500 mt-2">Lorem ipsum dolor sit amet consectetur.</p>
-                    <div class="mt-4">
-                       
-                    </div>
-                </div>
+            <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-5">
+                <div class="h-40 bg-gray-200 rounded-xl mb-4"></div>
+                <h4 class="font-semibold text-red-700">Sub Product A1</h4>
+                <p class="text-sm text-gray-500 mt-1">Lorem ipsum dolor sit amet</p>
             </div>
 
         </div>
     </div>
+
+
+    <!-- ================= PRODUCT B ================= -->
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Title -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-semibold text-red-800">Product B</h3>
+            <p class="text-gray-500 text-sm">Kategori produk B</p>
+        </div>
+
+        <!-- Cards -->
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-5">
+                <div class="h-40 bg-gray-200 rounded-xl mb-4"></div>
+                <h4 class="font-semibold text-red-700">Sub Product B1</h4>
+                <p class="text-sm text-gray-500 mt-1">Lorem ipsum dolor sit amet</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-5">
+                <div class="h-40 bg-gray-200 rounded-xl mb-4"></div>
+                <h4 class="font-semibold text-red-700">Sub Product B2</h4>
+                <p class="text-sm text-gray-500 mt-1">Lorem ipsum dolor sit amet</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow hover:shadow-xl transition p-5">
+                <div class="h-40 bg-gray-200 rounded-xl mb-4"></div>
+                <h4 class="font-semibold text-red-700">Sub Product B3</h4>
+                <p class="text-sm text-gray-500 mt-1">Lorem ipsum dolor sit amet</p>
+            </div>
+
+        </div>
+    </div>
+
 </section>
 
 <!-- Footer -->

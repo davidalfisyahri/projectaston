@@ -29,9 +29,10 @@
     
         <!-- Kanan -->
         <div class="ml-auto">
-            <button class="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-xl text-sm shadow">
+            <a href="{{ route('login_user') }}" 
+               class="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-xl text-sm shadow">
                 Login
-            </button>
+            </a>
         </div>
     
     </div>

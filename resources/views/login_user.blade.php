@@ -24,7 +24,7 @@
 
             <!-- Title -->
             <h2 class="text-3xl font-bold text-center text-white mb-2">
-                Login User
+                Login
             </h2>
 
             <p class="text-center text-gray-300 text-sm mb-6">

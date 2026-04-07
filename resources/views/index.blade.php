@@ -50,8 +50,8 @@
         <div class="absolute inset-0 bg-gradient-to-r from-red-900/80 to-black/70"></div>
 
         <div class="relative text-center px-6">
-            <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">PT. ISTIMEWA ASTON INDONESIA</h1>
-            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">ISTIMEWA BETON</p>
+            <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">ISTIMEWA BETON INDONESIA</h1>
+            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">PT. ISTIMEWA ASTON INDONESIA </p>
 
         </div>
     </section>

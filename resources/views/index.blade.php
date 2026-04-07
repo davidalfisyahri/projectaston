@@ -51,8 +51,7 @@
 
         <div class="relative text-center px-6">
             <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">PT. ISTIMEWA ASTON INDONESIA</h1>
-            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">Solusi profesional dengan sentuhan kualitas
-                dan kepercayaan untuk bisnis Anda.</p>
+            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">ISTIMEWA BETON</p>
 
         </div>
     </section>
@@ -374,7 +373,7 @@
 
                         <!-- Title di dalam gambar -->
                         <div class="absolute bottom-4 left-4 text-white">
-                            <h4 class="font-heading font-bold text-lg">BATU SPLIT SUKABUMI</h4>
+                            <h4 class="font-heading font-bold text-lg">Matrial kualitas tinggi yang telah disesuaikan dengan kebutuhakan ready mix</h4>
                             <span class="text-xs bg-red-600 px-2 py-1 rounded-full"></span>
                         </div>
                     </div>

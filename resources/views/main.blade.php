@@ -35,12 +35,12 @@
 
         <!-- NAMA -->
         <h3 class="mt-3 text-sm font-semibold opacity-0 group-hover:opacity-100 transition duration-300 whitespace-nowrap">
-            Budi Santoso
+            {{ auth()->user()->name_user }}
         </h3>
-
+        
         <!-- JABATAN -->
         <p class="text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition duration-300 whitespace-nowrap">
-            Supervisor
+            {{ auth()->user()->position }}
         </p>
 
     </div>
@@ -159,7 +159,7 @@
                 </span>
             </a>
     
-            <a href="#" 
+            <a href="{{ route('setting') }}" 
             class="flex items-center gap-2 px-3 py-3 rounded-xl 
             hover:bg-red-800 transition
             justify-start">
@@ -178,9 +178,13 @@
                     Settings
                 </span>
             </a>
+
+            
     
         </div>
+    
     </aside>
+    
     <!-- CONTENT -->
     <main class="flex-1 p-8">
 

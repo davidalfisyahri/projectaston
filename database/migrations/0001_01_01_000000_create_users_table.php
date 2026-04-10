@@ -13,17 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id('id_user');
-        
             $table->string('name_user');
-        
-            $table->string('email')->nullable()->unique();
+            $table->string('email')->nullable();
             $table->timestamp('email_verified_at')->nullable();
-        
             $table->string('office_branch')->nullable();
-            $table->string('nik')->unique();
-        
+            $table->string('nik')->nullable();
             $table->enum('role', ['superadmin','admin','sales']);
-        
             $table->enum('position', [
                 'sales_internal',
                 'sales_external',
@@ -33,9 +28,7 @@ return new class extends Migration
                 'logistik',
                 'finance'
             ]);
-        
-            $table->string('username')->unique();
-        
+            $table->string('username');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

@@ -39,24 +39,22 @@ class UsersController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'name_user' => 'required',
-            'username' => 'required|unique:users',
-            'nik' => 'required|unique:users',
-            'email' => 'nullable|email',
-            'office_branch' => 'nullable',
-            'role' => 'required',
-            'position' => 'required',
-            'password' => 'required|min:5'
-        ]);
+{
+    $validatedData = $request->validate([
+        'name_user' => 'required',
+        'username' => 'required|unique:users,username',
+        'nik' => 'nullable|unique:users,nik',
+        'email' => 'nullable|email',
+        'office_branch' => 'nullable',
+        'role' => 'required',
+        'position' => 'required',
+        'password' => 'required|min:5'
+    ]);
 
-        $validatedData['password'] = bcrypt($validatedData['password']);
+    User::create($validatedData);
 
-        User::create($validatedData);
-
-        return redirect('/users');
-    }
+    return redirect('/setting')->with('success', 'User berhasil ditambahkan');
+}
 
     /**
      * Update the specified resource in storage.
@@ -88,6 +86,6 @@ class UsersController extends Controller
     public function destroy($id)
     {
         User::where('id_user', $id)->delete();
-        return redirect('/users');
+        return redirect('/setting');
     }
 }

@@ -1,11 +1,11 @@
 @extends('main')
 @section('title', 'setting')
 @section('container')
-
+@if(auth()->user()->role === 'superadmin')
 <h1 class="text-2xl font-bold mb-6">Settings</h1>
 
 <div class="p-6">
-    <div class="mb-3 flex justify-end">
+    <div class="mb-3 flex justify">
         <button onclick="openAddModal()" 
             class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm shadow">
             + Tambah User
@@ -60,8 +60,12 @@
                 <form action="/users/{{ $user->id_user }}" method="POST" class="w-full">
                     @csrf
                     @method('DELETE')
-                    <button class="w-full text-xs bg-red-500 text-white py-1.5 rounded-lg">
-                        Delete
+                    <button 
+                    onclick="return confirm('Yakin ingin menghapus akun ini?')"
+                    class="w-full flex items-center justify-center gap-1 text-xs 
+                        bg-red-500 hover:bg-red-600 
+                        text-white py-1.5 rounded-lg transition">
+                                        Delete
                     </button>
                 </form>
             @endif
@@ -239,5 +243,5 @@ function closeAddModal() {
     document.getElementById('addUserModal').classList.add('hidden');
 }
 </script>
-
+@endif
 @endsection

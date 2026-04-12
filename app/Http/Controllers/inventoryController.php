@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Grade;
+use App\Models\Inventory;
+
+class InventoryController extends Controller
+{
+    public function index()
+    {
+        $inventory = Inventory::all();
+        $grade = Grade::with('composition.inventory')->get();
+
+        return view('inventory', compact('inventory', 'grade'));
+    }
+
+    public function store(Request $request)
+    {
+        $inv = inventory::create([
+            'name_material' => $request->name_material,
+            'type' => $request->type,
+            'stock' => $request->stock,
+        ]);
+
+        return response()->json($inv);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $inv = Inventory::findOrFail($id);
+
+        $inv->update([
+            'name_material' => $request->name_material,
+            'type' => $request->type,
+            'stock' => $request->stock,
+        ]);
+
+        return redirect('/inventory');
+    }
+
+    public function destroy($id)
+    {
+        Inventory::findOrFail($id)->delete();
+
+        return redirect('/inventory');
+    }
+}

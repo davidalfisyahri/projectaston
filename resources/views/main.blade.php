@@ -66,7 +66,7 @@
                 </a>
     
                 <!-- ITEM -->
-                <a href="#" 
+                <a href="{{ route('customer_req') }}"
                 class="flex items-center gap-2 px-3 py-3 rounded-xl 
                 hover:bg-red-800 transition
                 justify-start">
@@ -81,7 +81,7 @@
     
                     <!-- TEXT -->
                     <span class="opacity-0 group-hover:opacity-100 transition duration-300 whitespace-nowrap">
-                        Order
+                        Customer request
                     </span>
                 </a>
         
@@ -154,6 +154,25 @@
                     <!-- TEXT -->
                     <span class="opacity-0 group-hover:opacity-100 transition duration-300 whitespace-nowrap">
                         Procurement
+                    </span>
+                </a>
+
+                <a href="{{ route('inventory') }}" 
+                class="flex items-center gap-2 px-3 py-3 rounded-xl 
+                hover:bg-red-800 transition
+                justify-start">
+    
+                    <!-- ICON (langsung tanpa wrapper lebar) -->
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="w-6 h-6 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15.528 2.973a.75.75 0 0 1 .472.696v8.662a.75.75 0 0 1-.472.696l-7.25 2.9a.75.75 0 0 1-.557 0l-7.25-2.9A.75.75 0 0 1 0 12.331V3.669a.75.75 0 0 1 .471-.696L7.443.184l.01-.003.268-.108a.75.75 0 0 1 .558 0l.269.108.01.003zM10.404 2 4.25 4.461 1.846 3.5 1 3.839v.4l6.5 2.6v7.922l.5.2.5-.2V6.84l6.5-2.6v-.4l-.846-.339L8 5.961 5.596 5l6.154-2.461z"/>
+                    </svg>
+    
+                    <!-- TEXT -->
+                    <span class="opacity-0 group-hover:opacity-100 transition duration-300 whitespace-nowrap">
+                        Inventory
                     </span>
                 </a>
 

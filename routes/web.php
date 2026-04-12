@@ -1,6 +1,8 @@
 <?php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\inventoryController;
+use App\Http\Controllers\gradebetonController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 
@@ -25,6 +27,20 @@ Route::put('/users/{id}', [UsersController::class, 'update']);
 Route::delete('/users/{id}', [UsersController::class, 'destroy']);
 
 Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
+
+Route::get('/customer_req', function () { return view('customer_req'); })->name('customer_req');
+
+Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+Route::post('/inventory', [InventoryController::class, 'store']);
+Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
+
+Route::post('/grade/store', [gradebetonController::class, 'store'])->name('grade.store');
+Route::post('/grade', [GradebetonController::class, 'store']);
+Route::put('/grade/{id}', [GradebetonController::class, 'update']);
+Route::delete('/grade/{id}', [GradebetonController::class, 'destroy']);
+
+Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+
 
 Route::get('/setting', function () { return view('setting'); })->name('setting');
 Route::get('/setting', [UsersController::class, 'index'])->name('setting');

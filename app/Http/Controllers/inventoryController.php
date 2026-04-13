@@ -17,33 +17,22 @@ class InventoryController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $inv = inventory::create([
-            'name_material' => $request->name_material,
-            'type' => $request->type,
-            'stock' => $request->stock,
-        ]);
+{
+    $inv = Inventory::create($request->all());
+    return response()->json($inv);
+}
 
-        return response()->json($inv);
-    }
+public function update(Request $request, $id)
+{
+    $inv = Inventory::findOrFail($id);
+    $inv->update($request->all());
 
-    public function update(Request $request, $id)
-    {
-        $inv = Inventory::findOrFail($id);
+    return response()->json(['success'=>true]);
+}
 
-        $inv->update([
-            'name_material' => $request->name_material,
-            'type' => $request->type,
-            'stock' => $request->stock,
-        ]);
-
-        return redirect('/inventory');
-    }
-
-    public function destroy($id)
-    {
-        Inventory::findOrFail($id)->delete();
-
-        return redirect('/inventory');
-    }
+public function destroy($id)
+{
+    Inventory::findOrFail($id)->delete();
+    return response()->json(['success'=>true]);
+}
 }

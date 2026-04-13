@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('gradebeton', function (Blueprint $table) {
             $table->id('id_grade');
-            $table->string('name'); // K-250
-            $table->integer('fc');  // 20, 25
+            $table->string('name_grade'); // K-250
+            $table->integer('mpa');  // 20, 25
             $table->decimal('harga_fa', 12, 2)->default(0);
             $table->decimal('harga_nfa', 12, 2)->default(0);
             $table->timestamps();

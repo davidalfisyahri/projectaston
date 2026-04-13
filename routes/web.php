@@ -31,10 +31,11 @@ Route::get('/dashboard', function () { return view('dashboard'); })->name('dashb
 Route::get('/customer_req', function () { return view('customer_req'); })->name('customer_req');
 
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
-Route::post('/inventory', [InventoryController::class, 'store']);
-Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
 
-Route::post('/grade/store', [gradebetonController::class, 'store'])->name('grade.store');
+Route::post('/inventory', [InventoryController::class, 'store']);
+Route::put('/inventory/{id}', [InventoryController::class, 'update']);
+Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
+
 Route::post('/grade', [GradebetonController::class, 'store']);
 Route::put('/grade/{id}', [GradebetonController::class, 'update']);
 Route::delete('/grade/{id}', [GradebetonController::class, 'destroy']);

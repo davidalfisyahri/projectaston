@@ -42,7 +42,7 @@
             <button onclick="closeInventoryModal()" class="text-gray-400 text-lg">✕</button>
         </div>
 
-        <h2 class="font-bold mb-3">Tambah Material</h2>
+        <h2 class="font-bold mb-3">Material</h2>
 
         <input id="inv_name" placeholder="Nama Material" class="input mb-2">
         <select id="inv_type" class="input mb-2">
@@ -134,231 +134,84 @@
 </style>
 
 <script>
-    let inventories = @json($inventory ?? []);
-    let grades = @json($grade ?? []);
+    let inventories = @json($inventory);
+    let grades = @json($grade);
     
-    /* ================= HELPER ================= */
-    function formatRibuan(angka){
-        return String(angka)
-            .replace(/\D/g, '')
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    let editInventoryId = null;
+    function saveGrade(){
+
+    let rows = document.querySelectorAll('#compositionList > div');
+
+    if(rows.length === 0){
+        alert('Tambahkan minimal 1 material!');
+        return;
+    }
+
+    let compositions = [];
+
+    rows.forEach(row => {
+        let invId = row.querySelector('select').value;
+        let qty = clean(row.querySelector('input').value);
+
+        if(!qty){
+            alert('Qty tidak boleh kosong');
+            return;
+        }
+
+        compositions.push({
+            inventory_id: invId,
+            qty: qty
+        });
+    });
+
+    fetch("/grade", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            name_grade: name_grade.value,
+            mpa: mpa.value,
+            harga_fa: clean(harga_fa.value),
+            harga_nfa: clean(harga_nfa.value),
+            compositions: compositions
+        })
+    })
+    .then(res => {
+        if(!res.ok) throw "error";
+        return res.json();
+    })
+    .then(() => {
+        alert('Berhasil simpan grade');
+        location.reload();
+    })
+    .catch(() => {
+        alert('Gagal simpan grade');
+    });
+}
+    
+    /* ================= FORMAT ================= */
+    function formatRibuan(x){
+        return String(x).replace(/\D/g,'')
+        .replace(/\B(?=(\d{3})+(?!\d))/g,".");
+    }
+    function clean(x){
+        return String(x).replace(/\./g,'');
     }
     
-    function cleanNumber(angka){
-        return String(angka).replace(/\./g, '');
-    }
-    
-    /* ================= RESET ================= */
+    /* ================= INVENTORY ================= */
     function resetInventoryForm(){
+        editInventoryId = null;
         inv_name.value = '';
         inv_type.value = 'cement';
         inv_stock.value = '';
     }
     
-    function resetGradeForm(){
-        grade_name.value = '';
-        grade_fc.value = '';
-        harga_fa.value = '';
-        harga_nfa.value = '';
-        compositionList.innerHTML = '';
-    }
-    
-    /* ================= INVENTORY ================= */
-    function saveInventory(){
-    
-        fetch("{{ route('inventory.store') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                name_material: inv_name.value,
-                type: inv_type.value,
-                stock: cleanNumber(inv_stock.value)
-            })
-        })
-        .then(res => res.json())
-        .then(() => location.reload());
-    }
-    
-    /* DELETE */
-    function deleteInventory(id){
-        if(!confirm('Yakin hapus?')) return;
-    
-        fetch(`/inventory/${id}`, {
-            method: "DELETE",
-            headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            }
-        }).then(() => location.reload());
-    }
-    
-    /* EDIT */
-    function editInventory(data){
-        inv_name.value = data.name_material;
-        inv_type.value = data.type;
-        inv_stock.value = formatRibuan(data.stock);
-    
-        openInventoryModal();
-    
-        // ubah save jadi update
-        window.saveInventory = function(){
-            fetch(`/inventory/${data.id_inventory}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    name_material: inv_name.value,
-                    type: inv_type.value,
-                    stock: cleanNumber(inv_stock.value)
-                })
-            }).then(() => location.reload());
+    function openInventoryModal(isEdit = false){
+        if(!isEdit){
+            resetInventoryForm(); // hanya reset kalau ADD
         }
-    }
-    
-    /* ================= RENDER INVENTORY ================= */
-    function renderInventory(){
-        let el = document.getElementById('inventoryList');
-        el.innerHTML = '';
-    
-        inventories.forEach((item) => {
-            el.innerHTML += `
-            <div class="border p-2 rounded flex justify-between items-center">
-                <div>
-                    <b>${item.name_material}</b> (${item.type})<br>
-                    Stock: ${formatRibuan(item.stock)}
-                </div>
-    
-                <div class="flex gap-2">
-                    <button onclick='editInventory(${JSON.stringify(item)})'
-                        class="bg-yellow-400 px-2 py-1 rounded text-xs">
-                        Edit
-                    </button>
-    
-                    <button onclick="deleteInventory(${item.id_inventory})"
-                        class="bg-red-500 text-white px-2 py-1 rounded text-xs">
-                        Delete
-                    </button>
-                </div>
-            </div>
-            `;
-        });
-    }
-    
-    /* ================= GRADE ================= */
-    function saveGrade(){
-    
-        let rows = document.querySelectorAll('#compositionList > div');
-    
-        if(rows.length === 0){
-            alert('Tambahkan minimal 1 komposisi!');
-            return;
-        }
-    
-        let compositions = [];
-    
-        rows.forEach(row => {
-            let invId = row.querySelector('select').value;
-            let qty = cleanNumber(row.querySelector('input').value);
-    
-            if(!qty){
-                alert('Qty tidak boleh kosong');
-                throw "error";
-            }
-    
-            compositions.push({
-                inventory_id: invId,
-                qty: qty
-            });
-        });
-    
-        fetch("{{ route('grade.store') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                name: grade_name.value,
-                fc: grade_fc.value,
-                harga_fa: cleanNumber(harga_fa.value),
-                harga_nfa: cleanNumber(harga_nfa.value),
-                compositions: compositions
-            })
-        })
-        .then(res => res.json())
-        .then(() => location.reload())
-        .catch(() => alert('Gagal simpan grade'));
-    }
-    
-    /* ================= RENDER GRADE ================= */
-    function renderGrade(){
-        let el = document.getElementById('gradeList');
-        el.innerHTML = '';
-    
-        grades.forEach((g) => {
-    
-            let comp = '';
-            g.compositions?.forEach(c => {
-                comp += `<div>${c.inventory?.name_material} : ${formatRibuan(c.qty)}</div>`;
-            });
-    
-            el.innerHTML += `
-            <div class="border p-3 rounded">
-                <b>${g.name}</b> (FC: ${g.fc})
-    
-                <div class="text-xs mt-1">
-                    FA: Rp ${formatRibuan(g.harga_fa)} |
-                    NFA: Rp ${formatRibuan(g.harga_nfa)}
-                </div>
-    
-                <div class="mt-2 text-xs">${comp}</div>
-            </div>
-            `;
-        });
-    }
-    
-    /* ================= COMPOSITION ================= */
-    function addRow(){
-        let options = inventories.map(inv =>
-            `<option value="${inv.id_inventory}">${inv.name_material}</option>`
-        ).join('');
-    
-        compositionList.innerHTML += `
-        <div class="flex gap-2">
-            <select class="input">${options}</select>
-            <input type="text" placeholder="Qty" class="input qty">
-        </div>
-        `;
-    }
-    
-    /* ================= FORMAT ================= */
-    inv_stock.type = "text"; // 🔥 hilangin panah number
-    
-    inv_stock.addEventListener('input', function(){
-        this.value = formatRibuan(this.value);
-    });
-    
-    harga_fa.addEventListener('input', function(){
-        this.value = formatRibuan(this.value);
-    });
-    
-    harga_nfa.addEventListener('input', function(){
-        this.value = formatRibuan(this.value);
-    });
-    
-    document.addEventListener('input', function(e){
-        if(e.target.classList.contains('qty')){
-            e.target.value = formatRibuan(e.target.value);
-        }
-    });
-    
-    /* ================= MODAL ================= */
-    function openInventoryModal(){
-        resetInventoryForm();
         inventoryModal.classList.remove('hidden');
         inventoryModal.classList.add('flex');
     }
@@ -367,20 +220,205 @@
         inventoryModal.classList.add('hidden');
     }
     
-    function openGradeModal(){
-        resetGradeForm();
-        gradeModal.classList.remove('hidden');
-        gradeModal.classList.add('flex');
+    function saveInventory(){
+    
+        let url = editInventoryId ? `/inventory/${editInventoryId}` : `/inventory`;
+        let method = editInventoryId ? "PUT" : "POST";
+    
+        fetch(url,{
+            method:method,
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRF-TOKEN":"{{ csrf_token() }}"
+            },
+            body:JSON.stringify({
+                name_material:inv_name.value,
+                type:inv_type.value,
+                stock:clean(inv_stock.value)
+            })
+        })
+        .then(res=>res.json())
+        .then(()=>location.reload());
     }
     
-    function closeGradeModal(){
-        gradeModal.classList.add('hidden');
+    function editInventory(id){
+    
+        let data = inventories.find(i=>i.id_inventory==id);
+    
+        editInventoryId = id;
+    
+        inv_name.value = data.name_material;
+        inv_type.value = data.type;
+        inv_stock.value = formatRibuan(data.stock);
+    
+        openInventoryModal(true); // 🔥 penting
     }
+    
+    function deleteInventory(id){
+        if(!confirm('Yakin hapus?')) return;
+    
+        fetch(`/inventory/${id}`,{
+            method:"DELETE",
+            headers:{
+                "X-CSRF-TOKEN":"{{ csrf_token() }}"
+            }
+        }).then(()=>location.reload());
+    }
+    
+    function renderInventory(){
+        let el = document.getElementById('inventoryList');
+        el.innerHTML='';
+    
+        inventories.forEach(i=>{
+            el.innerHTML+=`
+            <div class="border p-2 rounded flex justify-between items-center">
+                <div>
+                    <b>${i.name_material}</b> (${i.type})<br>
+                    Stock: ${formatRibuan(i.stock)}
+                </div>
+    
+                <div class="flex gap-2">
+                    <button onclick="editInventory(${i.id_inventory})"
+                        class="bg-yellow-400 px-2 py-1 text-xs rounded">
+                        Edit
+                    </button>
+    
+                    <button onclick="deleteInventory(${i.id_inventory})"
+                        class="bg-red-500 text-white px-2 py-1 text-xs rounded">
+                        Delete
+                    </button>
+                </div>
+            </div>`;
+        });
+    }
+    
+
+/* ================= GRADE ================= */
+function openGradeModal(){
+    grade_name.value = '';
+    grade_fc.value = '';
+    harga_fa.value = '';
+    harga_nfa.value = '';
+    compositionList.innerHTML = '';
+
+    gradeModal.classList.remove('hidden');
+    gradeModal.classList.add('flex');
+}
+
+function closeGradeModal(){
+    gradeModal.classList.add('hidden');
+}
+
+/* ADD ROW + BUTTON X */
+    function addRow(){
+
+    let options = inventories.map(i =>
+        `<option value="${i.id_inventory}">${i.name_material}</option>`
+    ).join('');
+
+    let div = document.createElement('div');
+    div.className = "flex gap-2 items-center";
+
+    div.innerHTML = `
+        <select class="input">${options}</select>
+        <input type="text" placeholder="Qty" class="input qty">
+        <button type="button" class="bg-red-500 text-white px-2 py-1 rounded text-xs">✕</button>
+    `;
+
+    div.querySelector('button').onclick = () => div.remove();
+
+    document.getElementById('compositionList').appendChild(div);
+    }
+
+/* SAVE GRADE */
+    function saveGrade(){
+
+    let rows = document.querySelectorAll('#compositionList > div');
+
+    if(rows.length === 0){
+        alert('Tambahkan minimal 1 material!');
+        return;
+    }
+
+    let composition = [];
+    let valid = true;
+
+    rows.forEach(r=>{
+        let invId = r.querySelector('select').value;
+        let qty = clean(r.querySelector('input').value);
+
+        if(!qty){
+            valid = false;
+        }
+
+        composition.push({
+            inventory_id: invId,
+            qty: qty
+        });
+    });
+
+    if(!valid){
+        alert('Qty tidak boleh kosong!');
+        return;
+    }
+
+    if(!grade_name.value || !grade_fc.value){
+        alert('Nama Grade dan MPA wajib diisi!');
+        return;
+    }
+
+    fetch("/grade",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "X-CSRF-TOKEN":"{{ csrf_token() }}"
+        },
+        body:JSON.stringify({
+            name_grade: grade_name.value,  
+            mpa: grade_fc.value,            
+            harga_fa: clean(harga_fa.value),
+            harga_nfa: clean(harga_nfa.value),
+            composition: composition
+        })
+    })
+    .then(res=>{
+        if(!res.ok) throw "error";
+        return res.json();
+    })
+    .then(()=>{
+        alert('Grade berhasil disimpan');
+        closeGradeModal();
+        location.reload();
+    })
+    .catch(()=>{
+        alert('Gagal simpan grade (cek controller)');
+    });
+    }
+
+    /* ================= FORMAT INPUT ================= */
+    inv_stock.type = "text";
+    
+    inv_stock.addEventListener('input', e=>{
+        e.target.value = formatRibuan(e.target.value);
+    });
+    
+    harga_fa.addEventListener('input', e=>{
+        e.target.value = formatRibuan(e.target.value);
+    });
+    
+    harga_nfa.addEventListener('input', e=>{
+        e.target.value = formatRibuan(e.target.value);
+    });
+    
+    document.addEventListener('input', e=>{
+        if(e.target.classList.contains('qty')){
+            e.target.value = formatRibuan(e.target.value);
+        }
+    });
     
     /* ================= INIT ================= */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded',()=>{
         renderInventory();
-        renderGrade();
     });
     </script>
 

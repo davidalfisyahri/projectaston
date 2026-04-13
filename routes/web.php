@@ -32,15 +32,13 @@ Route::get('/customer_req', function () { return view('customer_req'); })->name(
 
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
 
-Route::post('/inventory', [InventoryController::class, 'store']);
-Route::put('/inventory/{id}', [InventoryController::class, 'update']);
-Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
+Route::post('/inventory/store', [InventoryController::class, 'store']);
+Route::post('/inventory/update/{id}', [InventoryController::class, 'update']);
+Route::get('/inventory/delete/{id}', [InventoryController::class, 'destroy']);
 
-Route::post('/grade', [GradebetonController::class, 'store']);
-Route::put('/grade/{id}', [GradebetonController::class, 'update']);
-Route::delete('/grade/{id}', [GradebetonController::class, 'destroy']);
-
-Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+Route::post('/grade/store', [gradebetonController::class, 'store']);
+Route::post('/grade/update/{id}', [gradebetonController::class, 'update']);
+Route::get('/grade/delete/{id}', [gradebetonController::class, 'destroy']);
 
 
 Route::get('/setting', function () { return view('setting'); })->name('setting');

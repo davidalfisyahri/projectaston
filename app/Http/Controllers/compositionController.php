@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Grade;
-use App\Models\Inventory;
+use App\Models\GradeBeton;
+use App\Models\inventory;
 
 class InventoryController extends Controller
 {
     public function index()
     {
         $inventory = Inventory::all();
-        $grade = Grade::with('composition.inventory')->get();
+        $grade = GradeBeton::with('composition.inventory')->get();
 
         return view('inventory', compact('inventory', 'grade'));
     }
@@ -29,7 +29,7 @@ class InventoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $inv = Inventory::findOrFail($id);
+        $inv = inventory::findOrFail($id);
 
         $inv->update([
             'name_material' => $request->name_material,
@@ -42,7 +42,7 @@ class InventoryController extends Controller
 
     public function destroy($id)
     {
-        Inventory::findOrFail($id)->delete();
+        inventory::findOrFail($id)->delete();
 
         return redirect('/inventory');
     }

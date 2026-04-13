@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Grade;
+use App\Models\gradebeton;
 use App\Models\Inventory;
 
 class InventoryController extends Controller
@@ -11,28 +11,38 @@ class InventoryController extends Controller
     public function index()
     {
         $inventory = Inventory::all();
-        $grade = Grade::with('composition.inventory')->get();
+        $grade = gradebeton::with('composition.inventory')->get();
 
-        return view('inventory', compact('inventory', 'grade'));
+        return view('inventory', compact('inventory','grade'));
     }
 
     public function store(Request $request)
+    {
+        Inventory::create([
+            'name_material' => $request->name_material,
+            'type' => $request->type,
+            'stock' => $request->stock ?? 0,
+        ]);
+
+        return redirect('/inventory');
+    }
+
+    public function update(Request $request, $id)
 {
-    $inv = Inventory::create($request->all());
-    return response()->json($inv);
+    $inv = Inventory::find($id);
+
+    $inv->update([
+        'name_material' => $request->name_material,
+        'type' => $request->type,
+        'stock' => $request->stock ?? 0,
+    ]);
+
+    return redirect('/inventory');
 }
 
-public function update(Request $request, $id)
-{
-    $inv = Inventory::findOrFail($id);
-    $inv->update($request->all());
-
-    return response()->json(['success'=>true]);
-}
-
-public function destroy($id)
-{
-    Inventory::findOrFail($id)->delete();
-    return response()->json(['success'=>true]);
-}
+    public function destroy($id)
+    {
+        Inventory::find($id)->delete();
+        return back();
+    }
 }

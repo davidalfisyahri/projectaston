@@ -1,425 +1,407 @@
 @extends('main')
-@section('title', 'inventory')
+@section('title','Inventory')
+
 @section('container')
 
-<h1 class="text-2xl font-bold mb-6">Inventory Management</h1>
+<div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- ================= INVENTORY ================= --}}
+        <div class="bg-white shadow-lg rounded-2xl p-6">
 
-    <!-- ================= INVENTORY ================= -->
-    <div class="bg-white p-5 rounded-xl shadow">
-        <div class="flex justify-between mb-4">
-            <h2 class="font-semibold">Material</h2>
-            <button onclick="openInventoryModal()" 
-                class="bg-green-500 text-white px-3 py-1 rounded">
-                + Create
-            </button>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Inventory Material</h2>
+                <button onclick="openModal('addInventory')" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    + Add Material
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @foreach($inventory as $inv)
+                <div class="border rounded-xl p-4 shadow-sm">
+
+                    <h3 class="font-bold text-lg">{{ $inv->name_material }}</h3>
+                    <p class="text-sm text-gray-500">Type: {{ $inv->type }}</p>
+
+                    <p class="mt-2">
+                        Stock: 
+                        <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
+                            {{ number_format($inv->stock, 0, ',', '.') }}
+                        </span>
+                    </p>
+
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="openModal('editInventory{{ $inv->id_inventory }}')" 
+                            class="bg-yellow-400 px-3 py-1 rounded text-sm">
+                            Edit
+                        </button>
+
+                        <a href="/inventory/delete/{{ $inv->id_inventory }}"
+                            onclick="return confirmDelete()"
+                            class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                            Delete
+                         </a>
+                    </div>
+
+                </div>
+
+                {{-- MODAL EDIT INVENTORY --}}
+                <div id="editInventory{{ $inv->id_inventory }}" class="modal hidden">
+                    <div class="modal-box">
+                        <h3 class="font-bold mb-3">Edit Material</h3>
+
+                        <form action="/inventory/update/{{ $inv->id_inventory }}" method="POST">
+                            @csrf
+
+                            <input type="text" name="name_material" value="{{ $inv->name_material }}" class="input">
+
+                            <select name="type" class="input mt-2">
+                                <option {{ $inv->type=='cement'?'selected':'' }}>cement</option>
+                                <option {{ $inv->type=='FA'?'selected':'' }}>FA</option>
+                                <option {{ $inv->type=='Sand'?'selected':'' }}>Sand</option>
+                                <option {{ $inv->type=='Aggregate'?'selected':'' }}>Aggregate</option>
+                                <option {{ $inv->type=='Admixture'?'selected':'' }}>Admixture</option>
+                            </select>
+                            
+                            <input type="text" name="stock" value="0" class="input mt-2 number-format" placeholder="Stock">
+
+                            <div class="mt-4 flex justify-end gap-2">
+                                <button type="button" onclick="closeModal('editInventory{{ $inv->id_inventory }}')" class="btn-cancel">Cancel</button>
+                                <button class="btn-primary">Update</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                @endforeach
+            </div>
         </div>
 
-        <div id="inventoryList" class="space-y-2 text-sm"></div>
-    </div>
+        {{-- ================= GRADE ================= --}}
+        <div class="bg-white shadow-lg rounded-2xl p-6">
 
-    <!-- ================= GRADE ================= -->
-    <div class="bg-white p-5 rounded-xl shadow">
-        <div class="flex justify-between mb-4">
-            <h2 class="font-semibold">Grade Beton</h2>
-            <button onclick="openGradeModal()" 
-                class="bg-blue-500 text-white px-3 py-1 rounded">
-                + Create
-            </button>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Grade Beton</h2>
+                <button onclick="openModal('addGrade')" 
+                    class="bg-green-600 text-white px-4 py-2 rounded-lg">
+                    + Add Grade
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                @foreach($grade as $g)
+                <div class="border rounded-xl p-4 shadow-sm">
+
+                    <h3 class="font-bold text-lg">{{ $g->name_grade }}</h3>
+                    <p class="text-sm text-gray-500">MPA: {{ $g->mpa }}</p>
+
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="openModal('detail{{ $g->id_grade }}')" 
+                            class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                            Detail
+                        </button>
+
+                        <button onclick="openModal('editGrade{{ $g->id_grade }}')" 
+                            class="bg-yellow-400 px-3 py-1 rounded text-sm">
+                            Edit
+                        </button>
+
+                        <a href="/grade/delete/{{ $g->id_grade }}"
+                            onclick="return confirmDelete()"
+                            class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                            Delete
+                         </a>
+                    </div>
+
+                </div>
+
+                {{-- MODAL DETAIL --}}
+                <div id="detail{{ $g->id_grade }}" class="modal hidden">
+                    <div class="modal-box w-[500px]">
+                
+                        <h3 class="text-lg font-bold mb-4">Detail Grade Beton</h3>
+                
+                        <!-- INFO GRADE -->
+                        <div class="mb-4 space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nama Grade</span>
+                                <span class="font-semibold">{{ $g->name_grade }}</span>
+                            </div>
+                
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">MPA</span>
+                                <span class="font-semibold">{{ $g->mpa }}</span>
+                            </div>
+                
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Harga FA</span>
+                                <span class="font-semibold">
+                                    Rp {{ number_format($g->harga_fa, 0, ',', '.') }}
+                                </span>
+                            </div>
+                
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Harga NFA</span>
+                                <span class="font-semibold">
+                                    Rp {{ number_format($g->harga_nfa, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                
+                        <!-- COMPOSITION -->
+                        <div>
+                            <h4 class="font-semibold mb-2">Composition Material</h4>
+                
+                            <div class="border rounded-lg">
+                                @foreach($g->composition as $c)
+                                <div class="flex justify-between border-b px-3 py-2 text-sm">
+                                    <span>{{ $c->inventory->name_material }}</span>
+                                    <span>{{ number_format($c->qty, 0, ',', '.') }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                
+                        <!-- ACTION -->
+                        <div class="mt-5 text-right">
+                            <button onclick="closeModal('detail{{ $g->id_grade }}')" class="btn-cancel">
+                                Close
+                            </button>
+                        </div>
+                
+                    </div>
+                </div>
+
+                @endforeach
+            </div>
         </div>
 
-        <div id="gradeList" class="space-y-3"></div>
     </div>
-
 </div>
 
-<!-- ================= MODAL INVENTORY ================= -->
-<div id="inventoryModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md relative">
+{{-- ================= MODAL ADD INVENTORY ================= --}}
+<div id="addInventory" class="modal hidden">
+    <div class="modal-box">
+        <h3 class="font-bold mb-3">Add Material</h3>
 
-        <div class="flex justify-end mb-2">
-            <button onclick="closeInventoryModal()" class="text-gray-400 text-lg">✕</button>
-        </div>
+        <form action="/inventory/store" method="POST">
+            @csrf
 
-        <h2 class="font-bold mb-3">Material</h2>
+            <input type="text" name="name_material" placeholder="Material Name" class="input">
+            
+            <select name="type" class="input mt-2">
+                <option>cement</option>
+                <option>FA</option>
+                <option>Sand</option>
+                <option>Aggregate</option>
+                <option>Admixture</option>
+            </select>
 
-        <input id="inv_name" placeholder="Nama Material" class="input mb-2">
-        <select id="inv_type" class="input mb-2">
-            <option value="cement">Cement</option>
-            <option value="FA">FA</option>
-            <option value="Sand">Sand</option>
-            <option value="Aggregate">Aggregate</option>
-            <option value="Admixture">Admixture</option>
-        </select>
-        <input id="inv_stock" type="number" placeholder="Stock" class="input mb-4">
+            <input type="number" name="stock" placeholder="Stock" class="input mt-2">
 
-        <div class="flex gap-2">
-            <button onclick="closeInventoryModal()" 
-                class="w-full bg-gray-200 py-2 rounded">
-                Exit
-            </button>
-
-            <button onclick="saveInventory()" 
-                class="w-full bg-green-500 text-white py-2 rounded">
-                Simpan
-            </button>
-        </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('addInventory')" class="btn-cancel">Cancel</button>
+                <button class="btn-primary">Save</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- ================= MODAL GRADE ================= -->
-<div id="gradeModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center overflow-auto">
-    <div class="bg-white p-6 rounded-xl w-full max-w-xl">
+{{-- ================= MODAL ADD GRADE ================= --}}
+<div id="addGrade" class="modal hidden">
+    <div class="modal-box w-[500px]">
 
-        <div class="flex justify-end mb-2">
-            <button onclick="closeGradeModal()" class="text-gray-400 text-lg">✕</button>
-        </div>
+        <h3 class="text-lg font-semibold mb-4">Add Grade Beton</h3>
 
-        <h2 class="font-bold mb-3">Tambah / Edit Grade</h2>
+        <form action="/grade/store" method="POST">
+            @csrf
 
-        <input id="grade_name" placeholder="Nama (K-250)" class="input mb-2">
-        <input id="grade_fc" placeholder="Mpa" class="input mb-2">
-        <input id="harga_fa" placeholder="Harga FA" class="input mb-2">
-        <input id="harga_nfa" placeholder="Harga NFA" class="input mb-4">
+            <!-- NAME GRADE -->
+            <div class="mb-3">
+                <label class="text-sm">Nama Grade</label>
+                <input type="text" name="name_grade" placeholder="Contoh: K-250"
+                    class="input mt-1" required>
+            </div>
 
-        <h3 class="font-semibold mb-2">Komposisi Material</h3>
+            <!-- MPA -->
+            <div class="mb-3">
+                <label class="text-sm">MPA</label>
+                <input type="text" name="mpa" placeholder="Contoh: 20 / FC20"
+                    class="input mt-1" required>
+            </div>
 
-        <div id="compositionList" class="space-y-2"></div>
+            <!-- HARGA -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="text-sm">Harga FA</label>
+                    <input type="text" name="harga_fa" class="input number-format">
+                </div>
 
-        <button onclick="addRow()" 
-            class="text-sm bg-gray-200 px-2 py-1 rounded mb-3">
-            + Tambah Material
-        </button>
+                <div>
+                    <label class="text-sm">Harga NFA</label>
+                    <input type="text" name="harga_nfa" class="input number-format">
+                </div>
+            </div>
 
-        <div class="flex gap-2">
-            <button onclick="closeGradeModal()" 
-                class="w-full bg-gray-200 py-2 rounded">
-                Exit
+            <!-- COMPOSITION -->
+            <div class="mb-2">
+                <label class="text-sm font-medium">Composition Material</label>
+            </div>
+
+            <table class="w-full text-sm border rounded" id="compositionTable">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 text-left">Material</th>
+                        <th class="p-2 text-left">Qty</th>
+                        <th class="p-2 text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td class="p-2">
+                            <select name="inventory_id[]" class="input" required>
+                                <option value="">-- pilih material --</option>
+                                @foreach($inventory as $inv)
+                                <option value="{{ $inv->id_inventory }}">
+                                    {{ $inv->name_material }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </td>
+
+                        <td class="p-2">
+                            <input type="number" step="0.01" name="qty[]" class="input" required>
+                        </td>
+
+                        <td class="p-2 text-center">
+                            <button type="button" onclick="removeRow(this)" class="text-red-500">
+                                ✕
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- BUTTON TAMBAH -->
+            <button type="button" onclick="addRow()" 
+                class="mt-2 text-blue-600 text-sm">
+                + Tambah Material
             </button>
 
-            <button onclick="saveGrade()" 
-                class="w-full bg-blue-500 text-white py-2 rounded">
-                Simpan
-            </button>
-        </div>
+            <!-- ACTION -->
+            <div class="mt-5 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('addGrade')" 
+                    class="btn-cancel">
+                    Cancel
+                </button>
+
+                <button class="btn-primary">
+                    Save
+                </button>
+            </div>
+
+        </form>
     </div>
 </div>
 
-<!-- ================= MODAL DETAIL ================= -->
-<div id="detailModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md">
-
-        <div class="flex justify-end mb-2">
-            <button onclick="closeDetailModal()" class="text-gray-400 text-lg">✕</button>
-        </div>
-
-        <h2 class="font-bold mb-3">Detail Komposisi</h2>
-        <div id="detailContent"></div>
-
-        <button onclick="closeDetailModal()" 
-            class="w-full mt-4 bg-gray-200 py-2 rounded">
-            Exit
-        </button>
-    </div>
-</div>
-
+{{-- ================= STYLE + SCRIPT ================= --}}
 <style>
-.input {
-    border: 1px solid #ccc;
-    padding: 8px;
-    border-radius: 6px;
-    width: 100%;
-}
+.modal { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; }
+.modal-box { background:white; padding:20px; border-radius:10px; width:400px; }
+.input { width:100%; border:1px solid #ddd; padding:8px; border-radius:6px; }
+.btn-primary { background:#2563eb; color:white; padding:6px 12px; border-radius:6px; }
+.btn-cancel { background:#ccc; padding:6px 12px; border-radius:6px; }
+.hidden { display:none; }
 </style>
 
 <script>
-    let inventories = @json($inventory);
-    let grades = @json($grade);
-    
-    let editInventoryId = null;
-    function saveGrade(){
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 
-    let rows = document.querySelectorAll('#compositionList > div');
+function confirmDelete() {
+    return confirm("Apakah kamu yakin ingin menghapus data ini?");
+}
 
-    if(rows.length === 0){
-        alert('Tambahkan minimal 1 material!');
+document.querySelectorAll('.number-format').forEach(input => {
+
+input.addEventListener('input', function(e) {
+    let value = this.value.replace(/[^0-9]/g, '');
+
+    if (value === '') {
+        this.value = '';
         return;
     }
 
-    let compositions = [];
+    this.value = new Intl.NumberFormat('id-ID').format(value);
+});
 
-    rows.forEach(row => {
-        let invId = row.querySelector('select').value;
-        let qty = clean(row.querySelector('input').value);
+});
 
-        if(!qty){
-            alert('Qty tidak boleh kosong');
-            return;
-        }
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function() {
 
-        compositions.push({
-            inventory_id: invId,
-            qty: qty
+        this.querySelectorAll('.number-format').forEach(input => {
+            input.value = input.value.replace(/\./g, '');
         });
+
     });
+});
 
-    fetch("/grade", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-        },
-        body: JSON.stringify({
-            name_grade: name_grade.value,
-            mpa: mpa.value,
-            harga_fa: clean(harga_fa.value),
-            harga_nfa: clean(harga_nfa.value),
-            compositions: compositions
-        })
-    })
-    .then(res => {
-        if(!res.ok) throw "error";
-        return res.json();
-    })
-    .then(() => {
-        alert('Berhasil simpan grade');
-        location.reload();
-    })
-    .catch(() => {
-        alert('Gagal simpan grade');
-    });
-}
-    
-    /* ================= FORMAT ================= */
-    function formatRibuan(x){
-        return String(x).replace(/\D/g,'')
-        .replace(/\B(?=(\d{3})+(?!\d))/g,".");
-    }
-    function clean(x){
-        return String(x).replace(/\./g,'');
-    }
-    
-    /* ================= INVENTORY ================= */
-    function resetInventoryForm(){
-        editInventoryId = null;
-        inv_name.value = '';
-        inv_type.value = 'cement';
-        inv_stock.value = '';
-    }
-    
-    function openInventoryModal(isEdit = false){
-        if(!isEdit){
-            resetInventoryForm(); // hanya reset kalau ADD
-        }
-        inventoryModal.classList.remove('hidden');
-        inventoryModal.classList.add('flex');
-    }
-    
-    function closeInventoryModal(){
-        inventoryModal.classList.add('hidden');
-    }
-    
-    function saveInventory(){
-    
-        let url = editInventoryId ? `/inventory/${editInventoryId}` : `/inventory`;
-        let method = editInventoryId ? "PUT" : "POST";
-    
-        fetch(url,{
-            method:method,
-            headers:{
-                "Content-Type":"application/json",
-                "X-CSRF-TOKEN":"{{ csrf_token() }}"
-            },
-            body:JSON.stringify({
-                name_material:inv_name.value,
-                type:inv_type.value,
-                stock:clean(inv_stock.value)
-            })
-        })
-        .then(res=>res.json())
-        .then(()=>location.reload());
-    }
-    
-    function editInventory(id){
-    
-        let data = inventories.find(i=>i.id_inventory==id);
-    
-        editInventoryId = id;
-    
-        inv_name.value = data.name_material;
-        inv_type.value = data.type;
-        inv_stock.value = formatRibuan(data.stock);
-    
-        openInventoryModal(true); // 🔥 penting
-    }
-    
-    function deleteInventory(id){
-        if(!confirm('Yakin hapus?')) return;
-    
-        fetch(`/inventory/${id}`,{
-            method:"DELETE",
-            headers:{
-                "X-CSRF-TOKEN":"{{ csrf_token() }}"
-            }
-        }).then(()=>location.reload());
-    }
-    
-    function renderInventory(){
-        let el = document.getElementById('inventoryList');
-        el.innerHTML='';
-    
-        inventories.forEach(i=>{
-            el.innerHTML+=`
-            <div class="border p-2 rounded flex justify-between items-center">
-                <div>
-                    <b>${i.name_material}</b> (${i.type})<br>
-                    Stock: ${formatRibuan(i.stock)}
-                </div>
-    
-                <div class="flex gap-2">
-                    <button onclick="editInventory(${i.id_inventory})"
-                        class="bg-yellow-400 px-2 py-1 text-xs rounded">
-                        Edit
-                    </button>
-    
-                    <button onclick="deleteInventory(${i.id_inventory})"
-                        class="bg-red-500 text-white px-2 py-1 text-xs rounded">
-                        Delete
-                    </button>
-                </div>
-            </div>`;
-        });
-    }
-    
+function addRow(){
+    let table = document.getElementById('compositionTable');
 
-/* ================= GRADE ================= */
-function openGradeModal(){
-    grade_name.value = '';
-    grade_fc.value = '';
-    harga_fa.value = '';
-    harga_nfa.value = '';
-    compositionList.innerHTML = '';
+    let row = `
+    <tr>
+        <td>
+            <select name="inventory_id[]" class="input">
+                @foreach($inventory as $inv)
+                <option value="{{ $inv->id_inventory }}">{{ $inv->name_material }}</option>
+                @endforeach
+            </select>
+        </td>
+        <td><input type="number" name="qty[]" class="input"></td>
+    </tr>`;
 
-    gradeModal.classList.remove('hidden');
-    gradeModal.classList.add('flex');
+    table.innerHTML += row;
 }
 
-function closeGradeModal(){
-    gradeModal.classList.add('hidden');
-}
+function addRow() {
+    let table = document.querySelector("#compositionTable tbody");
 
-/* ADD ROW + BUTTON X */
-    function addRow(){
+    let row = `
+    <tr>
+        <td class="p-2">
+            <select name="inventory_id[]" class="input" required>
+                <option value="">-- pilih material --</option>
+                @foreach($inventory as $inv)
+                <option value="{{ $inv->id_inventory }}">
+                    {{ $inv->name_material }}
+                </option>
+                @endforeach
+            </select>
+        </td>
 
-    let options = inventories.map(i =>
-        `<option value="${i.id_inventory}">${i.name_material}</option>`
-    ).join('');
+        <td class="p-2">
+            <input type="number" step="0.01" name="qty[]" class="input" required>
+        </td>
 
-    let div = document.createElement('div');
-    div.className = "flex gap-2 items-center";
-
-    div.innerHTML = `
-        <select class="input">${options}</select>
-        <input type="text" placeholder="Qty" class="input qty">
-        <button type="button" class="bg-red-500 text-white px-2 py-1 rounded text-xs">✕</button>
+        <td class="p-2 text-center">
+            <button type="button" onclick="removeRow(this)" class="text-red-500">
+                ✕
+            </button>
+        </td>
+    </tr>
     `;
 
-    div.querySelector('button').onclick = () => div.remove();
+    table.insertAdjacentHTML('beforeend', row);
+}
 
-    document.getElementById('compositionList').appendChild(div);
-    }
+function removeRow(btn) {
+    btn.closest('tr').remove();
+}
 
-/* SAVE GRADE */
-    function saveGrade(){
-
-    let rows = document.querySelectorAll('#compositionList > div');
-
-    if(rows.length === 0){
-        alert('Tambahkan minimal 1 material!');
-        return;
-    }
-
-    let composition = [];
-    let valid = true;
-
-    rows.forEach(r=>{
-        let invId = r.querySelector('select').value;
-        let qty = clean(r.querySelector('input').value);
-
-        if(!qty){
-            valid = false;
-        }
-
-        composition.push({
-            inventory_id: invId,
-            qty: qty
-        });
-    });
-
-    if(!valid){
-        alert('Qty tidak boleh kosong!');
-        return;
-    }
-
-    if(!grade_name.value || !grade_fc.value){
-        alert('Nama Grade dan MPA wajib diisi!');
-        return;
-    }
-
-    fetch("/grade",{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json",
-            "X-CSRF-TOKEN":"{{ csrf_token() }}"
-        },
-        body:JSON.stringify({
-            name_grade: grade_name.value,  
-            mpa: grade_fc.value,            
-            harga_fa: clean(harga_fa.value),
-            harga_nfa: clean(harga_nfa.value),
-            composition: composition
-        })
-    })
-    .then(res=>{
-        if(!res.ok) throw "error";
-        return res.json();
-    })
-    .then(()=>{
-        alert('Grade berhasil disimpan');
-        closeGradeModal();
-        location.reload();
-    })
-    .catch(()=>{
-        alert('Gagal simpan grade (cek controller)');
-    });
-    }
-
-    /* ================= FORMAT INPUT ================= */
-    inv_stock.type = "text";
-    
-    inv_stock.addEventListener('input', e=>{
-        e.target.value = formatRibuan(e.target.value);
-    });
-    
-    harga_fa.addEventListener('input', e=>{
-        e.target.value = formatRibuan(e.target.value);
-    });
-    
-    harga_nfa.addEventListener('input', e=>{
-        e.target.value = formatRibuan(e.target.value);
-    });
-    
-    document.addEventListener('input', e=>{
-        if(e.target.classList.contains('qty')){
-            e.target.value = formatRibuan(e.target.value);
-        }
-    });
-    
-    /* ================= INIT ================= */
-    document.addEventListener('DOMContentLoaded',()=>{
-        renderInventory();
-    });
-    </script>
+</script>
 
 @endsection

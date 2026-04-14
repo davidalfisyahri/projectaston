@@ -2,6 +2,7 @@
 @section('title','Inventory')
 
 @section('container')
+<h1 class="text-2xl font-bold mb-6">Inventory</h1>
 
 <div class="p-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -12,7 +13,7 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Inventory Material</h2>
                 <button onclick="openModal('addInventory')" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
                     + Add Material
                 </button>
             </div>
@@ -27,19 +28,19 @@
                     <p class="mt-2">
                         Stock: 
                         <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
-                            {{ number_format($inv->stock, 0, ',', '.') }}
+                            {{ number_format($inv->stock, 0, ',', '.') }} Kg
                         </span>
                     </p>
 
                     <div class="flex gap-2 mt-3">
                         <button onclick="openModal('editInventory{{ $inv->id_inventory }}')" 
-                            class="bg-yellow-400 px-3 py-1 rounded text-sm">
+                            class="bg-yellow-400 px-3 py-1 rounded text-sm hover:bg-yellow-600">
                             Edit
                         </button>
 
                         <a href="/inventory/delete/{{ $inv->id_inventory }}"
                             onclick="return confirmDelete()"
-                            class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                            class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
                             Delete
                          </a>
                     </div>
@@ -84,32 +85,31 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Grade Beton</h2>
                 <button onclick="openModal('addGrade')" 
-                    class="bg-green-600 text-white px-4 py-2 rounded-lg">
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
                     + Add Grade
                 </button>
             </div>
 
-            <div class="space-y-4">
-                @foreach($grade as $g)
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach($grade as $grade)
                 <div class="border rounded-xl p-4 shadow-sm">
 
-                    <h3 class="font-bold text-lg">{{ $g->name_grade }}</h3>
-                    <p class="text-sm text-gray-500">MPA: {{ $g->mpa }}</p>
+                    <h3 class="font-bold text-lg">{{ $grade->name_grade }} {{ $grade->mpa }}</h3>
 
                     <div class="flex gap-2 mt-3">
-                        <button onclick="openModal('detail{{ $g->id_grade }}')" 
-                            class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                        <button onclick="openModal('detail{{ $grade->id_grade }}')" 
+                            class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
                             Detail
                         </button>
 
-                        <button onclick="openModal('editGrade{{ $g->id_grade }}')" 
-                            class="bg-yellow-400 px-3 py-1 rounded text-sm">
+                        <button onclick="openModal('editGrade{{ $grade->id_grade }}')" 
+                            class="bg-yellow-400 px-3 py-1 rounded text-sm hover:bg-yellow-600">
                             Edit
                         </button>
 
-                        <a href="/grade/delete/{{ $g->id_grade }}"
+                        <a href="/grade/delete/{{ $grade->id_grade }}"
                             onclick="return confirmDelete()"
-                            class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                            class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
                             Delete
                          </a>
                     </div>
@@ -117,7 +117,7 @@
                 </div>
 
                 {{-- MODAL DETAIL --}}
-                <div id="detail{{ $g->id_grade }}" class="modal hidden">
+                <div id="detail{{ $grade->id_grade }}" class="modal hidden">
                     <div class="modal-box w-[500px]">
                 
                         <h3 class="text-lg font-bold mb-4">Detail Grade Beton</h3>
@@ -126,25 +126,25 @@
                         <div class="mb-4 space-y-1">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Nama Grade</span>
-                                <span class="font-semibold">{{ $g->name_grade }}</span>
+                                <span class="font-semibold">{{ $grade->name_grade }}</span>
                             </div>
                 
                             <div class="flex justify-between">
                                 <span class="text-gray-600">MPA</span>
-                                <span class="font-semibold">{{ $g->mpa }}</span>
+                                <span class="font-semibold">{{ $grade->mpa }}</span>
                             </div>
                 
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Harga FA</span>
+                                <span class="text-gray-600">FA 15%</span>
                                 <span class="font-semibold">
-                                    Rp {{ number_format($g->harga_fa, 0, ',', '.') }}
+                                    Rp {{ number_format($grade->harga_fa, 0, ',', '.') }}
                                 </span>
                             </div>
                 
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Harga NFA</span>
+                                <span class="text-gray-600">NFA</span>
                                 <span class="font-semibold">
-                                    Rp {{ number_format($g->harga_nfa, 0, ',', '.') }}
+                                    Rp {{ number_format($grade->harga_nfa, 0, ',', '.') }}
                                 </span>
                             </div>
                         </div>
@@ -154,7 +154,7 @@
                             <h4 class="font-semibold mb-2">Composition Material</h4>
                 
                             <div class="border rounded-lg">
-                                @foreach($g->composition as $c)
+                                @foreach($grade->composition as $c)
                                 <div class="flex justify-between border-b px-3 py-2 text-sm">
                                     <span>{{ $c->inventory->name_material }}</span>
                                     <span>{{ number_format($c->qty, 0, ',', '.') }}</span>
@@ -165,13 +165,123 @@
                 
                         <!-- ACTION -->
                         <div class="mt-5 text-right">
-                            <button onclick="closeModal('detail{{ $g->id_grade }}')" class="btn-cancel">
+                            <button onclick="closeModal('detail{{ $grade->id_grade }}')" class="btn-cancel">
                                 Close
                             </button>
                         </div>
                 
                     </div>
                 </div>
+
+                {{-- MODAL EDIT GRADE --}}
+                <div id="editGrade{{ $grade->id_grade }}" class="modal hidden">
+                    <div class="modal-box w-[550px]">
+
+                        <h3 class="text-lg font-semibold mb-4">Edit Grade Beton</h3>
+
+                        <form action="/grade/update/{{ $grade->id_grade }}" method="POST">
+                            @csrf
+
+                            <!-- NAME -->
+                            <div class="mb-3">
+                                <label class="text-sm">Nama Grade</label>
+                                <input type="text" name="name_grade" 
+                                    value="{{ $grade->name_grade }}" 
+                                    class="input mt-1" required>
+                            </div>
+
+                            <!-- MPA -->
+                            <div class="mb-3">
+                                <label class="text-sm">MPA</label>
+                                <input type="text" name="mpa" 
+                                    value="{{ $grade->mpa }}" 
+                                    class="input mt-1" required>
+                            </div>
+
+                            <!-- HARGA -->
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="text-sm">Harga FA</label>
+                                    <input type="text" name="harga_fa" 
+                                        value="{{ number_format($grade->harga_fa, 0, ',', '.') }}"
+                                        class="input number-format">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm">Harga NFA</label>
+                                    <input type="text" name="harga_nfa" 
+                                        value="{{ number_format($grade->harga_nfa, 0, ',', '.') }}"
+                                        class="input number-format">
+                                </div>
+                            </div>
+
+                            <!-- COMPOSITION -->
+                            <div class="mb-2">
+                                <label class="text-sm font-medium">Composition Material</label>
+                            </div>
+
+                            <table class="w-full text-sm border rounded" id="editTable{{ $grade->id_grade }}">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="p-2 text-left">Material</th>
+                                        <th class="p-2 text-left">Qty</th>
+                                        <th class="p-2 text-center">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach($grade->composition as $c)
+                                    <tr>
+                                        <td class="p-2">
+                                            <select name="inventory_id[]" class="input">
+                                                @foreach($inventory as $inv)
+                                                <option value="{{ $inv->id_inventory }}"
+                                                    {{ $inv->id_inventory == $c->inventory_id ? 'selected' : '' }}>
+                                                    {{ $inv->name_material }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+
+                                        <td class="p-2">
+                                            <input type="number" name="qty[]" 
+                                                value="{{ $c->qty }}" 
+                                                class="input">
+                                        </td>
+
+                                        <td class="p-2 text-center">
+                                            <button type="button" onclick="removeRow(this)" class="text-red-500">
+                                                ✕
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+
+                            <!-- ADD ROW -->
+                            <button type="button" 
+                                onclick="addRowEdit({{ $grade->id_grade }})"
+                                class="text-blue-600 text-sm mt-2">
+                                + Tambah Material
+                            </button>
+
+                            <!-- ACTION -->
+                            <div class="mt-5 flex justify-end gap-2">
+                                <button type="button" 
+                                    onclick="closeModal('editGrade{{ $grade->id_grade }}')" 
+                                    class="btn-cancel">
+                                    Cancel
+                                </button>
+
+                                <button class="btn-primary">
+                                    Update
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>  
 
                 @endforeach
             </div>
@@ -261,7 +371,7 @@
                 <tbody>
                     <tr>
                         <td class="p-2">
-                            <select name="inventory_id[]" class="input" required>
+                            <select name="inventory_id[]" class="input" >
                                 <option value="">-- pilih material --</option>
                                 @foreach($inventory as $inv)
                                 <option value="{{ $inv->id_inventory }}">
@@ -272,7 +382,7 @@
                         </td>
 
                         <td class="p-2">
-                            <input type="number" step="0.01" name="qty[]" class="input" required>
+                            <input type="number" step="0.01" name="qty[]" class="input">
                         </td>
 
                         <td class="p-2 text-center">
@@ -305,6 +415,8 @@
         </form>
     </div>
 </div>
+
+
 
 {{-- ================= STYLE + SCRIPT ================= --}}
 <style>
@@ -384,7 +496,7 @@ function addRow() {
         </td>
 
         <td class="p-2">
-            <input type="number" step="0.01" name="qty[]" class="input" required>
+            <input type="number" step="0.01" name="qty[]" class="input">
         </td>
 
         <td class="p-2 text-center">
@@ -400,6 +512,38 @@ function addRow() {
 
 function removeRow(btn) {
     btn.closest('tr').remove();
+}
+
+// EDIT GRADE
+
+function addRowEdit(id) {
+    let table = document.querySelector(`#editTable${id} tbody`);
+
+    let row = `
+    <tr>
+        <td class="p-2">
+            <select name="inventory_id[]" class="input">
+                @foreach($inventory as $inv)
+                <option value="{{ $inv->id_inventory }}">
+                    {{ $inv->name_material }}
+                </option>
+                @endforeach
+            </select>
+        </td>
+
+        <td class="p-2">
+            <input type="number" name="qty[]" class="input">
+        </td>
+
+        <td class="p-2 text-center">
+            <button type="button" onclick="removeRow(this)" class="text-red-500">
+                ✕
+            </button>
+        </td>
+    </tr>
+    `;
+
+    table.insertAdjacentHTML('beforeend', row);
 }
 
 </script>

@@ -77,7 +77,7 @@ class UsersController extends Controller
             return redirect(session('page_url'));
         }
 
-        return redirect('/users');
+        return redirect('/setting');
     }
 
     /**

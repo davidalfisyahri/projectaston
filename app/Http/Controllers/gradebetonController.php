@@ -14,27 +14,66 @@ class GradebetonController extends Controller
     $request->validate([
         'name_grade' => 'required',
         'mpa' => 'required|string',
-        'harga_fa' => 'required|numeric',
-        'harga_nfa' => 'required|numeric',
+        'harga_fa' => 'required',
+        'harga_nfa' => 'required',
     ]);
 
     $grade = GradeBeton::create([
         'name_grade' => $request->name_grade,
         'mpa' => $request->mpa,
-        'harga_fa' => $request->harga_fa,
-        'harga_nfa' => $request->harga_nfa,
+        'harga_fa' => str_replace('.', '', $request->harga_fa),
+        'harga_nfa' => str_replace('.', '', $request->harga_nfa),
     ]);
 
-    foreach ($request->inventory_id as $key => $inv) {
-        Composition::create([
-            'grade_id' => $grade->id_grade,
-            'inventory_id' => $inv,
-            'qty' => $request->qty[$key],
-        ]);
+    // ✅ CEK DULU ADA COMPOSITION ATAU TIDAK
+    if ($request->inventory_id) {
+        foreach ($request->inventory_id as $key => $inv) {
+
+            // skip kalau kosong
+            if (!$inv || !$request->qty[$key]) continue;
+
+            Composition::create([
+                'grade_id' => $grade->id_grade,
+                'inventory_id' => $inv,
+                'qty' => $request->qty[$key],
+            ]);
+        }
     }
 
     return back();
 }
+
+public function update(Request $request, $id)
+{
+    $grade = GradeBeton::find($id);
+
+    $grade->update([
+        'name_grade' => $request->name_grade,
+        'mpa' => $request->mpa,
+        'harga_fa' => str_replace('.', '', $request->harga_fa),
+        'harga_nfa' => str_replace('.', '', $request->harga_nfa),
+    ]);
+
+    // hapus lama
+    Composition::where('grade_id', $id)->delete();
+
+    // insert kalau ada
+    if ($request->inventory_id) {
+        foreach ($request->inventory_id as $key => $inv) {
+
+            if (!$inv || !$request->qty[$key]) continue;
+
+            Composition::create([
+                'grade_id' => $id,
+                'inventory_id' => $inv,
+                'qty' => $request->qty[$key],
+            ]);
+        }
+    }
+
+    return redirect('/inventory');
+}
+
 
     public function destroy($id)
     {

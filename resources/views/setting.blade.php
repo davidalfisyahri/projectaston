@@ -48,11 +48,13 @@
         <div class="mt-auto pt-4 flex gap-2">
             <button 
                 onclick="openModal({{ $user->id_user }})"
-                class="w-full text-xs bg-blue-500 text-white py-1.5 rounded-lg">
+                class="w-full text-xs bg-blue-500 text-white py-1.5 rounded-lg hover:bg-blue-600">
                 Detail
             </button>
 
-            <button class="w-full text-xs bg-yellow-400 text-white py-1.5 rounded-lg">
+            <button 
+            onclick="openeditModal({{ $user->id_user }})"
+            class="w-full text-xs bg-yellow-400 text-white py-1.5 rounded-lg hover:bg-yellow-600">
                 Edit
             </button>
 

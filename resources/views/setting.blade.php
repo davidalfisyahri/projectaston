@@ -2,162 +2,222 @@
 @section('title', 'setting')
 @section('container')
 @if(auth()->user()->role === 'superadmin')
-<h1 class="text-2xl font-bold mb-6">Settings</h1>
-
-<div class="p-6">
-    <div class="mb-3 flex justify">
-        <button onclick="openAddModal()" 
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm shadow">
-            + Tambah User
-        </button>
+<div class="p-6 bg-gray-50/50 min-h-screen">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Manajemen Pengguna</h1>
+        <p class="text-sm text-gray-500">Kelola semua pengguna platform</p>
     </div>
-    <!-- GRID UTAMA -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-        @forelse ($users as $user)
-        <div class="bg-white shadow-md rounded-2xl p-5 
-                    hover:shadow-xl transition 
-                    flex flex-col justify-between 
-                    min-h-[250px]">
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-4">
+        <!-- Total Pengguna -->
+        <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Total Pengguna</h3>
+            <p class="text-2xl font-bold text-gray-800">{{ $users->total() }}</p>
+        </div>
+        
+        <!-- Pengguna Aktif -->
+        <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Pengguna Aktif</h3>
+            <p class="text-2xl font-bold text-green-600">{{ $users->total() }}</p>
+        </div>
+        
+        <!-- Admin -->
+        <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Admin</h3>
+            <p class="text-2xl font-bold text-blue-600">
+                @php
+                    $adminCount = collect($users->items())->filter(fn($u) => in_array(strtolower($u->role), ['admin', 'superadmin']))->count();
+                @endphp
+                {{ $adminCount }}
+            </p>
+        </div>
+    </div>
 
-            <!-- HEADER -->
-            <div>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-12 h-12 bg-blue-500 text-white flex items-center justify-center rounded-full font-bold text-lg">
-                        {{ strtoupper(substr($user->name_user, 0, 1)) }}
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-semibold">{{ $user->name_user }}</h3>
-                        <p class="text-xs text-gray-500">{{ $user->position }}</p>
-                    </div>
-                </div>
+    <!-- FILTER & ADD BAR -->
+    <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 p-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex-1 w-full relative">
+            <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" placeholder="Cari pengguna..." class="pl-10 w-full md:w-96 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
+                <option>Semua Role</option>
+                <option>Admin</option>
+                <option>User</option>
+            </select>
+            <button class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-50 flex items-center gap-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                Filter
+            </button>
+            <button onclick="openAddModal()" class="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700 transition whitespace-nowrap shadow-sm">
+                + Tambah User
+            </button>
+        </div>
+    </div>
 
-                <!-- DETAIL -->
-                <div class="text-xs text-gray-600 space-y-2 mt-2">
-                    <p><span class="font-medium">NIK:</span> {{ $user->nik }}</p>
-                    <p><span class="font-medium">Role:</span> {{ $user->role }}</p>
-                    <p><span class="font-medium">Branch:</span> {{ $user->office_branch }}</p>
-                </div>
+    <!-- TABLE -->
+    <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-100 flex items-center gap-3">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"></path></svg>
+            <h2 class="text-xl font-bold text-gray-800">Daftar Pengguna</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left whitespace-nowrap">
+                <thead class="bg-white text-gray-500 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 font-medium">Nama</th>
+                        <th class="px-6 py-4 font-medium">Jabatan</th>
+                        <th class="px-6 py-4 font-medium">NIK</th>
+                        <th class="px-6 py-4 font-medium text-center">Role</th>
+                        <th class="px-6 py-4 font-medium">Branch</th>
+                        <th class="px-6 py-4 font-medium text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-gray-700">
+                    @forelse ($users as $user)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-semibold text-gray-900">{{ $user->name_user }}</td>
+                        <td class="px-6 py-4">{{ $user->position }}</td>
+                        <td class="px-6 py-4">{{ $user->nik }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide 
+                                {{ in_array(strtolower($user->role), ['admin', 'superadmin']) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700' }}">
+                                {{ ucfirst($user->role) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">{{ $user->office_branch }}</td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            @php $loginUser = auth()->user(); @endphp
+                            
+                            <button onclick="openeditModal({{ $user->id_user }})" class="text-gray-500 hover:text-yellow-600 transition" title="Edit">
+                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+
+                            <button onclick="openModal({{ $user->id_user }})" class="text-gray-500 hover:text-blue-600 transition" title="Detail">
+                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </button>
+
+                            @if ($loginUser && $loginUser->id_user != $user->id_user)
+                            <form action="/users/{{ $user->id_user }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus akun ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-400 hover:text-red-600 transition" title="Delete">
+                                    <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </form>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-500">Data user belum ada</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-end px-6 py-4 border-t border-gray-100 bg-white text-sm text-gray-600">
+            <div class="flex items-center gap-4">
+                <a href="{{ $users->previousPageUrl() ?? '#' }}" 
+                   class="{{ $users->onFirstPage() ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-gray-900 transition' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </a>
+                <span class="font-medium text-gray-800">{{ $users->currentPage() }}</span>
+                <span>{{ $users->firstItem() ?? 0 }}-{{ $users->lastItem() ?? 0 }} of {{ $users->total() }}</span>
+                <a href="{{ $users->nextPageUrl() ?? '#' }}" 
+                   class="{{ !$users->hasMorePages() ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-gray-900 transition' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
             </div>
-
-            <!-- BUTTON -->
-            @php
-                $loginUser = auth()->user();
-            @endphp
-
-        <div class="mt-auto pt-4 flex gap-2">
-            <button 
-                onclick="openModal({{ $user->id_user }})"
-                class="w-full text-xs bg-blue-500 text-white py-1.5 rounded-lg hover:bg-blue-600">
-                Detail
-            </button>
-
-            <button 
-            onclick="openeditModal({{ $user->id_user }})"
-            class="w-full text-xs bg-yellow-400 text-white py-1.5 rounded-lg hover:bg-yellow-600">
-                Edit
-            </button>
-
-            @if ($loginUser && $loginUser->id_user != $user->id_user)
-                <form action="/users/{{ $user->id_user }}" method="POST" class="w-full">
-                    @csrf
-                    @method('DELETE')
-                    <button 
-                    onclick="return confirm('Yakin ingin menghapus akun ini?')"
-                    class="w-full flex items-center justify-center gap-1 text-xs 
-                        bg-red-500 hover:bg-red-600 
-                        text-white py-1.5 rounded-lg transition">
-                                        Delete
-                    </button>
-                </form>
-            @endif
         </div>
-
-        </div>
-        @empty
-            <p class="col-span-4 text-center text-gray-500">Data user belum ada</p>
-        @endforelse
-
     </div>
-
-    <!-- PAGINATION -->
-    <div class="mt-6">
-        {{ $users->links() }}
-    </div>
-
 </div>
 
 {{-- Modal add user --}}
-<div id="addUserModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-xl relative">
-
+<div id="addUserModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl relative">
         <!-- CLOSE -->
-        <button onclick="closeAddModal()" 
-            class="absolute top-3 right-3 text-gray-400 hover:text-black text-lg">
-            ✕
+        <button onclick="closeAddModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
-        <h2 class="text-lg font-semibold mb-4">Tambah User</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-6">Tambah User</h2>
 
-        <form action="/users" method="POST" class="space-y-3">
+        <form action="/users" method="POST" class="space-y-4">
             @csrf
 
-            <input type="text" name="name_user" placeholder="Nama"
-                class="w-full border rounded-lg px-3 py-2 text-sm" required>
+            <div>
+                <input type="text" name="name_user" placeholder="Nama"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" required>
+            </div>
 
-            <input type="text" name="username" placeholder="Username"
-                class="w-full border rounded-lg px-3 py-2 text-sm" required>
+            <div>
+                <input type="text" name="username" placeholder="Username"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" required>
+            </div>
 
-            <input type="text" name="nik" placeholder="NIK"
-                class="w-full border rounded-lg px-3 py-2 text-sm">
+            <div>
+                <input type="password" name="password" placeholder="Password"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" required>
+            </div>
 
-            <input type="email" name="email" placeholder="Email (optional)"
-                class="w-full border rounded-lg px-3 py-2 text-sm">
+            <div>
+                <input type="text" name="nik" placeholder="NIK"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            </div>
 
-            <input type="text" name="office_branch" placeholder="Branch"
-                class="w-full border rounded-lg px-3 py-2 text-sm">
+            <div>
+                <input type="email" name="email" placeholder="Email (optional)"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            </div>
+
+            <div>
+                <input type="text" name="office_branch" placeholder="Branch"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            </div>
 
             <!-- ROLE -->
-            <select name="role" class="w-full border rounded-lg px-3 py-2 text-sm" required>
-                <option value="">Pilih Role</option>
-                <option value="superadmin">Superadmin</option>
-                <option value="admin">Admin</option>
-                <option value="sales">Sales</option>
-            </select>
+            <div>
+                <select name="role" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white" required>
+                    <option value="" disabled selected class="text-gray-400">Pilih Role</option>
+                    <option value="superadmin">Superadmin</option>
+                    <option value="admin">Admin</option>
+                    <option value="sales">Sales</option>
+                </select>
+            </div>
 
             <!-- POSITION -->
-            <select name="position" class="w-full border rounded-lg px-3 py-2 text-sm" required>
-                <option value="">Pilih Position</option>
-                <option value="sales_internal">Sales Internal</option>
-                <option value="sales_external">Sales External</option>
-                <option value="wakil_direktur">Wakil Direktur</option>
-                <option value="direktur_utama">Direktur Utama</option>
-                <option value="hrga">HRGA</option>
-                <option value="logistik">Logistik</option>
-                <option value="finance">Finance</option>
-            </select>
-
-            <input type="password" name="password" placeholder="Password"
-                class="w-full border rounded-lg px-3 py-2 text-sm" required>
+            <div>
+                <select name="position" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white" required>
+                    <option value="" disabled selected>Pilih Position</option>
+                    <option value="sales_internal">Sales Internal</option>
+                    <option value="sales_external">Sales External</option>
+                    <option value="wakil_direktur">Wakil Direktur</option>
+                    <option value="direktur_utama">Direktur Utama</option>
+                    <option value="hrga">HRGA</option>
+                    <option value="logistik">Logistik</option>
+                    <option value="finance">Finance</option>
+                </select>
+            </div>
 
             <!-- BUTTON -->
-            <div class="flex gap-2 pt-3">
+            <div class="flex gap-4 pt-4 mt-2">
                 <button type="button" onclick="closeAddModal()"
-                    class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg text-sm">
+                    class="w-1/2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm transition">
                     Batal
                 </button>
 
                 <button type="submit"
-                    class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm">
+                    class="w-1/2 bg-[#2b6cb0] hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm" style="background-color: #3b82f6;">
                     Simpan
                 </button>
             </div>
-
         </form>
-
     </div>
-
 </div>
 
 {{-- MODAL DETAIL USER --}}

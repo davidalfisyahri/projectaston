@@ -15,6 +15,8 @@ class InventorySeeder extends Seeder
             ['name_material' => 'Pasir Lumajang', 'type' => 'Sand', 'stock' => 2000],
             ['name_material' => 'Batu Split 1-2', 'type' => 'Aggregate', 'stock' => 3000],
             ['name_material' => 'Admixture Type F', 'type' => 'Admixture', 'stock' => 200],
+            ['name_material' => 'Semen baja F', 'type' => 'Admixture', 'stock' => 200],
+            ['name_material' => 'Pasir RUMPIN', 'type' => 'Sand', 'stock' => 200],
         ]);
     }
 }

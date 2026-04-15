@@ -5,223 +5,280 @@
 <h1 class="text-2xl font-bold mb-6">Inventory</h1>
 
 <div class="p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-8">
 
         {{-- ================= INVENTORY ================= --}}
-        <div class="bg-white shadow-lg rounded-2xl p-6">
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
 
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Inventory Material</h2>
+            <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
+                <h2 class="text-xl font-semibold text-gray-800">Inventory Material</h2>
                 <button onclick="openModal('addInventory')" 
-                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                    class="bg-[#E53E3E] text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition">
                     + Add Material
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                @foreach($inventory as $inv)
-                <div class="border rounded-xl p-4 shadow-sm">
-
-                    <h3 class="font-bold text-lg">{{ $inv->name_material }}</h3>
-                    <p class="text-sm text-gray-500">Type: {{ $inv->type }}</p>
-
-                    <p class="mt-2">
-                        Stock: 
-                        <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
-                            {{ number_format($inv->stock, 0, ',', '.') }} Kg
-                        </span>
-                    </p>
-
-                    <div class="flex gap-2 mt-3">
-                        <button onclick="openModal('editInventory{{ $inv->id_inventory }}')" 
-                            class="bg-yellow-400 px-3 py-1 rounded text-sm hover:bg-yellow-600">
-                            Edit
-                        </button>
-
-                        <a href="/inventory/delete/{{ $inv->id_inventory }}"
-                            onclick="return confirmDelete()"
-                            class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
-                            Delete
-                         </a>
-                    </div>
-
-                </div>
-
-                {{-- MODAL EDIT INVENTORY --}}
-                <div id="editInventory{{ $inv->id_inventory }}" class="modal hidden">
-                    <div class="modal-box">
-                        <h3 class="font-bold mb-3">Edit Material</h3>
-
-                        <form action="/inventory/update/{{ $inv->id_inventory }}" method="POST">
-                            @csrf
-
-                            <input type="text" name="name_material" value="{{ $inv->name_material }}" class="input">
-
-                            <select name="type" class="input mt-2">
-                                <option {{ $inv->type=='cement'?'selected':'' }}>cement</option>
-                                <option {{ $inv->type=='FA'?'selected':'' }}>FA</option>
-                                <option {{ $inv->type=='Sand'?'selected':'' }}>Sand</option>
-                                <option {{ $inv->type=='Aggregate'?'selected':'' }}>Aggregate</option>
-                                <option {{ $inv->type=='Admixture'?'selected':'' }}>Admixture</option>
-                            </select>
-                            
-                            <input type="text" name="stock" value="0" class="input mt-2 number-format" placeholder="Stock">
-
-                            <div class="mt-4 flex justify-end gap-2">
-                                <button type="button" onclick="closeModal('editInventory{{ $inv->id_inventory }}')" class="btn-cancel">Cancel</button>
-                                <button class="btn-primary">Update</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                @endforeach
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left whitespace-nowrap">
+                    <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 font-medium">Material Name</th>
+                            <th class="px-6 py-4 font-medium">Type</th>
+                            <th class="px-6 py-4 font-medium text-right">Stock</th>
+                            <th class="px-6 py-4 font-medium text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                        @foreach($inventories as $inv)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ $inv->name_material }}</td>
+                            <td class="px-6 py-4">{{ $inv->type }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
+                                    {{ number_format($inv->stock, 0, ',', '.') }} Kg
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center space-x-3">
+                                <button onclick="openModal('editInventory{{ $inv->id_inventory }}')" 
+                                    class="text-yellow-500 hover:text-yellow-600 font-medium transition cursor-pointer">
+                                    Edit
+                                </button>
+                                <a href="/inventory/delete/{{ $inv->id_inventory }}"
+                                    onclick="return confirmDelete()"
+                                    class="text-red-500 hover:text-red-600 font-medium transition cursor-pointer">
+                                    Delete
+                                 </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+            
+            <!-- Pagination Inventory -->
+            <div class="flex items-center justify-end px-6 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-600 rounded-b-2xl">
+                <div class="flex items-center gap-4">
+                    <a href="{{ $inventories->appends(['grade_page' => request('grade_page')])->previousPageUrl() ?? '#' }}" 
+                       class="{{ $inventories->onFirstPage() ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-gray-900 transition' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </a>
+                    
+                    <span class="font-medium text-gray-800">{{ $inventories->currentPage() }}</span>
+                    
+                    <span>{{ $inventories->firstItem() ?? 0 }}-{{ $inventories->lastItem() ?? 0 }} of {{ $inventories->total() }}</span>
+                    
+                    <a href="{{ $inventories->appends(['grade_page' => request('grade_page')])->nextPageUrl() ?? '#' }}" 
+                       class="{{ !$inventories->hasMorePages() ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-gray-900 transition' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                </div>
+            </div>
+            
+            @foreach($inventories as $inv)
+            {{-- MODAL EDIT INVENTORY --}}
+            <div id="editInventory{{ $inv->id_inventory }}" class="modal hidden">
+                <div class="modal-box">
+                    <h3 class="font-bold mb-3 text-lg text-left">Edit Material</h3>
+
+                    <form action="/inventory/update/{{ $inv->id_inventory }}" method="POST" class="text-left">
+                        @csrf
+
+                        <input type="text" name="name_material" value="{{ $inv->name_material }}" class="input">
+
+                        <select name="type" class="input mt-2">
+                            <option {{ $inv->type=='cement'?'selected':'' }}>cement</option>
+                            <option {{ $inv->type=='FA'?'selected':'' }}>FA</option>
+                            <option {{ $inv->type=='Sand'?'selected':'' }}>Sand</option>
+                            <option {{ $inv->type=='Aggregate'?'selected':'' }}>Aggregate</option>
+                            <option {{ $inv->type=='Admixture'?'selected':'' }}>Admixture</option>
+                        </select>
+                        
+                        <input type="text" name="stock" value="0" class="input mt-2 number-format" placeholder="Stock">
+
+                        <div class="mt-4 flex justify-end gap-2">
+                            <button type="button" onclick="closeModal('editInventory{{ $inv->id_inventory }}')" class="btn-cancel">Cancel</button>
+                            <button class="btn-primary">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+
         </div>
 
         {{-- ================= GRADE ================= --}}
-        <div class="bg-white shadow-lg rounded-2xl p-6">
+        <div class="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden mb-6">
 
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Grade Beton</h2>
+            <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
+                <h2 class="text-xl font-semibold text-gray-800">Grade Beton</h2>
                 <button onclick="openModal('addGrade')" 
-                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                    class="bg-[#E53E3E] text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition border-0">
                     + Add Grade
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach($grade as $grade)
-                <div class="border rounded-xl p-4 shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left whitespace-nowrap">
+                    <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 font-medium">Nama Grade</th>
+                            <th class="px-6 py-4 font-medium">MPA</th>
+                            <th class="px-6 py-4 font-medium text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                        @foreach($grade as $item)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ $item->name_grade }}</td>
+                            <td class="px-6 py-4">{{ $item->mpa }}</td>
+                            <td class="px-6 py-4 text-center space-x-3">
+                                <button onclick="openModal('detail{{ $item->id_grade }}')" 
+                                    class="text-blue-500 hover:text-blue-600 font-medium transition cursor-pointer">
+                                    Detail
+                                </button>
+                                <button onclick="openModal('editGrade{{ $item->id_grade }}')" 
+                                    class="text-yellow-500 hover:text-yellow-600 font-medium transition cursor-pointer">
+                                    Edit
+                                </button>
+                                <a href="/grade/delete/{{ $item->id_grade }}"
+                                    onclick="return confirmDelete()"
+                                    class="text-red-500 hover:text-red-600 font-medium transition cursor-pointer">
+                                    Delete
+                                 </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                    <h3 class="font-bold text-lg">{{ $grade->name_grade }} {{ $grade->mpa }}</h3>
-
-                    <div class="flex gap-2 mt-3">
-                        <button onclick="openModal('detail{{ $grade->id_grade }}')" 
-                            class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                            Detail
-                        </button>
-
-                        <button onclick="openModal('editGrade{{ $grade->id_grade }}')" 
-                            class="bg-yellow-400 px-3 py-1 rounded text-sm hover:bg-yellow-600">
-                            Edit
-                        </button>
-
-                        <a href="/grade/delete/{{ $grade->id_grade }}"
-                            onclick="return confirmDelete()"
-                            class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
-                            Delete
-                         </a>
-                    </div>
-
+            <!-- Pagination Grade -->
+            <div class="flex items-center justify-end px-6 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-600 rounded-b-2xl">
+                <div class="flex items-center gap-4">
+                    <a href="{{ $grade->appends(['inventory_page' => request('inventory_page')])->previousPageUrl() ?? '#' }}" 
+                       class="{{ $grade->onFirstPage() ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-gray-900 transition' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </a>
+                    
+                    <span class="font-medium text-gray-800">{{ $grade->currentPage() }}</span>
+                    
+                    <span>{{ $grade->firstItem() ?? 0 }}-{{ $grade->lastItem() ?? 0 }} of {{ $grade->total() }}</span>
+                    
+                    <a href="{{ $grade->appends(['inventory_page' => request('inventory_page')])->nextPageUrl() ?? '#' }}" 
+                       class="{{ !$grade->hasMorePages() ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:text-gray-900 transition' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
                 </div>
+            </div>
 
-                {{-- MODAL DETAIL --}}
-                <div id="detail{{ $grade->id_grade }}" class="modal hidden">
-                    <div class="modal-box w-[500px]">
-                
-                        <h3 class="text-lg font-bold mb-4">Detail Grade Beton</h3>
-                
-                        <!-- INFO GRADE -->
-                        <div class="mb-4 space-y-1">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Nama Grade</span>
-                                <span class="font-semibold">{{ $grade->name_grade }}</span>
+            @foreach($grade as $item)
+            {{-- MODAL DETAIL --}}
+            <div id="detail{{ $item->id_grade }}" class="modal hidden">
+                <div class="modal-box w-[500px] text-left whitespace-normal">
+            
+                    <h3 class="text-lg font-bold mb-4">Detail Grade Beton</h3>
+            
+                    <!-- INFO GRADE -->
+                    <div class="mb-4 space-y-2">
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-600">Nama Grade</span>
+                            <span class="font-semibold text-gray-900">{{ $item->name_grade }}</span>
+                        </div>
+            
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-600">MPA</span>
+                            <span class="font-semibold text-gray-900">{{ $item->mpa }}</span>
+                        </div>
+            
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-600">FA 15%</span>
+                            <span class="font-semibold text-gray-900">
+                                Rp {{ number_format($item->harga_fa, 0, ',', '.') }}
+                            </span>
+                        </div>
+            
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-600">NFA</span>
+                            <span class="font-semibold text-gray-900">
+                                Rp {{ number_format($item->harga_nfa, 0, ',', '.') }}
+                            </span>
+                        </div>
+                    </div>
+            
+                    <!-- COMPOSITION -->
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2 text-gray-800">Composition Material</h4>
+            
+                        <div class="border rounded-lg bg-gray-50 overflow-hidden">
+                            @foreach($item->composition as $c)
+                            <div class="flex justify-between border-b last:border-0 px-4 py-2 text-sm text-gray-700">
+                                <span>{{ $c->inventory->name_material }}</span>
+                                <span class="font-medium">{{ number_format($c->qty, 2, ',', '.') }} Kg</span>
                             </div>
-                
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">MPA</span>
-                                <span class="font-semibold">{{ $grade->mpa }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+            
+                    <!-- ACTION -->
+                    <div class="mt-6 text-right">
+                        <button onclick="closeModal('detail{{ $item->id_grade }}')" class="btn-cancel">
+                            Close
+                        </button>
+                    </div>
+            
+                </div>
+            </div>
+
+            {{-- MODAL EDIT GRADE --}}
+            <div id="editGrade{{ $item->id_grade }}" class="modal hidden">
+                <div class="modal-box w-[550px] text-left whitespace-normal">
+
+                    <h3 class="text-lg font-semibold mb-4">Edit Grade Beton</h3>
+
+                    <form action="/grade/update/{{ $item->id_grade }}" method="POST">
+                        @csrf
+
+                        <!-- NAME -->
+                        <div class="mb-3">
+                            <label class="text-sm">Nama Grade</label>
+                            <input type="text" name="name_grade" 
+                                value="{{ $item->name_grade }}" 
+                                class="input mt-1" required>
+                        </div>
+
+                        <!-- MPA -->
+                        <div class="mb-3">
+                            <label class="text-sm">MPA</label>
+                            <input type="text" name="mpa" 
+                                value="{{ $item->mpa }}" 
+                                class="input mt-1" required>
+                        </div>
+
+                        <!-- HARGA -->
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="text-sm">Harga FA</label>
+                                <input type="text" name="harga_fa" 
+                                    value="{{ number_format($item->harga_fa, 0, ',', '.') }}"
+                                    class="input number-format">
                             </div>
-                
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">FA 15%</span>
-                                <span class="font-semibold">
-                                    Rp {{ number_format($grade->harga_fa, 0, ',', '.') }}
-                                </span>
-                            </div>
-                
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">NFA</span>
-                                <span class="font-semibold">
-                                    Rp {{ number_format($grade->harga_nfa, 0, ',', '.') }}
-                                </span>
+
+                            <div>
+                                <label class="text-sm">Harga NFA</label>
+                                <input type="text" name="harga_nfa" 
+                                    value="{{ number_format($item->harga_nfa, 0, ',', '.') }}"
+                                    class="input number-format">
                             </div>
                         </div>
-                
+
                         <!-- COMPOSITION -->
-                        <div>
-                            <h4 class="font-semibold mb-2">Composition Material</h4>
-                
-                            <div class="border rounded-lg">
-                                @foreach($grade->composition as $c)
-                                <div class="flex justify-between border-b px-3 py-2 text-sm">
-                                    <span>{{ $c->inventory->name_material }}</span>
-                                    <span>{{ number_format($c->qty, 0, ',', '.') }}</span>
-                                </div>
-                                @endforeach
-                            </div>
+                        <div class="mb-2">
+                            <label class="text-sm font-medium">Composition Material</label>
                         </div>
-                
-                        <!-- ACTION -->
-                        <div class="mt-5 text-right">
-                            <button onclick="closeModal('detail{{ $grade->id_grade }}')" class="btn-cancel">
-                                Close
-                            </button>
-                        </div>
-                
-                    </div>
-                </div>
 
-                {{-- MODAL EDIT GRADE --}}
-                <div id="editGrade{{ $grade->id_grade }}" class="modal hidden">
-                    <div class="modal-box w-[550px]">
-
-                        <h3 class="text-lg font-semibold mb-4">Edit Grade Beton</h3>
-
-                        <form action="/grade/update/{{ $grade->id_grade }}" method="POST">
-                            @csrf
-
-                            <!-- NAME -->
-                            <div class="mb-3">
-                                <label class="text-sm">Nama Grade</label>
-                                <input type="text" name="name_grade" 
-                                    value="{{ $grade->name_grade }}" 
-                                    class="input mt-1" required>
-                            </div>
-
-                            <!-- MPA -->
-                            <div class="mb-3">
-                                <label class="text-sm">MPA</label>
-                                <input type="text" name="mpa" 
-                                    value="{{ $grade->mpa }}" 
-                                    class="input mt-1" required>
-                            </div>
-
-                            <!-- HARGA -->
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="text-sm">Harga FA</label>
-                                    <input type="text" name="harga_fa" 
-                                        value="{{ number_format($grade->harga_fa, 0, ',', '.') }}"
-                                        class="input number-format">
-                                </div>
-
-                                <div>
-                                    <label class="text-sm">Harga NFA</label>
-                                    <input type="text" name="harga_nfa" 
-                                        value="{{ number_format($grade->harga_nfa, 0, ',', '.') }}"
-                                        class="input number-format">
-                                </div>
-                            </div>
-
-                            <!-- COMPOSITION -->
-                            <div class="mb-2">
-                                <label class="text-sm font-medium">Composition Material</label>
-                            </div>
-
-                            <table class="w-full text-sm border rounded" id="editTable{{ $grade->id_grade }}">
-                                <thead class="bg-gray-100">
+                        <div class="max-h-60 overflow-y-auto border rounded bg-white">
+                            <table class="w-full text-sm" id="editTable{{ $item->id_grade }}">
+                                <thead class="bg-gray-100 sticky top-0">
                                     <tr>
                                         <th class="p-2 text-left">Material</th>
                                         <th class="p-2 text-left">Qty</th>
@@ -229,12 +286,12 @@
                                     </tr>
                                 </thead>
 
-                                <tbody>
-                                    @foreach($grade->composition as $c)
+                                <tbody class="divide-y">
+                                    @foreach($item->composition as $c)
                                     <tr>
                                         <td class="p-2">
-                                            <select name="inventory_id[]" class="input">
-                                                @foreach($inventory as $inv)
+                                            <select name="inventory_id[]" class="input py-1 px-2 h-auto text-sm">
+                                                @foreach($inventoryList as $inv)
                                                 <option value="{{ $inv->id_inventory }}"
                                                     {{ $inv->id_inventory == $c->inventory_id ? 'selected' : '' }}>
                                                     {{ $inv->name_material }}
@@ -244,13 +301,13 @@
                                         </td>
 
                                         <td class="p-2">
-                                            <input type="number" name="qty[]" 
+                                            <input type="number" step="0.01" name="qty[]" 
                                                 value="{{ $c->qty }}" 
-                                                class="input">
+                                                class="input py-1 px-2 h-auto text-sm">
                                         </td>
 
                                         <td class="p-2 text-center">
-                                            <button type="button" onclick="removeRow(this)" class="text-red-500">
+                                            <button type="button" onclick="removeRow(this)" class="text-red-500 hover:bg-red-50 rounded p-1">
                                                 ✕
                                             </button>
                                         </td>
@@ -258,33 +315,33 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
 
-                            <!-- ADD ROW -->
+                        <!-- ADD ROW -->
+                        <button type="button" 
+                            onclick="addRowEdit({{ $item->id_grade }})"
+                            class="text-blue-600 text-sm mt-2 font-medium">
+                            + Tambah Material
+                        </button>
+
+                        <!-- ACTION -->
+                        <div class="mt-5 flex justify-end gap-2 border-t pt-4">
                             <button type="button" 
-                                onclick="addRowEdit({{ $grade->id_grade }})"
-                                class="text-blue-600 text-sm mt-2">
-                                + Tambah Material
+                                onclick="closeModal('editGrade{{ $item->id_grade }}')" 
+                                class="btn-cancel">
+                                Cancel
                             </button>
 
-                            <!-- ACTION -->
-                            <div class="mt-5 flex justify-end gap-2">
-                                <button type="button" 
-                                    onclick="closeModal('editGrade{{ $grade->id_grade }}')" 
-                                    class="btn-cancel">
-                                    Cancel
-                                </button>
+                            <button class="btn-primary">
+                                Update
+                            </button>
+                        </div>
 
-                                <button class="btn-primary">
-                                    Update
-                                </button>
-                            </div>
+                    </form>
+                </div>
+            </div>  
+            @endforeach
 
-                        </form>
-                    </div>
-                </div>  
-
-                @endforeach
-            </div>
         </div>
 
     </div>
@@ -373,7 +430,7 @@
                         <td class="p-2">
                             <select name="inventory_id[]" class="input" >
                                 <option value="">-- pilih material --</option>
-                                @foreach($inventory as $inv)
+                                @foreach($inventoryList as $inv)
                                 <option value="{{ $inv->id_inventory }}">
                                     {{ $inv->name_material }}
                                 </option>
@@ -468,7 +525,7 @@ function addRow(){
     <tr>
         <td>
             <select name="inventory_id[]" class="input">
-                @foreach($inventory as $inv)
+                @foreach($inventoryList as $inv)
                 <option value="{{ $inv->id_inventory }}">{{ $inv->name_material }}</option>
                 @endforeach
             </select>
@@ -487,7 +544,7 @@ function addRow() {
         <td class="p-2">
             <select name="inventory_id[]" class="input" required>
                 <option value="">-- pilih material --</option>
-                @foreach($inventory as $inv)
+                @foreach($inventoryList as $inv)
                 <option value="{{ $inv->id_inventory }}">
                     {{ $inv->name_material }}
                 </option>
@@ -523,7 +580,7 @@ function addRowEdit(id) {
     <tr>
         <td class="p-2">
             <select name="inventory_id[]" class="input">
-                @foreach($inventory as $inv)
+                @foreach($inventoryList as $inv)
                 <option value="{{ $inv->id_inventory }}">
                     {{ $inv->name_material }}
                 </option>

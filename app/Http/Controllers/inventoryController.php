@@ -10,10 +10,11 @@ class InventoryController extends Controller
 {
     public function index()
     {
-        $inventory = Inventory::all();
-        $grade = gradebeton::with('composition.inventory')->get();
+        $inventories = Inventory::paginate(10, ['*'], 'inventory_page');
+        $grade = gradebeton::with('composition.inventory')->paginate(10, ['*'], 'grade_page');
+        $inventoryList = Inventory::all();
 
-        return view('inventory', compact('inventory','grade'));
+        return view('inventory', compact('inventories', 'grade', 'inventoryList'));
     }
 
     public function store(Request $request)

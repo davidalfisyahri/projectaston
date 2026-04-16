@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\purchase_order;
 use App\Models\purchase_order_detail;
 use App\Models\supplier;
+use App\Models\Inventory;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -14,9 +15,10 @@ class procurementcontroller extends Controller
     public function index()
     {
         $suppliers = supplier::all();
-        $po = purchase_order::with('details','supplier')->latest()->get();
+        $po = purchase_order::with('details.inventory','supplier')->latest()->get();
+        $inventories = Inventory::all();
 
-        return view('procurement', compact('suppliers','po'));
+        return view('procurement', compact('suppliers','po', 'inventories'));
     }
 
     public function store(Request $request)
@@ -38,7 +40,7 @@ class procurementcontroller extends Controller
 
     $total = 0;
 
-    foreach ($request->item_name as $i => $item) {
+    foreach ($request->inventory_id as $i => $inv_id) {
 
         $qty = $request->qty[$i];
         $price = str_replace('.', '', $request->price[$i]);
@@ -46,12 +48,18 @@ class procurementcontroller extends Controller
 
         purchase_order_detail::create([
             'po_id' => $po->id_po,
-            'item_name' => $item,
+            'inventory_id' => $inv_id,
             'unit' => $request->unit[$i],
             'qty' => $qty,
             'price' => $price,
             'total' => $subtotal,
         ]);
+
+        // Tambah Stok di Inventory
+        $inventory = Inventory::find($inv_id);
+        if ($inventory) {
+            $inventory->update(['stock' => $inventory->stock + $qty]);
+        }
 
         $total += $subtotal;
     }
@@ -63,7 +71,7 @@ class procurementcontroller extends Controller
 
 public function pdf($id)
 {
-    $po = purchase_order::with('details')->findOrFail($id);
+    $po = purchase_order::with(['details.inventory', 'supplier'])->findOrFail($id);
 
     $pdf = Pdf::loadView('procurement_pdf', compact('po'));
 
@@ -72,7 +80,17 @@ public function pdf($id)
 
 public function delete($id)
 {
-    purchase_order::findOrFail($id)->delete();
+    $po = purchase_order::with('details')->findOrFail($id);
+
+    // Kembalikan Stok (Kurangi stok yang tadinya ditambah)
+    foreach ($po->details as $detail) {
+        $inventory = Inventory::find($detail->inventory_id);
+        if ($inventory) {
+            $inventory->update(['stock' => $inventory->stock - $detail->qty]);
+        }
+    }
+
+    $po->delete();
     return back();
 }
 

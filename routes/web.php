@@ -4,6 +4,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\inventoryController;
 use App\Http\Controllers\gradebetonController;
 use App\Http\Controllers\procurementcontroller;
+use App\Http\Controllers\StockOpnameController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 
@@ -60,4 +61,6 @@ Route::get('/dashboard', function () { return view('dashboard');})->middleware('
 
 Route::get('/', function () { return view('index'); });
 
-// DASHBOARD
+// STOCK OPNAME
+Route::get('/stock-opname', [StockOpnameController::class, 'index'])->middleware('auth')->name('stock_opname');
+Route::post('/stock-opname', [StockOpnameController::class, 'store'])->middleware('auth');

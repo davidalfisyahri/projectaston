@@ -41,7 +41,14 @@
 
                 <tbody id="table">
                     <tr>
-                        <td><input type="text" name="item_name[]" class="input"></td>
+                        <td>
+                            <select name="inventory_id[]" class="input" required>
+                                <option value="">Pilih Material</option>
+                                @foreach($inventories as $inv)
+                                    <option value="{{ $inv->id_inventory }}">{{ $inv->name_material }} - {{ $inv->type }}</option>
+                                @endforeach
+                            </select>
+                        </td>
                         <td><input type="text" name="unit[]" class="input text-center"></td>
                         <td><input type="number" name="qty[]" class="input text-center"></td>
                         <td><input type="text" name="price[]" class="input text-right"></td>
@@ -143,7 +150,7 @@
                             <tbody>
                                 @foreach($p->details as $d)
                                 <tr class="border-t">
-                                    <td class="p-2">{{ $d->item_name }}</td>
+                                    <td class="p-2">{{ $d->inventory->name_material ?? '-' }}</td>
                                     <td class="p-2 text-center">{{ $d->unit }}</td>
                                     <td class="p-2 text-center">{{ $d->qty }}</td>
                                     <td class="p-2 text-right">
@@ -232,10 +239,21 @@
 </style>
 
 <script>
+const inventoriesStr = `{!! addslashes(json_encode($inventories)) !!}`;
+const inventoriesArray = JSON.parse(inventoriesStr);
+let optionsHTML = '<option value="">Pilih Material</option>';
+inventoriesArray.forEach(inv => {
+    optionsHTML += `<option value="${inv.id_inventory}">${inv.name_material} - ${inv.type}</option>`;
+});
+
 function addRow(){
     let row = `
     <tr>
-        <td><input type="text" name="item_name[]" class="input"></td>
+        <td>
+            <select name="inventory_id[]" class="input" required>
+                ${optionsHTML}
+            </select>
+        </td>
         <td><input type="text" name="unit[]" class="input text-center"></td>
         <td><input type="number" name="qty[]" class="input text-center"></td>
         <td><input type="text" name="price[]" class="input text-right"></td>

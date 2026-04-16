@@ -91,9 +91,9 @@
 
     <!-- KEPADA -->
     <p><strong>Kepada Yth:</strong><br>
-        <strong>{{ $name_pt }}</strong><br>
-        {{ $supplier_name }}<br>
-        {{ $supplier_address }}
+        <strong>{{ $po->supplier->name_pt ?? '-' }}</strong><br>
+        {{ $po->supplier->name ?? '-' }}<br>
+        {{ $po->supplier->address ?? '-' }}
     </p>
 
     <!-- TABLE -->
@@ -110,14 +110,14 @@
         </thead>
 
         <tbody>
-            @foreach($items as $i => $d)
+            @foreach($po->details as $i => $d)
             <tr>
                 <td>{{ $i+1 }}</td>
-                <td class="text-left">{{ $d['item_name'] }}</td>
-                <td>{{ $d['unit'] }}</td>
-                <td>{{ rtrim(rtrim(number_format($d['qty'],2,',','.'),'0'),',') }}</td>
-                <td>{{ number_format($d['price'],0,',','.') }}</td>
-                <td>{{ number_format($d['total'],0,',','.') }}</td>
+                <td class="text-left">{{ $d->inventory->name_material ?? '-' }}</td>
+                <td>{{ $d->unit }}</td>
+                <td>{{ rtrim(rtrim(number_format($d->qty,2,',','.'),'0'),',') }}</td>
+                <td>{{ number_format($d->price,0,',','.') }}</td>
+                <td>{{ number_format($d->total,0,',','.') }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -128,7 +128,7 @@
         <tr>
             <td width="70%"></td>
             <td>
-                <strong>Total: {{ number_format($total,0,',','.') }}</strong>
+                <strong>Total: {{ number_format($po->total,0,',','.') }}</strong>
             </td>
         </tr>
     </table>

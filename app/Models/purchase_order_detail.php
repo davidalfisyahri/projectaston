@@ -11,7 +11,7 @@ class purchase_order_detail extends Model
 
     protected $fillable = [
         'po_id',
-        'item_name',
+        'inventory_id',
         'unit',
         'qty',
         'price',
@@ -22,5 +22,11 @@ class purchase_order_detail extends Model
     public function po()
     {
         return $this->belongsTo(purchase_order::class, 'po_id');
+    }
+
+    // RELASI KE INVENTORY
+    public function inventory()
+    {
+        return $this->belongsTo(Inventory::class, 'inventory_id', 'id_inventory');
     }
 }

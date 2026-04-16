@@ -213,7 +213,9 @@
                             @foreach($item->composition as $c)
                             <div class="flex justify-between border-b last:border-0 px-4 py-2 text-sm text-gray-700">
                                 <span>{{ $c->inventory->name_material }}</span>
-                                <span class="font-medium">{{ number_format($c->qty, 2, ',', '.') }} Kg</span>
+                                <span class="font-medium">
+                                    {{ rtrim(rtrim(number_format($c->qty, 2, ',', '.'), '0'), ',') }} Kg
+                                </span>
                             </div>
                             @endforeach
                         </div>

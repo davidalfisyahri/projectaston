@@ -137,7 +137,7 @@
                     </span>
                 </a>
         
-                <a href="#" 
+                <a href="{{ route('procurement') }}" 
                 class="flex items-center gap-2 px-3 py-3 rounded-xl 
                 hover:bg-red-800 transition
                 justify-start">

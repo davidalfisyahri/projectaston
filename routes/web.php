@@ -3,6 +3,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\inventoryController;
 use App\Http\Controllers\gradebetonController;
+use App\Http\Controllers\procurementcontroller;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 
@@ -40,6 +41,12 @@ Route::post('/grade/store', [gradebetonController::class, 'store']);
 Route::post('/grade/update/{id}', [gradebetonController::class, 'update']);
 Route::get('/grade/delete/{id}', [gradebetonController::class, 'destroy']);
 
+Route::get('/procurement', [procurementcontroller::class, 'index']) ->name('procurement');
+Route::post('/procurement/store', [procurementcontroller::class, 'store']);
+Route::post('/procurement/store-pdf', [procurementcontroller::class, 'storePdf']);
+Route::get('/procurement/pdf/{id}', [procurementcontroller::class, 'pdf']);
+Route::post('/procurement/pdf', [procurementcontroller::class, 'pdf']);
+Route::delete('/procurement/delete/{id}', [procurementcontroller::class, 'delete']);
 
 Route::get('/setting', function () { return view('setting'); })->name('setting');
 Route::get('/setting', [UsersController::class, 'index'])->name('setting');

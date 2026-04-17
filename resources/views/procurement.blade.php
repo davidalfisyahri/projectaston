@@ -12,15 +12,15 @@
             <!-- HEADER FORM -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
 
-                <input type="text" name="no_po" class="input" placeholder="No PO">
+                <input type="text" name="no_po" class="input" required placeholder="No PO" >
 
-                <input type="date" name="tanggal" class="input">
+                <input type="date" name="tanggal" class="input" required>
 
-                <input type="text" name="name_pt" class="input" placeholder="Nama PT Supplier">
+                <input type="text" name="name_pt" class="input" required placeholder="Nama PT Supplier">
 
-                <input type="text" name="supplier_name" class="input" placeholder="Nama PIC">
+                <input type="text" name="supplier_name" class="input" required placeholder="Nama PIC">
 
-                <input type="text" name="supplier_address" class="input md:col-span-2" placeholder="Alamat">
+                <input type="text" name="supplier_address" class="input md:col-span-2" required placeholder="Alamat">
 
                 <input type="text" name="created_by"
                     value="{{ auth()->user()->name_user ?? 'Manual User' }}"
@@ -31,7 +31,16 @@
             <table class="w-full border text-sm">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="p-2 text-left">Item</th>
+                        <th class="p-2 text-left">
+                            <div class="flex items-center justify-between">
+                                <span>Item</span>
+                        
+                                <a href="{{ url('/inventory') }}" 
+                                   class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition">
+                                    + Add new Item
+                                </a>
+                            </div>
+                        </th>
                         <th class="p-2">Unit</th>
                         <th class="p-2">Qty</th>
                         <th class="p-2">Harga</th>
@@ -42,16 +51,25 @@
                 <tbody id="table">
                     <tr>
                         <td>
-                            <select name="inventory_id[]" class="input" required>
+                            <select name="inventory_id[]" class="input select2" required>
                                 <option value="">Pilih Material</option>
                                 @foreach($inventories as $inv)
-                                    <option value="{{ $inv->id_inventory }}">{{ $inv->name_material }} - {{ $inv->type }}</option>
+                                    <option value="{{ $inv->id_inventory }}">
+                                        {{ $inv->name_material }} - {{ $inv->type }}
+                                    </option>
                                 @endforeach
                             </select>
                         </td>
-                        <td><input type="text" name="unit[]" class="input text-center"></td>
-                        <td><input type="number" name="qty[]" class="input text-center"></td>
-                        <td><input type="text" name="price[]" class="input text-right"></td>
+                        <td>
+                            <select name="unit[]" class="input text-center">
+                                <option value="kg">Kg</option>
+                                <option value="ton">Ton</option>
+                            </select>
+                        </td>
+                        <td><input type="number" name="qty[]" class="input text-center" step="1" min="1"></td>
+                        <td>
+                            <input type="text" name="price[]" class="input text-right rupiah">
+                        </td>
                         <td><button type="button" onclick="removeRow(this)">✕</button></td>
                     </tr>
                 </tbody>
@@ -151,11 +169,21 @@
                                 @foreach($p->details as $d)
                                 <tr class="border-t">
                                     <td class="p-2">{{ $d->inventory->name_material ?? '-' }}</td>
-                                    <td class="p-2 text-center">{{ $d->unit }}</td>
-                                    <td class="p-2 text-center">{{ $d->qty }}</td>
+                                
+                                    <td class="p-2 text-center">
+                                        {{ $d->qty >= 1000 
+                                            ? ($d->qty / 1000).' ton' 
+                                            : $d->qty.' kg' }}
+                                    </td>
+                                
+                                    <td class="p-2 text-center">
+                                        {{ rtrim(rtrim(number_format($d->qty, 2, ',', '.'), '0'), ',') }}
+                                    </td>
+                                
                                     <td class="p-2 text-right">
                                         Rp {{ number_format($d->price,0,',','.') }}
                                     </td>
+                                
                                     <td class="p-2 text-right">
                                         Rp {{ number_format($d->total,0,',','.') }}
                                     </td>
@@ -238,6 +266,11 @@
 }
 </style>
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
 const inventoriesStr = `{!! addslashes(json_encode($inventories)) !!}`;
 const inventoriesArray = JSON.parse(inventoriesStr);
@@ -246,20 +279,56 @@ inventoriesArray.forEach(inv => {
     optionsHTML += `<option value="${inv.id_inventory}">${inv.name_material} - ${inv.type}</option>`;
 });
 
+$(document).ready(function() {
+    $('.select2').select2({
+        placeholder: "Cari Material...",
+        allowClear: true
+    });
+});
+
+document.addEventListener('input', function(e){
+
+if(e.target.name === 'qty[]'){
+    let value = e.target.value;
+
+    // cegah koma & karakter aneh
+    e.target.value = value.replace(/[^0-9]/g, '');
+}
+
+});
+
 function addRow(){
     let row = `
-    <tr>
-        <td>
-            <select name="inventory_id[]" class="input" required>
-                ${optionsHTML}
-            </select>
+<tr>
+    <td>
+            <select name="inventory_id[]" class="input select2" required>
+            <option value="">Pilih Material</option>
+            @foreach($inventories as $inv)
+            <option value="{{ $inv->id_inventory }}">
+             {{ $inv->name_material }} - {{ $inv->type }}
+            </option>
+            @endforeach
+    </select>
         </td>
-        <td><input type="text" name="unit[]" class="input text-center"></td>
-        <td><input type="number" name="qty[]" class="input text-center"></td>
-        <td><input type="text" name="price[]" class="input text-right"></td>
+        <td>
+            <select name="unit[]" class="input text-center">
+            <option value="kg">Kg</option>
+            <option value="ton">Ton</option>
+        </select>
+    </td>
+        <td><<input type="number" name="qty[]" class="input text-center" step="1" min="1"></td>
+        <td>
+            <input type="text" name="price[]" class="input text-right rupiah">
+        </td>
         <td><button type="button" onclick="removeRow(this)">✕</button></td>
-    </tr>`;
+</tr>`;
+
     document.querySelector('#table').insertAdjacentHTML('beforeend', row);
+
+    $('.select2').select2({
+        placeholder: "Cari Material...",
+        allowClear: true
+    });
 }
 
 function removeRow(btn){
@@ -301,6 +370,21 @@ if(row.classList.contains('hidden')){
     icon.classList.remove('rotate-180');
 }
 }
+
+document.addEventListener('input', function(e){
+
+if(e.target.classList.contains('rupiah')){
+
+    let value = e.target.value.replace(/[^0-9]/g, ''); // hapus selain angka
+
+    if(value){
+        e.target.value = new Intl.NumberFormat('id-ID').format(value);
+    }else{
+        e.target.value = '';
+    }
+}
+
+});
 </script>
 
 @endsection

@@ -19,7 +19,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
         
             $table->string('item_name');
-            $table->string('unit');
+            $table->enum('unit', ['kg', 'ton']);
             $table->decimal('qty', 12, 2);
             $table->decimal('price', 12, 2);
             $table->decimal('total', 15, 2);

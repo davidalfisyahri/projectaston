@@ -367,7 +367,7 @@
                 <option>Admixture</option>
             </select>
 
-            <input type="number" name="stock" placeholder="Stock" class="input mt-2">
+            {{-- <input type="number" name="stock" placeholder="Stock" class="input mt-2"> --}}
 
             <div class="mt-4 flex justify-end gap-2">
                 <button type="button" onclick="closeModal('addInventory')" class="btn-cancel">Cancel</button>

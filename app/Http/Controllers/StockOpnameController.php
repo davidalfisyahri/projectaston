@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Inventory;
 use App\Models\StockOpname;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StockOpnameController extends Controller
 {
@@ -59,7 +60,7 @@ class StockOpnameController extends Controller
                 'difference' => $difference,
                 'notes' => $item['notes'] ?? null,
                 'opname_date' => $request->opname_date,
-                'checked_by' => auth()->id(),
+                'checked_by' => $request->user()->id,
             ]);
 
             // Update stok di inventory sesuai stok aktual

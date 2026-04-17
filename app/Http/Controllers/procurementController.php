@@ -42,25 +42,35 @@ class procurementcontroller extends Controller
 
     foreach ($request->inventory_id as $i => $inv_id) {
 
-        $qty = $request->qty[$i];
+        $qty_input = $request->qty[$i]; // angka yg diketik user
+        $unit = $request->unit[$i];
         $price = str_replace('.', '', $request->price[$i]);
-        $subtotal = $qty * $price;
 
+        // 🔥 1. KONVERSI KE KG (UNTUK DATABASE)
+        if($unit == 'ton'){
+            $qty_db = $qty_input * 1000;
+        } else {
+            $qty_db = $qty_input;
+        }
+
+        // 🔥 2. HITUNG TOTAL (PAKAI INPUT ASLI, BUKAN KG)
+        $subtotal = $qty_input * $price;
+    
         purchase_order_detail::create([
             'po_id' => $po->id_po,
             'inventory_id' => $inv_id,
-            'unit' => $request->unit[$i],
-            'qty' => $qty,
+            'unit' => 'kg', // 🔥 SIMPAN SELALU KG
+            'qty' => $qty_db,
             'price' => $price,
             'total' => $subtotal,
         ]);
-
-        // Tambah Stok di Inventory
+    
+        // 🔥 TAMBAH STOCK (SUDAH KG)
         $inventory = Inventory::find($inv_id);
         if ($inventory) {
-            $inventory->update(['stock' => $inventory->stock + $qty]);
+            $inventory->update(['stock' => $inventory->stock + $qty_db]);
         }
-
+    
         $total += $subtotal;
     }
 

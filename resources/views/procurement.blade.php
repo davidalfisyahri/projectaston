@@ -28,51 +28,83 @@
             </div>
 
             <!-- TABLE ITEM -->
-            <table class="w-full border text-sm">
-                <thead class="bg-gray-100">
+            <table class="w-full text-sm border border-gray-200 rounded-xl overflow-hidden">
+    
+                <thead class="bg-gray-50 text-gray-600">
                     <tr>
-                        <th class="p-2 text-left">
+                        <th class="p-3 text-left w-[40%]">
                             <div class="flex items-center justify-between">
-                                <span>Item</span>
-                        
+                                <span class="font-medium">Item</span>
+            
                                 <a href="{{ url('/inventory') }}" 
-                                   class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition">
-                                    + Add new Item
+                                   class="text-xs bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 transition">
+                                    + Add new inventory
                                 </a>
                             </div>
                         </th>
-                        <th class="p-2">Unit</th>
-                        <th class="p-2">Qty</th>
-                        <th class="p-2">Harga</th>
-                        <th></th>
+            
+                        <th class="p-3 text-center w-[10%]">Unit</th>
+                        <th class="p-3 text-center w-[20%]">Qty</th>
+                        <th class="p-3 text-right w-[25%]">Harga</th>
+                        <th class="p-3 text-center w-[5%]"></th>
                     </tr>
                 </thead>
-
-                <tbody id="table">
-                    <tr>
-                        <td>
-                            <select name="inventory_id[]" class="input select2" required>
+            
+                <tbody id="table" class="divide-y">
+                    <tr class="hover:bg-gray-50 transition">
+                        
+                        <!-- ITEM -->
+                        <td class="p-2">
+                            <select name="inventory_id[]" 
+                                class="input select2 text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full max-w-xs" 
+                                required>
+                                
                                 <option value="">Pilih Material</option>
+            
                                 @foreach($inventories as $inv)
                                     <option value="{{ $inv->id_inventory }}">
                                         {{ $inv->name_material }} - {{ $inv->type }}
                                     </option>
                                 @endforeach
+            
                             </select>
                         </td>
-                        <td>
-                            <select name="unit[]" class="input text-center">
+            
+                        <!-- UNIT -->
+                        <td class="p-2">
+                            <select name="unit[]" 
+                                class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full">
                                 <option value="kg">Kg</option>
                                 <option value="ton">Ton</option>
                             </select>
                         </td>
-                        <td><input type="number" name="qty[]" class="input text-center" step="1" min="1"></td>
-                        <td>
-                            <input type="text" name="price[]" class="input text-right rupiah">
+            
+                        <!-- QTY -->
+                        <td class="p-2">
+                            <input type="number" name="qty[]" 
+                                class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full"
+                                step="1" min="1" placeholder="0">
                         </td>
-                        <td><button type="button" onclick="removeRow(this)">✕</button></td>
+            
+                        <!-- HARGA -->
+                        <td class="p-2">
+                            <input type="text" name="price[]" 
+                                class="input text-right text-sm rupiah bg-gray-50 border border-gray-200 rounded-lg h-9 w-full"
+                                placeholder="Rp 0">
+                        </td>
+            
+                        <!-- DELETE -->
+                        <td class="p-2 text-center align-middle">
+                            <button type="button" onclick="removeRow(this)" 
+                                class="w-8 h-8 flex items-center justify-center rounded-full 
+                                       hover:bg-red-100 text-red-400 hover:text-red-600 transition">
+                                ✕
+                            </button>
+                        </td>
+            
                     </tr>
                 </tbody>
+            
             </table>
 
             <div class="flex justify-between mt-4">
@@ -90,7 +122,7 @@
     <!-- TABLE DATA -->
     <div class="mt-8 bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
         <div class="flex justify-between items-center p-6">
-            <h2 class="text-xl font-bold text-gray-800">Data PO</h2>
+            <h2 class="text-xl font-bold text-gray-800">Data Procurement</h2>
 
         </div>
     
@@ -158,7 +190,6 @@
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="p-2 text-left">Item</th>
-                                    <th class="p-2 text-center">Unit</th>
                                     <th class="p-2 text-center">Qty</th>
                                     <th class="p-2 text-right">Harga</th>
                                     <th class="p-2 text-right">Total</th>
@@ -171,13 +202,14 @@
                                     <td class="p-2">{{ $d->inventory->name_material ?? '-' }}</td>
                                 
                                     <td class="p-2 text-center">
-                                        {{ $d->qty >= 1000 
-                                            ? ($d->qty / 1000).' ton' 
-                                            : $d->qty.' kg' }}
-                                    </td>
-                                
-                                    <td class="p-2 text-center">
-                                        {{ rtrim(rtrim(number_format($d->qty, 2, ',', '.'), '0'), ',') }}
+                                        @if($d->qty >= 1000)
+                                            {{ rtrim(rtrim(number_format($d->qty / 1000, 2, ',', '.'), '0'), ',') }} ton
+                                            <div class="text-xs text-gray-400">
+                                                ({{ number_format($d->qty, 0, ',', '.') }} kg)
+                                            </div>
+                                        @else
+                                            {{ number_format($d->qty, 0, ',', '.') }} kg
+                                        @endif
                                     </td>
                                 
                                     <td class="p-2 text-right">
@@ -299,29 +331,58 @@ if(e.target.name === 'qty[]'){
 
 function addRow(){
     let row = `
-<tr>
-    <td>
-            <select name="inventory_id[]" class="input select2" required>
-            <option value="">Pilih Material</option>
-            @foreach($inventories as $inv)
-            <option value="{{ $inv->id_inventory }}">
-             {{ $inv->name_material }} - {{ $inv->type }}
-            </option>
-            @endforeach
-    </select>
-        </td>
-        <td>
-            <select name="unit[]" class="input text-center">
-            <option value="kg">Kg</option>
-            <option value="ton">Ton</option>
-        </select>
-    </td>
-        <td><<input type="number" name="qty[]" class="input text-center" step="1" min="1"></td>
-        <td>
-            <input type="text" name="price[]" class="input text-right rupiah">
-        </td>
-        <td><button type="button" onclick="removeRow(this)">✕</button></td>
-</tr>`;
+<tr class="hover:bg-gray-50 transition">
+                        
+                        <!-- ITEM -->
+                        <td class="p-2">
+                            <select name="inventory_id[]" 
+                                class="input select2 text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full max-w-xs" 
+                                required>
+                                
+                                <option value="">Pilih Material</option>
+            
+                                @foreach($inventories as $inv)
+                                    <option value="{{ $inv->id_inventory }}">
+                                        {{ $inv->name_material }} - {{ $inv->type }}
+                                    </option>
+                                @endforeach
+            
+                            </select>
+                        </td>
+            
+                        <!-- UNIT -->
+                        <td class="p-2">
+                            <select name="unit[]" 
+                                class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full">
+                                <option value="kg">Kg</option>
+                                <option value="ton">Ton</option>
+                            </select>
+                        </td>
+            
+                        <!-- QTY -->
+                        <td class="p-2">
+                            <input type="number" name="qty[]" 
+                                class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full"
+                                step="1" min="1" placeholder="0">
+                        </td>
+            
+                        <!-- HARGA -->
+                        <td class="p-2">
+                            <input type="text" name="price[]" 
+                                class="input text-right text-sm rupiah bg-gray-50 border border-gray-200 rounded-lg h-9 w-full"
+                                placeholder="Rp 0">
+                        </td>
+            
+                        <!-- DELETE -->
+                        <td class="p-2 text-center align-middle">
+                            <button type="button" onclick="removeRow(this)" 
+                                class="w-8 h-8 flex items-center justify-center rounded-full 
+                                       hover:bg-red-100 text-red-400 hover:text-red-600 transition">
+                                ✕
+                            </button>
+                        </td>
+            
+                    </tr>`;
 
     document.querySelector('#table').insertAdjacentHTML('beforeend', row);
 

@@ -2,251 +2,172 @@
 @section('title', 'customer_req')
 @section('container')
 
-<h1 class="text-2xl font-bold mb-6">Form Customer Order</h1>
+<h1 class="text-2xl font-semibold mb-6 text-gray-800">
+    Customer Request
+</h1>
 
-<!-- FORM -->
-<div class="bg-white p-6 rounded-xl shadow mb-6 border">
+<div class="max-w-5xl mx-auto space-y-6">
 
-    <form id="orderForm" class="space-y-6">
+    <!-- FORM INPUT -->
+    <form action="/customer-request/store" method="POST"
+        class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+        @csrf
 
-        <!-- SECTION: DATA CUSTOMER -->
-        <div>
-            <h2 class="font-semibold text-gray-700 mb-3 border-b pb-2">
-                Data Customer
-            </h2>
+        <h2 class="text-sm font-semibold text-gray-600 mb-3">
+            Form Pengajuan
+        </h2>
 
-            <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input name="customer_name" placeholder="Nama Customer"
+                class="input">
 
-                <div>
-                    <label class="label">Nama Customer *</label>
-                    <input type="text" name="customer_name" class="input" required>
-                </div>
+            <input name="phone" placeholder="No HP"
+                class="input">
 
-                <div>
-                    <label class="label">Nomor Customer</label>
-                    <input type="text" name="customer_number" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Region</label>
-                    <input type="text" name="region" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Qty Grade</label>
-                    <input type="number" name="qty_grade" class="input">
-                </div>
-
-            </div>
+            <textarea name="address" placeholder="Alamat"
+                class="input md:col-span-2"></textarea>
         </div>
 
-        <!-- SECTION: KONTAK -->
-        <div>
-            <h2 class="font-semibold text-gray-700 mb-3 border-b pb-2">
-                Kontak
-            </h2>
-
-            <div class="grid grid-cols-2 gap-4">
-
-                <div>
-                    <label class="label">No HP</label>
-                    <input type="text" name="phone_number" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Email</label>
-                    <input type="email" name="email" class="input">
-                </div>
-
-            </div>
-        </div>
-
-        <!-- SECTION: OWNER -->
-        <div>
-            <h2 class="font-semibold text-gray-700 mb-3 border-b pb-2">
-                Data Pemilik
-            </h2>
-
-            <div class="grid grid-cols-2 gap-4">
-
-                <div>
-                    <label class="label">Nama Owner</label>
-                    <input type="text" name="owner_name" class="input">
-                </div>
-
-                <div>
-                    <label class="label">Alamat Owner</label>
-                    <input type="text" name="owner_address" class="input">
-                </div>
-
-            </div>
-        </div>
-
-        <!-- SECTION: BISNIS -->
-        <div>
-            <h2 class="font-semibold text-gray-700 mb-3 border-b pb-2">
-                Data Bisnis
-            </h2>
-
-            <div class="grid grid-cols-2 gap-4">
-
-                <div>
-                    <label class="label">Kepemilikan Bisnis</label>
-                    <select name="business_ownership" class="input">
-                        <option value="">-- Pilih --</option>
-                        <option value="one_own">Milik Sendiri</option>
-                        <option value="rent">Sewa</option>
-                        <option value="branch">Cabang</option>
-                        <option value="no_branch">Non Cabang</option>
-                        <option value="main_headoffice">Kantor Pusat</option>
-                        <option value="project">Project</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="label">Alamat Kantor</label>
-                    <input type="text" name="office_address" class="input">
-                </div>
-
-            </div>
-        </div>
-
-        <!-- SECTION: STATUS -->
-        <div>
-            <h2 class="font-semibold text-gray-700 mb-3 border-b pb-2">
-                Status Order
-            </h2>
-
-            <select name="status" class="input w-full">
-                <option value="pending">Pending</option>
-                <option value="in_progress">Sedang Diproses</option>
-                <option value="approved">Disetujui</option>
-                <option value="rejected">Ditolak</option>
-            </select>
-        </div>
-
-        <!-- NOTE -->
-        <div>
-            <label class="label">Catatan</label>
-            <textarea name="note" class="input w-full"></textarea>
-        </div>
-
-        <!-- BUTTON -->
-        <button type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-lg">
-            SIMPAN DATA
+        <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm">
+            Ajukan Request
         </button>
-
     </form>
-</div>
 
-<!-- CARD CONTAINER -->
-<div id="cardContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
 
-<!-- MODAL DETAIL -->
-<div id="modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md">
-        <h2 class="text-lg font-bold mb-4">Detail Customer</h2>
-        <div id="modalContent" class="text-sm space-y-2"></div>
+    <!-- LIST DATA -->
+    @foreach($data as $d)
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
 
-        <button onclick="closeModal()" 
-            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
-            Tutup
-        </button>
-    </div>
-</div>
+        <!-- HEADER -->
+        <div class="flex justify-between items-start mb-3">
 
-<style>
-.input {
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 14px;
-    width: 100%;
-}
-
-.label {
-    font-size: 13px;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 4px;
-    color: #444;
-}
-</style>
-
-<script>
-let dataList = [];
-
-document.getElementById('orderForm').addEventListener('submit', function(e){
-    e.preventDefault();
-
-    const formData = new FormData(this);
-    let data = {};
-
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-
-    dataList.push(data);
-    renderCard();
-
-    this.reset();
-});
-
-function renderCard(){
-    let container = document.getElementById('cardContainer');
-    container.innerHTML = '';
-
-    dataList.forEach((item, index) => {
-
-        let statusColor = {
-            pending: 'bg-yellow-500',
-            in_progress: 'bg-blue-500',
-            approved: 'bg-green-600',
-            rejected: 'bg-red-600'
-        };
-
-        container.innerHTML += `
-        <div class="bg-white rounded-xl shadow p-4 border">
-
-            <!-- STATUS -->
-            <div class="text-white text-xs px-3 py-1 rounded mb-3 font-semibold ${statusColor[item.status]}">
-                ${item.status.toUpperCase()}
+            <div>
+                <div class="font-semibold text-gray-800">
+                    {{ $d->customer_name }}
+                </div>
+                <div class="text-xs text-gray-400">
+                    {{ $d->request_code }}
+                </div>
             </div>
 
-            <h3 class="font-bold text-base">${item.customer_name}</h3>
-            <p class="text-xs text-gray-500">${item.customer_number || '-'}</p>
-
-            <div class="text-sm mt-2 space-y-1">
-                <p><b>Region:</b> ${item.region || '-'}</p>
-                <p><b>Phone:</b> ${item.phone_number || '-'}</p>
-            </div>
-
-            <button onclick="showDetail(${index})"
-                class="mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 rounded">
-                Lihat Detail
-            </button>
+            <span class="text-xs px-3 py-1 rounded-full 
+                @if($d->status == 'waiting_approval') bg-yellow-100 text-yellow-700
+                @elseif($d->status == 'approved') bg-green-100 text-green-700
+                @elseif($d->status == 'rejected') bg-red-100 text-red-600
+                @elseif($d->status == 'paid') bg-blue-100 text-blue-700
+                @else bg-gray-100 text-gray-600
+                @endif">
+                {{ $d->status }}
+            </span>
         </div>
-        `;
-    });
-}
 
-function showDetail(index){
-    let data = dataList[index];
-    let content = '';
+        <!-- INFO -->
+        <div class="text-sm text-gray-500 space-y-1 mb-3">
+            <div>📞 {{ $d->phone }}</div>
+            <div>📍 {{ $d->address }}</div>
+        </div>
 
-    for (let key in data){
-        content += `<p><b>${key}</b>: ${data[key]}</p>`;
-    }
 
-    document.getElementById('modalContent').innerHTML = content;
-    document.getElementById('modal').classList.remove('hidden');
-    document.getElementById('modal').classList.add('flex');
-}
+        <!-- ===================== -->
+        <!-- 🔥 APPROVAL SECTION -->
+        <!-- ===================== -->
 
-function closeModal(){
-    document.getElementById('modal').classList.add('hidden');
-}
-</script>
+        @if(
+            in_array(auth()->user()->position, ['wakil_direktur','direktur_utama']) 
+            && $d->status == 'waiting_approval'
+        )
+        <form action="/customer-request/approve/{{ $d->id }}" method="POST" class="flex gap-2">
+            @csrf
+
+            <button name="action" value="approved"
+                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
+                ✔ Approve
+            </button>
+
+            <button name="action" value="rejected"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                ✖ Reject
+            </button>
+        </form>
+        @endif
+
+
+        <!-- ===================== -->
+        <!-- 💰 BAYAR -->
+        <!-- ===================== -->
+
+        @if($d->status == 'approved' && auth()->user()->position == 'sales_internal')
+        <form action="/customer-request/pay/{{ $d->id }}" method="POST">
+            @csrf
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm mt-2">
+                Bayar Sekarang
+            </button>
+        </form>
+        @endif
+
+
+        <!-- ===================== -->
+        <!-- 📲 WA CONFIRM -->
+        <!-- ===================== -->
+
+        @if($d->is_paid && !$d->is_wa_confirmed)
+
+        <div class="mt-3 space-y-2">
+
+            <a href="https://wa.me/628123456789" target="_blank"
+                class="block bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm text-center">
+                Chat WhatsApp
+            </a>
+
+            <form action="/customer-request/confirm-wa/{{ $d->id }}" method="POST">
+                @csrf
+                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm w-full">
+                    ✔ Konfirmasi WA
+                </button>
+            </form>
+
+        </div>
+        @endif
+
+
+        <!-- ===================== -->
+        <!-- 📅 SCHEDULE -->
+        <!-- ===================== -->
+
+        @if($d->is_wa_confirmed && !$d->schedule_date)
+
+        <form action="/customer-request/schedule/{{ $d->id }}" method="POST" class="mt-3">
+            @csrf
+
+            <div class="flex gap-2">
+                <input type="date" name="schedule_date"
+                    class="input text-sm">
+
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm">
+                    Set Jadwal
+                </button>
+            </div>
+        </form>
+
+        @endif
+
+
+        <!-- ===================== -->
+        <!-- 📄 PDF -->
+        <!-- ===================== -->
+
+        @if($d->schedule_date)
+
+        <a href="/customer-request/pdf/{{ $d->id }}"
+            class="inline-block mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm">
+            Print PDF
+        </a>
+
+        @endif
+
+    </div>
+    @endforeach
+
+</div>
 
 @endsection

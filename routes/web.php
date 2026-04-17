@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\CustomerRequestController;
 use App\Http\Controllers\inventoryController;
 use App\Http\Controllers\gradebetonController;
 use App\Http\Controllers\procurementcontroller;
@@ -30,10 +31,18 @@ Route::delete('/users/{id}', [UsersController::class, 'destroy']);
 
 Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
-Route::get('/customer_req', function () { return view('customer_req'); })->name('customer_req');
+Route::get('/customer_req', [CustomerRequestController::class, 'index'])->name('customer_req');
+Route::get('/customer-request', [CustomerRequestController::class, 'index']);
+Route::post('/customer-request/store', [CustomerRequestController::class, 'store']);
+
+Route::post('/customer-request/approve/{id}', [CustomerRequestController::class, 'approve']);
+Route::post('/customer-request/pay/{id}', [CustomerRequestController::class, 'pay']);
+Route::post('/customer-request/confirm-wa/{id}', [CustomerRequestController::class, 'confirmWa']);
+Route::post('/customer-request/schedule/{id}', [CustomerRequestController::class, 'schedule']);
+
+Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
 
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
-
 Route::post('/inventory/store', [InventoryController::class, 'store']);
 Route::post('/inventory/update/{id}', [InventoryController::class, 'update']);
 Route::get('/inventory/delete/{id}', [InventoryController::class, 'destroy']);

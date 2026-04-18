@@ -12,8 +12,37 @@ return new class extends Migration {
 
             $table->string('request_code')->unique()->nullable();
 
-            // ✅ FIX FOREIGN KEY (WAJIB)
             $table->unsignedBigInteger('created_by');
+            $table->string('region')->nullable();
+            
+            $table->string('customer_number')->nullable();
+
+            $table->string('no_identitas')->nullable();
+            $table->string('form_business')->nullable();
+            $table->string('section_business')->nullable();
+            $table->text('address_business')->nullable();
+
+            $table->string('npwp')->nullable();
+            $table->string('tax_name')->nullable();
+            $table->text('tax_address')->nullable();
+
+            $table->string('izin_tdp')->nullable();
+            $table->date('tdp_date')->nullable();
+
+            $table->string('izin_siup')->nullable();
+            $table->date('siup_date')->nullable();
+
+            $table->string('izin_sio')->nullable();
+            $table->date('sio_date')->nullable();
+
+            $table->string('owner_name')->nullable();
+            $table->text('owner_address')->nullable();
+
+            $table->string('email')->nullable();
+            $table->string('business_ownership')->nullable();
+
+            $table->text('office_address')->nullable();
+            $table->text('ongoing_project')->nullable();
 
             $table->date('tanggal');
             $table->string('region')->nullable();

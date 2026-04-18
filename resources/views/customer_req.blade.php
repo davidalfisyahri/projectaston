@@ -2,172 +2,226 @@
 @section('title', 'customer_req')
 @section('container')
 
-<h1 class="text-2xl font-semibold mb-6 text-gray-800">
-    Customer Request
-</h1>
+<div class="max-w-6xl mx-auto">
 
-<div class="max-w-5xl mx-auto space-y-6">
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold text-gray-800">
+            Customer Request
+        </h1>
 
-    <!-- FORM INPUT -->
-    <form action="/customer-request/store" method="POST"
-        class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-        @csrf
-
-        <h2 class="text-sm font-semibold text-gray-600 mb-3">
-            Form Pengajuan
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input name="customer_name" placeholder="Nama Customer"
-                class="input">
-
-            <input name="phone" placeholder="No HP"
-                class="input">
-
-            <textarea name="address" placeholder="Alamat"
-                class="input md:col-span-2"></textarea>
-        </div>
-
-        <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm">
-            Ajukan Request
+        <button onclick="openModal()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow">
+            + Buat Request
         </button>
-    </form>
-
-
-    <!-- LIST DATA -->
-    @foreach($data as $d)
-    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-
-        <!-- HEADER -->
-        <div class="flex justify-between items-start mb-3">
-
-            <div>
-                <div class="font-semibold text-gray-800">
-                    {{ $d->customer_name }}
-                </div>
-                <div class="text-xs text-gray-400">
-                    {{ $d->request_code }}
-                </div>
-            </div>
-
-            <span class="text-xs px-3 py-1 rounded-full 
-                @if($d->status == 'waiting_approval') bg-yellow-100 text-yellow-700
-                @elseif($d->status == 'approved') bg-green-100 text-green-700
-                @elseif($d->status == 'rejected') bg-red-100 text-red-600
-                @elseif($d->status == 'paid') bg-blue-100 text-blue-700
-                @else bg-gray-100 text-gray-600
-                @endif">
-                {{ $d->status }}
-            </span>
-        </div>
-
-        <!-- INFO -->
-        <div class="text-sm text-gray-500 space-y-1 mb-3">
-            <div>📞 {{ $d->phone }}</div>
-            <div>📍 {{ $d->address }}</div>
-        </div>
-
-
-        <!-- ===================== -->
-        <!-- 🔥 APPROVAL SECTION -->
-        <!-- ===================== -->
-
-        @if(
-            in_array(auth()->user()->position, ['wakil_direktur','direktur_utama']) 
-            && $d->status == 'waiting_approval'
-        )
-        <form action="/customer-request/approve/{{ $d->id }}" method="POST" class="flex gap-2">
-            @csrf
-
-            <button name="action" value="approved"
-                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
-                ✔ Approve
-            </button>
-
-            <button name="action" value="rejected"
-                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                ✖ Reject
-            </button>
-        </form>
-        @endif
-
-
-        <!-- ===================== -->
-        <!-- 💰 BAYAR -->
-        <!-- ===================== -->
-
-        @if($d->status == 'approved' && auth()->user()->position == 'sales_internal')
-        <form action="/customer-request/pay/{{ $d->id }}" method="POST">
-            @csrf
-            <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm mt-2">
-                Bayar Sekarang
-            </button>
-        </form>
-        @endif
-
-
-        <!-- ===================== -->
-        <!-- 📲 WA CONFIRM -->
-        <!-- ===================== -->
-
-        @if($d->is_paid && !$d->is_wa_confirmed)
-
-        <div class="mt-3 space-y-2">
-
-            <a href="https://wa.me/628123456789" target="_blank"
-                class="block bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm text-center">
-                Chat WhatsApp
-            </a>
-
-            <form action="/customer-request/confirm-wa/{{ $d->id }}" method="POST">
-                @csrf
-                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm w-full">
-                    ✔ Konfirmasi WA
-                </button>
-            </form>
-
-        </div>
-        @endif
-
-
-        <!-- ===================== -->
-        <!-- 📅 SCHEDULE -->
-        <!-- ===================== -->
-
-        @if($d->is_wa_confirmed && !$d->schedule_date)
-
-        <form action="/customer-request/schedule/{{ $d->id }}" method="POST" class="mt-3">
-            @csrf
-
-            <div class="flex gap-2">
-                <input type="date" name="schedule_date"
-                    class="input text-sm">
-
-                <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm">
-                    Set Jadwal
-                </button>
-            </div>
-        </form>
-
-        @endif
-
-
-        <!-- ===================== -->
-        <!-- 📄 PDF -->
-        <!-- ===================== -->
-
-        @if($d->schedule_date)
-
-        <a href="/customer-request/pdf/{{ $d->id }}"
-            class="inline-block mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm">
-            Print PDF
-        </a>
-
-        @endif
-
     </div>
-    @endforeach
 
+    <!-- ========================= -->
+    <!-- TABLE -->
+    <!-- ========================= -->
+    <div class="bg-white rounded-xl shadow border overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3">Kode</th>
+                    <th class="p-3">Customer</th>
+                    <th class="p-3">Phone</th>
+                    <th class="p-3">Region</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3">Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($data as $d)
+                <tr class="border-t">
+                    <td class="p-3">{{ $d->request_code }}</td>
+                    <td class="p-3">{{ $d->customer_name }}</td>
+                    <td class="p-3">{{ $d->phone }}</td>
+                    <td class="p-3">{{ $d->region }}</td>
+                    <td class="p-3">{{ $d->status }}</td>
+                    <td class="p-3">{{ $d->tanggal }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- ========================= -->
+<!-- MODAL -->
+<!-- ========================= -->
+<div id="modalForm"
+    class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+<div class="bg-white w-full max-w-6xl rounded-xl p-6 overflow-y-auto max-h-[90vh]">
+
+<form action="/customer-request/store" method="POST">
+@csrf
+
+<h2 class="text-lg font-semibold mb-4">Form Customer Request</h2>
+
+<!-- ===================== -->
+<!-- IDENTITAS -->
+<!-- ===================== -->
+<div class="grid grid-cols-2 gap-3 mb-4">
+
+    <input name="customer_name" placeholder="Nama Customer" class="border p-2 rounded" required>
+    <input name="phone" placeholder="No HP" class="border p-2 rounded">
+
+    <input name="region" placeholder="Region" class="border p-2 rounded">
+    <input name="customer_number" placeholder="Customer Number" class="border p-2 rounded">
+
+    <textarea name="address" placeholder="Alamat" class="col-span-2 border p-2 rounded"></textarea>
+
+    <textarea name="note" placeholder="Note" class="col-span-2 border p-2 rounded"></textarea>
+</div>
+
+<!-- ===================== -->
+<!-- PROFILE BISNIS -->
+<!-- ===================== -->
+<h3 class="font-semibold mb-2">Profil Bisnis</h3>
+
+<div class="grid grid-cols-2 gap-3 mb-4">
+
+    <input name="no_identitas" placeholder="No Identitas" class="border p-2 rounded">
+    <input name="form_business" placeholder="Bentuk Usaha" class="border p-2 rounded">
+
+    <input name="section_business" placeholder="Bidang Usaha" class="border p-2 rounded">
+    <textarea name="address_business" placeholder="Alamat Usaha" class="border p-2 rounded"></textarea>
+
+    <input name="npwp" placeholder="NPWP" class="border p-2 rounded">
+    <input name="tax_name" placeholder="Nama Pajak" class="border p-2 rounded">
+
+    <textarea name="tax_address" placeholder="Alamat Pajak" class="col-span-2 border p-2 rounded"></textarea>
+</div>
+
+<!-- ===================== -->
+<!-- IZIN -->
+<!-- ===================== -->
+<h3 class="font-semibold mb-2">Perizinan</h3>
+
+<div class="grid grid-cols-3 gap-3 mb-4">
+
+    <input name="izin_tdp" placeholder="TDP" class="border p-2 rounded">
+    <input type="date" name="tdp_date" class="border p-2 rounded">
+
+    <input name="izin_siup" placeholder="SIUP" class="border p-2 rounded">
+    <input type="date" name="siup_date" class="border p-2 rounded">
+
+    <input name="izin_sio" placeholder="SIO" class="border p-2 rounded">
+    <input type="date" name="sio_date" class="border p-2 rounded">
+</div>
+
+<!-- ===================== -->
+<!-- OWNER -->
+<!-- ===================== -->
+<h3 class="font-semibold mb-2">Owner</h3>
+
+<div class="grid grid-cols-2 gap-3 mb-4">
+    <input name="owner_name" placeholder="Nama Owner" class="border p-2 rounded">
+    <textarea name="owner_address" placeholder="Alamat Owner" class="border p-2 rounded"></textarea>
+
+    <input name="email" placeholder="Email" class="border p-2 rounded">
+    <input name="business_ownership" placeholder="Kepemilikan Usaha" class="border p-2 rounded">
+</div>
+
+<!-- ===================== -->
+<!-- PROJECT -->
+<!-- ===================== -->
+<div class="mb-4">
+    <textarea name="office_address" placeholder="Alamat Kantor" class="w-full border p-2 rounded mb-2"></textarea>
+    <textarea name="ongoing_project" placeholder="Proyek Berjalan" class="w-full border p-2 rounded"></textarea>
+</div>
+
+<!-- ===================== -->
+<!-- DETAIL -->
+<!-- ===================== -->
+<h3 class="mb-2 font-semibold">Detail Order</h3>
+
+<table class="w-full border text-sm">
+<thead>
+<tr>
+    <th>Grade</th>
+    <th>Type</th>
+    <th>Qty</th>
+    <th>Harga</th>
+    <th>Total</th>
+</tr>
+</thead>
+
+<tbody id="detailTable">
+<tr>
+<td>
+<select name="grade_id[]" class="border p-1 gradeSelect">
+@foreach($grades as $g)
+<option value="{{ $g->id_grade }}"
+data-fa="{{ $g->harga_fa }}"
+data-nfa="{{ $g->harga_nfa }}">
+{{ $g->name_grade }}
+</option>
+@endforeach
+</select>
+</td>
+
+<td>
+<select name="type[]" class="border p-1 typeSelect">
+<option value="fa">FA</option>
+<option value="nfa">NFA</option>
+</select>
+</td>
+
+<td><input type="number" name="qty[]" class="border p-1 qtyInput"></td>
+<td><input type="text" name="price[]" class="border p-1 priceInput" readonly></td>
+<td><input type="text" class="border p-1 totalInput" readonly></td>
+</tr>
+</tbody>
+</table>
+
+<button type="button" onclick="addRow()" class="mt-2 text-blue-600">
++ Tambah Item
+</button>
+
+<div class="mt-4 text-right">
+<button class="bg-blue-600 text-white px-4 py-2 rounded">
+Submit
+</button>
+</div>
+
+</form>
+</div>
+</div>
+
+<script>
+function openModal(){
+    modalForm.classList.remove('hidden')
+    modalForm.classList.add('flex')
+}
+
+function closeModal(){
+    modalForm.classList.add('hidden')
+}
+
+function addRow(){
+    let row = document.querySelector('#detailTable tr').cloneNode(true)
+    document.getElementById('detailTable').appendChild(row)
+}
+
+document.addEventListener('input', function(e){
+    let row = e.target.closest('tr')
+    if(!row) return
+
+    let grade = row.querySelector('.gradeSelect')
+    let type = row.querySelector('.typeSelect')
+    let qty = row.querySelector('.qtyInput')
+    let price = row.querySelector('.priceInput')
+    let total = row.querySelector('.totalInput')
+
+    let selected = grade.options[grade.selectedIndex]
+    let harga = type.value === 'fa' ? selected.dataset.fa : selected.dataset.nfa
+
+    price.value = harga || 0
+    total.value = (qty.value || 0) * (harga || 0)
+})
+</script>
 
 @endsection

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\GradeBeton;
 use App\Models\CustomerRequest;
+use App\Models\CustomerRequestDetail;
 use App\Models\CustomerRequestApproval;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,8 +14,10 @@ class CustomerRequestController extends Controller
 {
     public function index()
     {
-        $data = CustomerRequest::latest()->get();
-        return view('customer_req', compact('data'));
+        $data = CustomerRequest::with('details.grade')->latest()->get();
+        $grades = GradeBeton::all();
+
+        return view('customer_req', compact('data','grades'));
     }
 
     public function store(Request $request)
@@ -22,22 +26,31 @@ class CustomerRequestController extends Controller
             'request_code' => 'REQ-'.date('Ymd').rand(100,999),
             'created_by' => Auth::id(),
             'tanggal' => now(),
+
             'customer_name' => $request->customer_name,
             'phone' => $request->phone,
             'address' => $request->address,
+
+            'region' => $request->region,
+            'customer_number' => $request->customer_number,
+            'note' => $request->note,
+
             'status' => 'waiting_approval'
         ]);
 
-        // approval auto create
-        CustomerRequestApproval::create([
-            'customer_request_id' => $req->id,
-            'role' => 'wadir'
-        ]);
-
-        CustomerRequestApproval::create([
-            'customer_request_id' => $req->id,
-            'role' => 'direktur'
-        ]);
+        // 🔥 SIMPAN DETAIL
+        if($request->grade_id){
+            foreach($request->grade_id as $i => $g){
+                CustomerRequestDetail::create([
+                    'customer_request_id' => $req->id,
+                    'grade_id' => $g,
+                    'type' => $request->type[$i],
+                    'qty' => $request->qty[$i],
+                    'price' => $request->price[$i],
+                    'total' => $request->qty[$i] * $request->price[$i],
+                ]);
+            }
+        }
 
         return back();
     }
@@ -109,4 +122,5 @@ class CustomerRequestController extends Controller
 
         return $pdf->download('customer_request.pdf');
     }
+    
 }

@@ -20,30 +20,137 @@
     <!-- TABLE -->
     <!-- ========================= -->
     <div class="bg-white rounded-xl shadow border overflow-hidden">
+
         <table class="w-full text-sm">
-            <thead class="bg-gray-100">
+            <thead class="bg-gray-100 text-gray-700">
                 <tr>
-                    <th class="p-3">Kode</th>
-                    <th class="p-3">Customer</th>
-                    <th class="p-3">Phone</th>
-                    <th class="p-3">Region</th>
-                    <th class="p-3">Status</th>
-                    <th class="p-3">Tanggal</th>
+                    <th class="p-3 w-10"></th>
+                    <th class="p-3 text-left">Kode</th>
+                    <th class="p-3 text-left">Customer</th>
+                    <th class="p-3 text-center">Phone</th>
+                    <th class="p-3 text-center">Region</th>
+                    <th class="p-3 text-center">Dibuat Oleh</th>
+                    <th class="p-3 text-center">Tanggal</th>
+                    <th class="p-3 text-center">Status</th>
+                    <th class="p-3 text-center">Action</th>
                 </tr>
             </thead>
+    
             <tbody>
                 @foreach($data as $d)
-                <tr class="border-t">
-                    <td class="p-3">{{ $d->request_code }}</td>
-                    <td class="p-3">{{ $d->customer_name }}</td>
-                    <td class="p-3">{{ $d->phone }}</td>
-                    <td class="p-3">{{ $d->region }}</td>
-                    <td class="p-3">{{ $d->status }}</td>
-                    <td class="p-3">{{ $d->tanggal }}</td>
+    
+                <!-- MAIN ROW -->
+                <tr class="border-t hover:bg-gray-50">
+    
+                    <!-- BUTTON EXPAND -->
+                    <td class="p-3 text-center">
+                        <button onclick="toggleDetail({{ $d->id }})"
+                            class="bg-blue-100 text-blue-600 px-2 rounded">
+                            +
+                        </button>
+                    </td>
+    
+                    <td class="p-3 text-xs text-gray-500">
+                        {{ $d->request_code }}
+                    </td>
+    
+                    <td class="p-3 font-medium">
+                        {{ $d->customer_name }}
+                    </td>
+    
+                    <td class="p-3 text-center">
+                        {{ $d->phone }}
+                    </td>
+    
+                    <td class="p-3 text-center">
+                        {{ $d->region }}
+                    </td>
+    
+                    <td class="p-3 text-center text-gray-600">
+                        {{ $d->user->name_user ?? '-' }}
+                    </td>
+    
+                    <td class="p-3 text-center text-gray-500">
+                        {{ date('d-m-Y', strtotime($d->tanggal)) }}
+                    </td>
+    
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-1 text-xs rounded-full
+                            @if($d->status == 'waiting_approval') bg-yellow-100 text-yellow-700
+                            @elseif($d->status == 'approved') bg-green-100 text-green-700
+                            @elseif($d->status == 'rejected') bg-red-100 text-red-600
+                            @else bg-gray-100 text-gray-600
+                            @endif">
+                            {{ $d->status }}
+                        </span>
+                    </td>
+    
+                    <!-- DELETE -->
+                    <td class="p-3 text-center">
+                        <form action="/customer-request/delete/{{ $d->id }}" method="POST"
+                            onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                            @csrf
+                            @method('DELETE')
+    
+                            <button class="text-red-500 hover:text-red-700">
+                                🗑
+                            </button>
+                        </form>
+                    </td>
                 </tr>
+    
+                <!-- DETAIL ROW -->
+                <tr id="detail-{{ $d->id }}" class="hidden bg-gray-50">
+                    <td colspan="9" class="p-4">
+    
+                        <div class="border rounded-lg overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-200 text-gray-600">
+                                    <tr>
+                                        <th class="p-2 text-left">Grade</th>
+                                        <th class="p-2 text-center">Type</th>
+                                        <th class="p-2 text-center">Qty</th>
+                                        <th class="p-2 text-right">Harga</th>
+                                        <th class="p-2 text-right">Total</th>
+                                    </tr>
+                                </thead>
+    
+                                <tbody>
+                                    @foreach($d->details as $item)
+                                    <tr class="border-t">
+                                        <td class="p-2">
+                                            {{ $item->grade->name_grade }}
+                                        </td>
+    
+                                        <td class="p-2 text-center uppercase">
+                                            {{ $item->type }}
+                                        </td>
+    
+                                        <td class="p-2 text-center">
+                                            {{ number_format($item->qty,2,',','.') }}
+                                        </td>
+    
+                                        <td class="p-2 text-right">
+                                            Rp {{ number_format($item->price,0,',','.') }}
+                                        </td>
+    
+                                        <td class="p-2 text-right font-semibold text-green-600">
+                                            Rp {{ number_format($item->total,0,',','.') }}
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+    
+                            </table>
+                        </div>
+    
+                    </td>
+                </tr>
+    
                 @endforeach
             </tbody>
         </table>
+    
     </div>
 </div>
 
@@ -53,145 +160,264 @@
 <div id="modalForm"
     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-<div class="bg-white w-full max-w-6xl rounded-xl p-6 overflow-y-auto max-h-[90vh]">
+    <div class="bg-white w-full max-w-6xl rounded-xl shadow-lg overflow-hidden max-h-[90vh] flex flex-col">
 
-<form action="/customer-request/store" method="POST">
-@csrf
+        <!-- HEADER -->
+        <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+            <h2 class="text-lg font-semibold text-gray-800">
+                Form Customer Request
+            </h2>
 
-<h2 class="text-lg font-semibold mb-4">Form Customer Request</h2>
+            <!-- BUTTON X -->
+            <button onclick="closeModal()" 
+                class="text-gray-500 hover:text-red-500 text-xl font-bold">
+                ✕
+            </button>
+        </div>
 
-<!-- ===================== -->
-<!-- IDENTITAS -->
-<!-- ===================== -->
-<div class="grid grid-cols-2 gap-3 mb-4">
+        <!-- BODY -->
+        <div class="p-6 overflow-y-auto">
 
-    <input name="customer_name" placeholder="Nama Customer" class="border p-2 rounded" required>
-    <input name="phone" placeholder="No HP" class="border p-2 rounded">
+        <form action="/customer-request/store" method="POST">
+        @csrf
 
-    <input name="region" placeholder="Region" class="border p-2 rounded">
-    <input name="customer_number" placeholder="Customer Number" class="border p-2 rounded">
+        <!-- ===================== -->
+        <!-- IDENTITAS -->
+        <!-- ===================== -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <input name="customer_name" placeholder="Nama Customer" class="border p-2 rounded" required>
+            <input name="phone" placeholder="No HP" class="border p-2 rounded">
 
-    <textarea name="address" placeholder="Alamat" class="col-span-2 border p-2 rounded"></textarea>
+            <input name="region" placeholder="Region" class="border p-2 rounded">
+            <input name="customer_number" placeholder="Customer Number" class="border p-2 rounded">
 
-    <textarea name="note" placeholder="Note" class="col-span-2 border p-2 rounded"></textarea>
-</div>
+            <textarea name="address" placeholder="Alamat" class="col-span-2 border p-2 rounded"></textarea>
+            <textarea name="note" placeholder="Note" class="col-span-2 border p-2 rounded"></textarea>
+        </div>
 
-<!-- ===================== -->
-<!-- PROFILE BISNIS -->
-<!-- ===================== -->
-<h3 class="font-semibold mb-2">Profil Bisnis</h3>
+        <!-- ===================== -->
+        <!-- PROFILE BISNIS -->
+        <!-- ===================== -->
+        <h3 class="font-semibold mb-2">Profil Bisnis</h3>
 
-<div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <input name="no_identitas" placeholder="No Identitas" class="border p-2 rounded">
+            <input name="form_business" placeholder="Bentuk Usaha" class="border p-2 rounded">
 
-    <input name="no_identitas" placeholder="No Identitas" class="border p-2 rounded">
-    <input name="form_business" placeholder="Bentuk Usaha" class="border p-2 rounded">
+            <input name="section_business" placeholder="Bidang Usaha" class="border p-2 rounded">
+            <textarea name="address_business" placeholder="Alamat Usaha" class="border p-2 rounded"></textarea>
 
-    <input name="section_business" placeholder="Bidang Usaha" class="border p-2 rounded">
-    <textarea name="address_business" placeholder="Alamat Usaha" class="border p-2 rounded"></textarea>
+            <input name="npwp" placeholder="NPWP" class="border p-2 rounded">
+            <input name="tax_name" placeholder="Nama Pajak" class="border p-2 rounded">
 
-    <input name="npwp" placeholder="NPWP" class="border p-2 rounded">
-    <input name="tax_name" placeholder="Nama Pajak" class="border p-2 rounded">
+            <textarea name="tax_address" placeholder="Alamat Pajak" class="col-span-2 border p-2 rounded"></textarea>
+        </div>
 
-    <textarea name="tax_address" placeholder="Alamat Pajak" class="col-span-2 border p-2 rounded"></textarea>
-</div>
+        <!-- ===================== -->
+        <!-- IZIN -->
+        <!-- ===================== -->
+        <h3 class="font-semibold mb-2">Perizinan</h3>
 
-<!-- ===================== -->
-<!-- IZIN -->
-<!-- ===================== -->
-<h3 class="font-semibold mb-2">Perizinan</h3>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <input name="izin_tdp" placeholder="TDP" class="border p-2 rounded">
+            <input type="date" name="tdp_date" class="border p-2 rounded">
 
-<div class="grid grid-cols-3 gap-3 mb-4">
+            <input name="izin_siup" placeholder="SIUP" class="border p-2 rounded">
+            <input type="date" name="siup_date" class="border p-2 rounded">
 
-    <input name="izin_tdp" placeholder="TDP" class="border p-2 rounded">
-    <input type="date" name="tdp_date" class="border p-2 rounded">
+            <input name="izin_sio" placeholder="SIO" class="border p-2 rounded">
+            <input type="date" name="sio_date" class="border p-2 rounded">
+        </div>
 
-    <input name="izin_siup" placeholder="SIUP" class="border p-2 rounded">
-    <input type="date" name="siup_date" class="border p-2 rounded">
+        <!-- ===================== -->
+        <!-- DETAIL -->
+        <!-- ===================== -->
+        <h3 class="mb-3 font-semibold text-gray-800 border-b pb-2">
+            Detail Order
+        </h3>
 
-    <input name="izin_sio" placeholder="SIO" class="border p-2 rounded">
-    <input type="date" name="sio_date" class="border p-2 rounded">
-</div>
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm border rounded-lg overflow-hidden">
 
-<!-- ===================== -->
-<!-- OWNER -->
-<!-- ===================== -->
-<h3 class="font-semibold mb-2">Owner</h3>
+            <thead class="bg-gray-100 text-gray-700">
+                <tr>
+                    <th class="p-2 text-left">Grade</th>
+                    <th class="p-2 text-center">Type</th>
+                    <th class="p-2 text-center">Qty</th>
+                    <th class="p-2 text-right">Harga</th>
+                    <th class="p-2 text-right">Total</th>
+                    <th class="p-2 text-center w-10">#</th>
+                </tr>
+            </thead>
 
-<div class="grid grid-cols-2 gap-3 mb-4">
-    <input name="owner_name" placeholder="Nama Owner" class="border p-2 rounded">
-    <textarea name="owner_address" placeholder="Alamat Owner" class="border p-2 rounded"></textarea>
+            <tbody id="detailTable">
+                <tr class="border-t">
+                    <td class="p-2">
+                        <select name="grade_id[]" class="border rounded px-2 py-1 w-full gradeSelect">
+                            @foreach($grades as $g)
+                            <option value="{{ $g->id_grade }}"
+                                data-fa="{{ $g->harga_fa }}"
+                                data-nfa="{{ $g->harga_nfa }}">
+                                {{ $g->name_grade }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </td>
 
-    <input name="email" placeholder="Email" class="border p-2 rounded">
-    <input name="business_ownership" placeholder="Kepemilikan Usaha" class="border p-2 rounded">
-</div>
+                    <td class="p-2">
+                        <select name="type[]" class="border rounded px-2 py-1 w-full typeSelect">
+                            <option value="fa">FA</option>
+                            <option value="nfa">NFA</option>
+                        </select>
+                    </td>
 
-<!-- ===================== -->
-<!-- PROJECT -->
-<!-- ===================== -->
-<div class="mb-4">
-    <textarea name="office_address" placeholder="Alamat Kantor" class="w-full border p-2 rounded mb-2"></textarea>
-    <textarea name="ongoing_project" placeholder="Proyek Berjalan" class="w-full border p-2 rounded"></textarea>
-</div>
+                    <td class="p-2">
+                        <input type="number" name="qty[]" class="border rounded px-2 py-1 w-full qtyInput">
+                    </td>
 
-<!-- ===================== -->
-<!-- DETAIL -->
-<!-- ===================== -->
-<h3 class="mb-2 font-semibold">Detail Order</h3>
+                    <td class="p-2">
+                        <input type="text" name="price[]" class="border rounded px-2 py-1 w-full priceInput bg-gray-50" readonly>
+                    </td>
 
-<table class="w-full border text-sm">
-<thead>
-<tr>
-    <th>Grade</th>
-    <th>Type</th>
-    <th>Qty</th>
-    <th>Harga</th>
-    <th>Total</th>
-</tr>
-</thead>
+                    <td class="p-2">
+                        <input type="text" class="border rounded px-2 py-1 w-full totalInput bg-gray-100" readonly>
+                    </td>
 
-<tbody id="detailTable">
-<tr>
-<td>
-<select name="grade_id[]" class="border p-1 gradeSelect">
-@foreach($grades as $g)
-<option value="{{ $g->id_grade }}"
-data-fa="{{ $g->harga_fa }}"
-data-nfa="{{ $g->harga_nfa }}">
-{{ $g->name_grade }}
-</option>
-@endforeach
-</select>
-</td>
+                    <td class="p-2 text-center">
+                        <button type="button" class="btn-remove text-red-500 text-lg">✕</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
 
-<td>
-<select name="type[]" class="border p-1 typeSelect">
-<option value="fa">FA</option>
-<option value="nfa">NFA</option>
-</select>
-</td>
+        <button type="button" onclick="addRow()" 
+            class="mt-3 text-blue-600 text-sm">
+            + Tambah Item
+        </button>
 
-<td><input type="number" name="qty[]" class="border p-1 qtyInput"></td>
-<td><input type="text" name="price[]" class="border p-1 priceInput" readonly></td>
-<td><input type="text" class="border p-1 totalInput" readonly></td>
-</tr>
-</tbody>
-</table>
+        <!-- FOOTER -->
+        <div class="mt-6 flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" 
+                class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100">
+                Batal
+            </button>
 
-<button type="button" onclick="addRow()" class="mt-2 text-blue-600">
-+ Tambah Item
-</button>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded">
+                Submit
+            </button>
+        </div>
 
-<div class="mt-4 text-right">
-<button class="bg-blue-600 text-white px-4 py-2 rounded">
-Submit
-</button>
-</div>
-
-</form>
-</div>
+        </form>
+        </div>
+    </div>
 </div>
 
 <script>
+
+document.addEventListener('DOMContentLoaded', function(){
+
+// =====================
+// TAMBAH ROW
+// =====================
+window.addRow = function(){
+    let table = document.getElementById('detailTable')
+    let row = table.querySelector('tr').cloneNode(true)
+
+    // reset input value
+    row.querySelectorAll('input').forEach(input => input.value = '')
+
+    table.appendChild(row)
+}
+
+// =====================
+// HAPUS ROW (AMAN)
+// =====================
+document.getElementById('detailTable').addEventListener('click', function(e){
+    if(e.target.classList.contains('btn-remove')){
+        let rows = document.querySelectorAll('#detailTable tr')
+
+        if(rows.length > 1){
+            e.target.closest('tr').remove()
+        }
+    }
+})
+
+function closeModal(){
+    document.getElementById('modalForm').classList.add('hidden')
+}
+
+function openModal(){
+    document.getElementById('modalForm').classList.remove('hidden')
+    document.getElementById('modalForm').classList.add('flex')
+}
+
+// klik background = close
+document.getElementById('modalForm').addEventListener('click', function(e){
+    if(e.target.id === 'modalForm'){
+        closeModal()
+    }
+})
+
+// =====================
+// AUTO HITUNG
+// =====================
+document.getElementById('detailTable').addEventListener('input', function(e){
+    let row = e.target.closest('tr')
+    if(!row) return
+
+    let grade = row.querySelector('.gradeSelect')
+    let type = row.querySelector('.typeSelect')
+    let qty = row.querySelector('.qtyInput')
+    let price = row.querySelector('.priceInput')
+    let total = row.querySelector('.totalInput')
+
+    let selected = grade.options[grade.selectedIndex]
+
+    let harga = type.value === 'fa' 
+        ? selected.dataset.fa 
+        : selected.dataset.nfa
+
+    price.value = harga || 0
+
+    let totalVal = (qty.value || 0) * (harga || 0)
+    total.value = totalVal
+})
+
+function formatNumber(num) {
+    return new Intl.NumberFormat('id-ID').format(num)
+}
+
+document.addEventListener('input', function(e){
+    let row = e.target.closest('tr')
+    if(!row) return
+
+    let grade = row.querySelector('.gradeSelect')
+    let type = row.querySelector('.typeSelect')
+    let qty = row.querySelector('.qtyInput')
+    let price = row.querySelector('.priceInput')
+    let total = row.querySelector('.totalInput')
+
+    if(!grade || !type) return
+
+    let selected = grade.options[grade.selectedIndex]
+    let harga = type.value === 'fa' 
+        ? selected.dataset.fa 
+        : selected.dataset.nfa
+
+    // 👉 ubah ke number dulu
+    harga = parseFloat(harga) || 0
+    let qtyVal = parseFloat(qty.value) || 0
+
+    // 👉 tampilkan dengan format ribuan
+    price.value = formatNumber(harga)
+
+    let totalVal = qtyVal * harga
+    total.value = formatNumber(totalVal)
+})
+
+})
+
 function openModal(){
     modalForm.classList.remove('hidden')
     modalForm.classList.add('flex')

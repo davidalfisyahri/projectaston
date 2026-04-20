@@ -24,7 +24,6 @@
         <table class="w-full text-sm">
             <thead class="bg-gray-100 text-gray-700">
                 <tr>
-                    <th class="p-3 w-10"></th>
                     <th class="p-3 text-left">Kode</th>
                     <th class="p-3 text-left">Customer</th>
                     <th class="p-3 text-center">Phone</th>
@@ -41,14 +40,6 @@
     
                 <!-- MAIN ROW -->
                 <tr class="border-t hover:bg-gray-50">
-    
-                    <!-- BUTTON EXPAND -->
-                    <td class="p-3 text-center">
-                        <button onclick="toggleDetail({{ $d->id }})"
-                            class="bg-blue-100 text-blue-600 px-2 rounded">
-                            +
-                        </button>
-                    </td>
     
                     <td class="p-3 text-xs text-gray-500">
                         {{ $d->request_code }}
@@ -84,18 +75,32 @@
                             {{ $d->status }}
                         </span>
                     </td>
-    
-                    <!-- DELETE -->
-                    <td class="p-3 text-center">
+
+                    <td class="p-3 text-center flex justify-center gap-2">
+
+                        <!-- VIEW PDF -->
+                        <a href="/customer-request/pdf/{{ $d->id }}" target="_blank"
+                            class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">
+                            View
+                        </a>
+                    
+                        <!-- DOWNLOAD PDF -->
+                        <a href="/customer-request/pdf/{{ $d->id }}?download=1"
+                            class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">
+                            Download
+                        </a>
+                    
+                        <!-- DELETE -->
                         <form action="/customer-request/delete/{{ $d->id }}" method="POST"
                             onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                             @csrf
                             @method('DELETE')
-    
+                    
                             <button class="text-red-500 hover:text-red-700">
-                                🗑
+                                Delete
                             </button>
                         </form>
+                    
                     </td>
                 </tr>
     
@@ -201,8 +206,17 @@
         <h3 class="font-semibold mb-2">Profil Bisnis</h3>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <input name="no_identitas" placeholder="No Identitas" class="border p-2 rounded">
+            <input name="no_identitas" placeholder="NIK" class="border p-2 rounded">
             <input name="form_business" placeholder="Bentuk Usaha" class="border p-2 rounded">
+            <select name="business_ownership" class="border p-2 rounded w-full">
+                <option value="">-- Pilih Kepemilikan --</option>
+                <option value="milik_sendiri">Milik Sendiri</option>
+                <option value="tidak_ada_cabang">Tidak Ada Cabang</option>
+                <option value="sewa_kontrak">Sewa / Kontrak</option>
+                <option value="kantor_pusat">Kantor Pusat / Induk</option>
+                <option value="cabang">Cabang</option>
+                <option value="proyek">Proyek</option>
+            </select>
 
             <input name="section_business" placeholder="Bidang Usaha" class="border p-2 rounded">
             <textarea name="address_business" placeholder="Alamat Usaha" class="border p-2 rounded"></textarea>

@@ -31,6 +31,14 @@ return new class extends Migration {
             // =====================
             $table->string('no_identitas')->nullable();
             $table->string('form_business')->nullable();
+            $table->enum('business_ownership', [
+                'milik_sendiri',
+                'tidak_ada_cabang',
+                'sewa_kontrak',
+                'kantor_pusat',
+                'cabang',
+                'proyek'
+            ])->nullable();
             $table->string('section_business')->nullable();
             $table->text('address_business')->nullable();
 
@@ -59,7 +67,6 @@ return new class extends Migration {
             $table->string('owner_name')->nullable();
             $table->text('owner_address')->nullable();
             $table->string('email')->nullable();
-            $table->string('business_ownership')->nullable();
 
             // =====================
             // PROJECT

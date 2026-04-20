@@ -104,6 +104,20 @@ class CustomerRequestController extends Controller
         return back();
     }
 
+    public function pdf($id)
+    {
+        $data = CustomerRequest::with(['details.grade','user'])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.customer_request', compact('data'))
+                ->setPaper('A4', 'portrait');
+
+        if(request('download')){
+            return $pdf->download('customer_request_'.$data->request_code.'.pdf');
+        }
+
+        return $pdf->stream();
+    }
+
     public function schedule(Request $request, $id)
     {
         CustomerRequest::find($id)->update([
@@ -112,15 +126,6 @@ class CustomerRequestController extends Controller
         ]);
 
         return back();
-    }
-
-    public function pdf($id)
-    {
-        $data = CustomerRequest::find($id);
-
-        $pdf = Pdf::loadView('customer_req_pdf', compact('data'));
-
-        return $pdf->download('customer_request.pdf');
     }
     
 }

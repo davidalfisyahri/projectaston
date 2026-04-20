@@ -34,6 +34,7 @@ Route::get('/dashboard', function () { return view('dashboard'); })->name('dashb
 Route::get('/customer_req', [CustomerRequestController::class, 'index'])->name('customer_req');
 Route::get('/customer-request', [CustomerRequestController::class, 'index']);
 Route::post('/customer-request/store', [CustomerRequestController::class, 'store']);
+Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
 
 Route::post('/customer-request/approve/{id}', [CustomerRequestController::class, 'approve']);
 Route::post('/customer-request/pay/{id}', [CustomerRequestController::class, 'pay']);

@@ -91,6 +91,15 @@ class CustomerRequestController extends Controller
             }
         }
 
+        // 🔥 BUAT APPROVAL ROWS (untuk direktur & wakil direktur)
+        foreach (['wakil_direktur', 'direktur_utama'] as $role) {
+            CustomerRequestApproval::create([
+                'customer_request_id' => $req->id,
+                'role'   => $role,
+                'status' => 'pending',
+            ]);
+        }
+
         return back();
     }
 

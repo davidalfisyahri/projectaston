@@ -73,3 +73,12 @@ Route::get('/', function () { return view('index'); });
 // STOCK OPNAME
 Route::get('/stock-opname', [StockOpnameController::class, 'index'])->middleware('auth')->name('stock_opname');
 Route::post('/stock-opname', [StockOpnameController::class, 'store'])->middleware('auth');
+
+// APPROVAL (hanya direktur & wakil direktur)
+use App\Http\Controllers\ApprovalController;
+
+Route::middleware(['auth', 'isDirector'])->group(function () {
+    Route::get('/approval', [ApprovalController::class, 'index'])->name('approval');
+    Route::post('/approval/customer-request/{id}', [ApprovalController::class, 'approveCustomerRequest'])->name('approval.customer_request');
+    Route::post('/approval/procurement/{id}', [ApprovalController::class, 'approveProcurement'])->name('approval.procurement');
+});

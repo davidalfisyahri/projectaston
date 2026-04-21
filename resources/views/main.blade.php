@@ -86,7 +86,8 @@
                 </a>
         
                 <!-- COPY ITEM -->
-                <a href="#"
+                @if(in_array(auth()->user()->position, ['direktur_utama', 'wakil_direktur']))
+                <a href="{{ route('approval') }}"
                 class="flex items-center gap-2 px-3 py-3 rounded-xl 
                 hover:bg-red-800 transition
                 justify-start">
@@ -103,13 +104,6 @@
                         <path d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4"/>
                     </svg>
     
-                    <!-- BADGE -->
-                    <span class="absolute -top-1 -right-2 
-                    bg-red-600 text-white text-[10px] 
-                    px-1.5 py-0.5 rounded-full font-bold">
-                        5
-                    </span>
-    
                 </div>
     
                     <!-- TEXT -->
@@ -117,6 +111,7 @@
                         Approval
                     </span>
                 </a>
+                @endif
         
                 <a href="{{ route('stock_opname') }}" 
                 class="flex items-center gap-2 px-3 py-3 rounded-xl 

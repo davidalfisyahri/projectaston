@@ -14,7 +14,10 @@ class purchase_order extends Model
         'supplier_id',
         'tanggal',
         'created_by',
-        'total'
+        'total',
+        'status',
+        'approved_by',
+        'approved_at'
     ];
 
     // RELASI KE SUPPLIER
@@ -27,5 +30,10 @@ class purchase_order extends Model
     public function details()
     {
         return $this->hasMany(purchase_order_detail::class, 'po_id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by', 'id_user');
     }
 }

@@ -75,15 +75,15 @@ td, th {
 
 <tr>
     <td class="label">Creation Date</td>
-    <td><span class="value-line">{{ $data->tanggal ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->tanggal ?? '-' }}</span></td>
 
     <td class="label">Customer Region</td>
-    <td><span class="value-line">{{ $data->region ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->region ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">Sales Name</td>
-    <td><span class="value-line">{{ $data->user->name_user ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->user->name_user ?? '-' }}</span></td>
 
     <td class="label">Request Detail</td>
     <td><span class="value-line">
@@ -94,26 +94,22 @@ td, th {
         @empty
             -
         @endforelse
+    </span>
     </td>
     
 </tr>
 
 <tr>
+    <td class="label">NIK</td>
+    <td><span class="value-line">{{ $data->user->nik ?? '-' }}</span></td>
+
     <td class="label">Customer No</td>
-    <td><span class="value-line">{{ $data->customer_number ?? '-' }}</td>
-
-    <td class="label">Phone</td>
-    <td><span class="value-line">{{ $data->phone ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->customer_number ?? '-' }}</span></td>
 </tr>
 
 <tr>
-    <td class="label">Customer Name</td>
-    <td colspan="3"><span class="value-line">{{ $data->customer_name ?? '-' }}</td>
-</tr>
-
-<tr>
-    <td class="label">Address</td>
-    <td colspan="3"><span class="value-line">{{ $data->address ?? '-' }}</td>
+    <td class="label">Sales Code</td>
+    <td colspan="3"><span class="value-line">{{ $data->user->id_user ?? '-' }}</span></td>
 </tr>
 
 </table>
@@ -122,6 +118,7 @@ td, th {
 
 <!-- ================= CUSTOMER PROFILE ================= -->
 <table class="table-clean">
+
 <tr>
     <td colspan="4" class="section">
         Profil Pelanggan / Customer Profile
@@ -129,87 +126,115 @@ td, th {
 </tr>
 
 <tr>
-    <td class="label">No Identitas</td>
-    <td><span class="value-line">{{ $data->no_identitas ?? '-' }}</td>
+    <td class="label">Customer Name</td>
+    <td colspan="3"><span class="value-line">{{ $data->customer_name ?? '-' }}</span></td>
+</tr>
 
-    <td class="label">NPWP</td>
-    <td><span class="value-line">{{ $data->npwp ?? '-' }}</td>
+<tr>
+    <td class="label">No Identitas</td>
+    <td colspan="3"><span class="value-line">{{ $data->no_identitas ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">Form of Business</td>
-    <td><span class="value-line">{{ $data->form_business ?? '-' }}</td>
-
-    <td class="label">Tax Name</td>
-    <td><span class="value-line">{{ $data->tax_name ?? '-' }}</td>
+    <td colspan="3"><span class="value-line">{{ $data->form_business ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">Section of Business</td>
-    <td><span class="value-line">{{ $data->section_business ?? '-' }}</td>
-
-    <td class="label">Tax Address</td>
-    <td><span class="value-line">{{ $data->tax_address ?? '-' }}</td>
+    <td colspan="3"><span class="value-line">{{ $data->section_business ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">Address Business</td>
-    <td colspan="3"><span class="value-line">{{ $data->address_business ?? '-' }}</td>
+    <td colspan="3"><span class="value-line">{{ $data->address_business ?? '-' }}</span></td>
+</tr>
+
+<tr>
+    <td class="label">Address</td>
+    <td colspan="3"><span class="value-line">{{ $data->address ?? '-' }}</span></td>
+</tr>
+
+<tr>
+    <td class="label">Phone</td>
+    <td colspan="3"><span class="value-line">{{ $data->phone ?? '-' }}</span></td>
+</tr>
+
+<tr>
+    <td class="label">NPWP</td>
+    <td colspan="3"><span class="value-line">{{ $data->npwp ?? '-' }}</span></td>
+</tr>
+
+<tr>
+
+    <td class="label">Tax Name</td>
+    <td colspan="3"><span class="value-line">{{ $data->tax_name ?? '-' }}</span></td>
+</tr>
+
+<tr>
+
+    <td class="label">Tax Address</td>
+    <td colspan="3"><span class="value-line">{{ $data->tax_address ?? '-' }}</span></td>
 </tr>
 
 <!-- ================= PERIZINAN ================= -->
 <tr>
+    <td colspan="4" class="label">Permit No.</td>
+</tr>
+<tr>
     <td class="label">TDP</td>
-    <td><span class="value-line">{{ $data->izin_tdp ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->izin_tdp ?? '-' }}</span></td>
 
     <td class="label">Effective Date</td>
-    <td><span class="value-line">{{ $data->tdp_date ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->tdp_date ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">SIUP</td>
-    <td><span class="value-line">{{ $data->izin_siup ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->izin_siup ?? '-' }}</span></td>
 
     <td class="label">Effective Date</td>
-    <td><span class="value-line">{{ $data->siup_date ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->siup_date ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">SIO</td>
-    <td><span class="value-line">{{ $data->izin_sio ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->izin_sio ?? '-' }}</span></td>
 
     <td class="label">Effective Date</td>
-    <td><span class="value-line">{{ $data->sio_date ?? '-' }}</td>
+    <td><span class="value-line">{{ $data->sio_date ?? '-' }}</span></td>
 </tr>
 
 <!-- ================= OWNER ================= -->
 <tr>
     <td class="label">Owner Name</td>
-    <td><span class="value-line">{{ $data->owner_name ?? '-' }}</td>
-
-    <td class="label">Email</td>
-    <td><span class="value-line">{{ $data->email ?? '-' }}</td>
+    <td colspan="3"><span class="value-line">{{ $data->owner_name ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">Owner Address</td>
-    <td colspan="3"><span class="value-line">{{ $data->owner_address ?? '-' }}</td>
+    <td colspan="3"><span class="value-line">{{ $data->owner_address ?? '-' }}</span></td>
+</tr>
+
+<tr>
+    <td class="label">Email</td>
+    <td colspan="3"><span class="value-line">{{ $data->email ?? '-' }}</span></td>
 </tr>
 
 <tr>
     <td class="label">Business Ownership</td>
-    <td colspan="3"><span class="value-line">{{ ucwords(str_replace('_',' ', $data->business_ownership ?? '-')) }}</td>
+    <td colspan="3"><span class="value-line">{{ ucwords(str_replace('_',' ', $data->business_ownership ?? '-')) }}</span></td>
 </tr>
 
 <!-- ================= PROJECT ================= -->
 <tr>
-    <td class="label">Office Address</td>
-    <td colspan="3"><span class="value-line">{{ $data->office_address ?? '-' }}</td>
+    <td class="label">Main Office Address</td>
+    <td colspan="3"><span class="value-line">{{ $data->office_address ?? '-' }}</span></td>
 </tr>
 
 <tr>
-    <td class="label">Ongoing Project</td>
-    <td colspan="3"><span class="value-line">{{ $data->ongoing_project ?? '-' }}</td>
+    <td class="label">State of ongoing Project</td>
+    <td colspan="3"><span class="value-line">{{ $data->ongoing_project ?? '-' }}</span></td>
 </tr>
 
 </table>
@@ -221,13 +246,13 @@ td, th {
     <!-- HEADER -->
     <tr>
         <td class="section" width="40%">Remark / Keterangan</td>
-        <td class="section" width="20%" align="center">
+        <td class="section" width="30%" align="center">
             Created by<br><small>Dibuat oleh</small>
         </td>
-        <td class="section" width="20%" align="center">
+        <td class="section" width="30%" align="center">
             Approved by<br><small>Disetujui oleh</small>
         </td>
-        <td class="section" width="20%" align="center">
+        <td class="section" width="30%" align="center">
             Acknowledged by<br><small>Diketahui oleh</small>
         </td>
     </tr>

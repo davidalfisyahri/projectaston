@@ -7,19 +7,50 @@ use Illuminate\Database\Eloquent\Model;
 class CustomerRequest extends Model
 {
     protected $fillable = [
+
         'request_code',
         'created_by',
         'tanggal',
-        'region',
-        'customer_number',
+    
+        // IDENTITAS
         'customer_name',
         'phone',
         'address',
+        'region',
+        'customer_number',
         'note',
+    
+        // PROFIL BISNIS
+        'no_identitas',
+        'form_business',
+        'business_ownership',
+        'section_business',
+        'address_business',
+    
+        // PAJAK
+        'npwp',
+        'tax_name',
+        'tax_address',
+    
+        // IZIN
+        'izin_tdp',
+        'tdp_date',
+        'izin_siup',
+        'siup_date',
+        'izin_sio',
+        'sio_date',
+    
+        // OWNER
+        'owner_name',
+        'owner_address',
+        'email',
+    
+        // PROJECT
+        'office_address',
+        'ongoing_project',
+    
+        // STATUS
         'status',
-        'is_paid',
-        'is_wa_confirmed',
-        'schedule_date'
     ];
 
     public function user()

@@ -152,10 +152,16 @@
                     <td class="px-6 py-4 text-center">
                         <div class="flex justify-center items-center space-x-3">
                 
-                            <!-- PRINT -->
-                            <a href="/procurement/pdf/{{ $p->id_po }}" 
-                                class="text-amber-500 hover:text-amber-600 font-semibold">
-                                Print
+                            <!-- VIEW PDF -->
+                            <a href="/procurement/pdf/{{ $p->id_po }}" target="_blank"
+                                class="text-blue-500 hover:text-blue-600 font-semibold">
+                                View
+                            </a>
+
+                            <!-- DOWNLOAD PDF -->
+                            <a href="/procurement/pdf/{{ $p->id_po }}?download=1"
+                                class="text-green-500 hover:text-green-600 font-semibold">
+                                Download
                             </a>
                 
                             <!-- DELETE -->

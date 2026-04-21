@@ -34,13 +34,13 @@ Route::get('/dashboard', function () { return view('dashboard'); })->name('dashb
 Route::get('/customer_req', [CustomerRequestController::class, 'index'])->name('customer_req');
 Route::get('/customer-request', [CustomerRequestController::class, 'index']);
 Route::post('/customer-request/store', [CustomerRequestController::class, 'store']);
+Route::delete('/customer-request/delete/{id}', [CustomerRequestController::class, 'destroy']);
 Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
 
 Route::post('/customer-request/approve/{id}', [CustomerRequestController::class, 'approve']);
 Route::post('/customer-request/pay/{id}', [CustomerRequestController::class, 'pay']);
 Route::post('/customer-request/confirm-wa/{id}', [CustomerRequestController::class, 'confirmWa']);
 Route::post('/customer-request/schedule/{id}', [CustomerRequestController::class, 'schedule']);
-
 Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
 
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
@@ -56,7 +56,6 @@ Route::get('/procurement', [procurementcontroller::class, 'index']) ->name('proc
 Route::post('/procurement/store', [procurementcontroller::class, 'store']);
 Route::post('/procurement/store-pdf', [procurementcontroller::class, 'storePdf']);
 Route::get('/procurement/pdf/{id}', [procurementcontroller::class, 'pdf']);
-Route::post('/procurement/pdf', [procurementcontroller::class, 'pdf']);
 Route::delete('/procurement/delete/{id}', [procurementcontroller::class, 'delete']);
 
 Route::get('/setting', function () { return view('setting'); })->name('setting');

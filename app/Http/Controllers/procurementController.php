@@ -83,10 +83,16 @@ public function pdf($id)
 {
     $po = purchase_order::with(['details.inventory', 'supplier'])->findOrFail($id);
 
-    $pdf = Pdf::loadView('procurement_pdf', compact('po'));
+    $pdf = Pdf::loadView('pdf.procurement_pdf', compact('po'));
 
-    return $pdf->download('PO-'.$po->no_po.'.pdf');
+    // 🔥 kalau ada ?download=1 → download
+    if(request('download')){
+        return $pdf->download('PO-'.$po->no_po.'.pdf');
+    }
+
+    return $pdf->stream('PO-'.$po->no_po.'.pdf');
 }
+
 
 public function delete($id)
 {

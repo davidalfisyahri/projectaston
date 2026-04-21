@@ -155,6 +155,9 @@
                 @endforeach
             </tbody>
         </table>
+        <div class="p-4">
+            {{ $data->links() }}
+        </div>
     
     </div>
 </div>
@@ -196,7 +199,6 @@
             <input name="region" placeholder="Region" class="border p-2 rounded">
             <input name="customer_number" placeholder="Customer Number" class="border p-2 rounded">
 
-            <textarea name="address" placeholder="Alamat" class="col-span-2 border p-2 rounded"></textarea>
             <textarea name="note" placeholder="Note" class="col-span-2 border p-2 rounded"></textarea>
         </div>
 
@@ -217,14 +219,41 @@
                 <option value="cabang">Cabang</option>
                 <option value="proyek">Proyek</option>
             </select>
-
+            
             <input name="section_business" placeholder="Bidang Usaha" class="border p-2 rounded">
             <textarea name="address_business" placeholder="Alamat Usaha" class="border p-2 rounded"></textarea>
 
             <input name="npwp" placeholder="NPWP" class="border p-2 rounded">
             <input name="tax_name" placeholder="Nama Pajak" class="border p-2 rounded">
-
+            <textarea name="address" placeholder="Alamat pengiriman" class="col-span-2 border p-2 rounded"></textarea>
             <textarea name="tax_address" placeholder="Alamat Pajak" class="col-span-2 border p-2 rounded"></textarea>
+        </div>
+
+        <!-- ===================== -->
+        <!-- PROJECT -->
+        <!-- ===================== -->
+        <h3 class="font-semibold mb-2">Project</h3>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <textarea name="office_address" placeholder="Jika kantor cabang, Alamat Kantor induk"
+                class="border p-2 rounded"></textarea>
+
+                <div>
+                    <label class="text-xs text-gray-600">Project yang sedang berjalan</label>
+                
+                    <select name="ongoing_project" id="ongoing_project"
+                        class="border p-2 rounded w-full">
+                
+                        <option value="">-- Pilih Project (Opsional) --</option>
+                
+                        @foreach($projects as $p)
+                            <option value="{{ $p->ongoing_project }}">
+                                {{ $p->ongoing_project }}
+                            </option>
+                        @endforeach
+                
+                    </select>
+                </div>
         </div>
 
         <!-- ===================== -->
@@ -232,16 +261,57 @@
         <!-- ===================== -->
         <h3 class="font-semibold mb-2">Perizinan</h3>
 
+<div class="grid grid-cols-2 gap-4 mb-4">
+
+    <!-- TDP -->
+    <div>
+        <label class="text-xs text-gray-600">TDP</label>
+        <input name="izin_tdp" class="border p-2 rounded w-full">
+    </div>
+
+    <div>
+        <label class="text-xs text-gray-600">Tanggal Berlaku TDP</label>
+        <input type="date" name="tdp_date" class="border p-2 rounded w-full">
+    </div>
+
+    <!-- SIUP -->
+    <div>
+        <label class="text-xs text-gray-600">SIUP</label>
+        <input name="izin_siup" class="border p-2 rounded w-full">
+    </div>
+
+    <div>
+        <label class="text-xs text-gray-600">Tanggal Berlaku SIUP</label>
+        <input type="date" name="siup_date" class="border p-2 rounded w-full">
+    </div>
+
+    <!-- SIO -->
+    <div>
+        <label class="text-xs text-gray-600">SIO</label>
+        <input name="izin_sio" class="border p-2 rounded w-full">
+    </div>
+
+    <div>
+        <label class="text-xs text-gray-600">Tanggal Berlaku SIO</label>
+        <input type="date" name="sio_date" class="border p-2 rounded w-full">
+    </div>
+
+</div>
+
+        <!-- ===================== -->
+        <!-- OWNER -->
+        <!-- ===================== -->
+        <h3 class="font-semibold mb-2">Owner</h3>
+
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <input name="izin_tdp" placeholder="TDP" class="border p-2 rounded">
-            <input type="date" name="tdp_date" class="border p-2 rounded">
+            <input name="owner_name" placeholder="Nama Pemilik" class="border p-2 rounded">
+            
+            <input name="email" type="email" placeholder="Email pemilik" class="border p-2 rounded">
 
-            <input name="izin_siup" placeholder="SIUP" class="border p-2 rounded">
-            <input type="date" name="siup_date" class="border p-2 rounded">
-
-            <input name="izin_sio" placeholder="SIO" class="border p-2 rounded">
-            <input type="date" name="sio_date" class="border p-2 rounded">
+            <textarea name="owner_address" placeholder="Alamat pemilik"
+                class="col-span-2 border p-2 rounded"></textarea>
         </div>
+
 
         <!-- ===================== -->
         <!-- DETAIL -->
@@ -344,6 +414,14 @@ window.addRow = function(){
     table.appendChild(row)
 }
 
+$(document).ready(function() {
+    $('#ongoing_project').select2({
+        placeholder: "Cari atau pilih project...",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#modalForm') // 🔥 WAJIB karena modal
+    });
+});
 // =====================
 // HAPUS ROW (AMAN)
 // =====================

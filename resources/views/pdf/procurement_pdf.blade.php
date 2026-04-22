@@ -89,8 +89,9 @@
     
             <td style="width:50%; text-align:right;">
                 <div style="background:#8b0000; color:white; padding:10px; font-size:12px; display:inline-block;">
-                    Jl. Kp. Bojong Koneng Kel. Cibinong, Kec. Cibinong<br>
-                    Kabupaten Bogor, Jawa Barat 16911.<br>
+                    Jl. Raya Bomang, Desa Jampang
+                    RT 001 / RW 005, Kec. Kemang
+                    Kabupaten Bogor, Jawa Barat 16310.<br>
                     Email: marketing@astonindonesia@gmail.com<br>
                     No.Telp : 0851-2296-3317
                 </div>
@@ -138,7 +139,7 @@
             <tr>
                 <td>Alamat</td>
                 <td>:</td>
-                <td>Jl. Kp. Bojong Koneng, Cibinong</td>
+                <td>Jl. Raya Bomang, Kemang</td>
             </tr>
         </table>
 

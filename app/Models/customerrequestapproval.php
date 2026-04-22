@@ -18,4 +18,9 @@ class CustomerRequestApproval extends Model
     {
         return $this->belongsTo(CustomerRequest::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'approved_by', 'id_user');
+    }
 }

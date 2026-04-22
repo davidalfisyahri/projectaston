@@ -497,8 +497,7 @@
                             <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
                           </svg>
                         <span>
-                            Jl. Kp. Bojong Koneng, Cibinong, Kec. Cibinong,
-                            Kabupaten Bogor, Jawa Barat 16911
+                            Jl. Raya Bomang, Desa JampangRT 001 / RW 005, Kec. KemangKabupaten Bogor, Jawa Barat 16310.
                         </span>
                     </div>
 

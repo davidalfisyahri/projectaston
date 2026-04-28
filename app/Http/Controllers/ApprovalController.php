@@ -15,17 +15,27 @@ class ApprovalController extends Controller
      */
     public function index()
     {
-        $customerRequests = CustomerRequest::with(['details.grade', 'user', 'approvals'])
+        $crPending = CustomerRequest::with(['details.grade', 'user', 'approvals'])
             ->where('status', 'waiting_approval')
             ->latest()
-            ->get();
+            ->paginate(10, ['*'], 'cr_pending');
 
-        $procurements = purchase_order::with(['supplier', 'details.inventory'])
+        $crHistory = CustomerRequest::with(['details.grade', 'user', 'approvals'])
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest()
+            ->paginate(10, ['*'], 'cr_history');
+
+        $poPending = purchase_order::with(['supplier', 'details.inventory'])
             ->where('status', 'pending')
             ->latest()
-            ->get();
+            ->paginate(10, ['*'], 'po_pending');
 
-        return view('approval', compact('customerRequests', 'procurements'));
+        $poHistory = purchase_order::with(['supplier', 'details.inventory'])
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest()
+            ->paginate(10, ['*'], 'po_history');
+
+        return view('approval', compact('crPending', 'crHistory', 'poPending', 'poHistory'));
     }
 
     /**

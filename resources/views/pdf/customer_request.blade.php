@@ -279,14 +279,14 @@ td, th {
         <td style="text-align:center;">
             Date:<br>
         
-            {{ $wadir && $wadir->approved_at 
-                ? date('d-m-Y', strtotime($wadir->approved_at)) 
-                : '-' 
-            }}
+            @php
+                $approvedDate = $wadir->approved_at ?? $dirut->approved_at ?? null;
+            @endphp
+            {{ $approvedDate ? date('d-m-Y', strtotime($approvedDate)) : '-' }}
         
-            @if($wadir && $wadir->approved_at)
+            @if(($wadir && $wadir->approved_at) || ($dirut && $dirut->approved_at))
                 <br>
-                <img src="{{ asset('asset/image/Qr_wadir.jpeg') }}" 
+                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/Qr_wadir.jpeg'))) }}" 
                      style="width:80px; margin-top:5px;">
             @endif
         </td>
@@ -295,14 +295,14 @@ td, th {
         <td style="text-align:center;">
             Date:<br>
         
-            {{ $dirut && $dirut->approved_at 
-                ? date('d-m-Y', strtotime($dirut->approved_at)) 
-                : '-' 
-            }}
+            @php
+                $ackDate = $dirut->approved_at ?? $wadir->approved_at ?? null;
+            @endphp
+            {{ $ackDate ? date('d-m-Y', strtotime($ackDate)) : '-' }}
         
-            @if($dirut && $dirut->approved_at)
+            @if(($wadir && $wadir->approved_at) || ($dirut && $dirut->approved_at))
                 <br>
-                <img src="{{ asset('asset/image/Qr_dirut.jpeg') }}" 
+                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/Qr_dirut.jpeg'))) }}" 
                      style="width:80px; margin-top:5px;">
             @endif
         </td>

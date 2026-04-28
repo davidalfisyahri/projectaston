@@ -2,6 +2,7 @@
 <html>
 <head>
 <style>
+
 body {
     font-family: Arial, sans-serif;
     font-size: 11px;
@@ -40,6 +41,11 @@ td, th {
 }
 </style>
 </head>
+
+    @php
+        $wadir = $data->approvals->where('role','wakil_direktur')->first();
+        $dirut = $data->approvals->where('role','direktur_utama')->first();
+    @endphp
 
 <body>
 
@@ -245,14 +251,14 @@ td, th {
 <table class="table-border">
     <!-- HEADER -->
     <tr>
-        <td class="section" width="40%">Remark / Keterangan</td>
-        <td class="section" width="30%" align="center">
+        <td class="section" width="35%">Remark / Keterangan</td>
+        <td class="section" width="40%" align="center">
             Created by<br><small>Dibuat oleh</small>
         </td>
-        <td class="section" width="30%" align="center">
+        <td class="section" width="40%" align="center">
             Approved by<br><small>Disetujui oleh</small>
         </td>
-        <td class="section" width="30%" align="center">
+        <td class="section" width="40%" align="center">
             Acknowledged by<br><small>Diketahui oleh</small>
         </td>
     </tr>
@@ -270,50 +276,66 @@ td, th {
         </td>
 
         <!-- APPROVED -->
-        <td>
-            Date: 
-            {{ optional($data->approvals->where('role','wakil_direktur')->first())->approved_at 
-                ? date('d-m-Y', strtotime(optional($data->approvals->where('role','wakil_direktur')->first())->approved_at)) 
+        <td style="text-align:center;">
+            Date:<br>
+        
+            {{ $wadir && $wadir->approved_at 
+                ? date('d-m-Y', strtotime($wadir->approved_at)) 
                 : '-' 
             }}
+        
+            @if($wadir && $wadir->approved_at)
+                <br>
+                <img src="{{ asset('asset/image/Qr_wadir.jpeg') }}" 
+                     style="width:80px; margin-top:5px;">
+            @endif
         </td>
 
         <!-- ACK -->
-        <td>
-            Date: 
-            {{ optional($data->approvals->where('role','direktur_utama')->first())->approved_at 
-                ? date('d-m-Y', strtotime(optional($data->approvals->where('role','direktur_utama')->first())->approved_at)) 
+        <td style="text-align:center;">
+            Date:<br>
+        
+            {{ $dirut && $dirut->approved_at 
+                ? date('d-m-Y', strtotime($dirut->approved_at)) 
                 : '-' 
             }}
+        
+            @if($dirut && $dirut->approved_at)
+                <br>
+                <img src="{{ asset('asset/image/Qr_dirut.jpeg') }}" 
+                     style="width:80px; margin-top:5px;">
+            @endif
         </td>
     </tr>
 
     <!-- TANDA TANGAN -->
     <tr>
-        <td align="center" style="height:40px;">
-             {{ $data->user->name_user ?? '(    )' }}<br> 
-        </td>
-        <td align="center">
-            {{ optional($data->approvals->where('role','wakil_direktur')->first())->user->name_user ?? '-' }}
-        </td>
-        <td align="center">
-            {{ optional($data->approvals->where('role','direktur_utama')->first())->user->name_user ?? '-' }}
-        </td>
+        <td align="center" style="height:45px; vertical-align:bottom;">
+        <div class="nama">{{ $data->user->name_user ?? '(    )' }}</div>
+    </td>
+
+    <td align="center" style="height:45px; vertical-align:bottom;">
+        <div class="nama">Ronald Asmerico Marpaung, S.T</div>
+    </td>
+
+    <td align="center" style="height:45px; vertical-align:bottom;">
+        <div class="nama">ASEP AS'ARY, S.Sos</div>
+    </td>
     </tr>
 
     <!-- NAMA + JABATAN -->
-    <tr>
-        <td align="center">
-            <small>Sales</small>
-        </td>
+   <tr>
+    <td align="center">
+        <div class="jabatan">Sales</div>
+    </td>
 
-        <td align="center">
-            <small>Wakil Direktur</small>
-        </td>
+    <td align="center">
+        <div class="jabatan">Wakil Direktur</div>
+    </td>
 
-        <td align="center">
-            <small>Direktur Utama</small>
-        </td>
+    <td align="center">
+        <div class="jabatan">Direktur Utama</div>
+    </td>
     </tr>
 </table>
 

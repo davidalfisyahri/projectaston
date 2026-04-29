@@ -234,7 +234,7 @@
 
             <!-- ROLE -->
             <div>
-                <select name="role" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white" required>
+                <select name="role" id="roleSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white" required>
                     <option value="" disabled selected class="text-gray-400">Pilih Role</option>
                     <option value="superadmin">Superadmin</option>
                     <option value="admin">Admin</option>
@@ -244,7 +244,7 @@
 
             <!-- POSITION -->
             <div>
-                <select name="position" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white" required>
+                <select name="position" id="positionSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition bg-white" required>
                     <option value="" disabled selected>Pilih Position</option>
                     <option value="sales_internal">Sales Internal</option>
                     <option value="sales_external">Sales External</option>
@@ -472,6 +472,37 @@ function openeditModal(id) {
 function closeEditModal() {
     document.getElementById('editUserModal').classList.add('hidden');
 }
+
+const roleSelect = document.getElementById('roleSelect');
+const positionSelect = document.getElementById('positionSelect');
+
+// semua option disimpan dulu
+const allOptions = Array.from(positionSelect.options);
+
+roleSelect.addEventListener('change', function(){
+
+    let role = this.value;
+
+    // reset dulu
+    positionSelect.innerHTML = '<option value="">Pilih Position</option>';
+
+    if(role === 'sales'){
+        // hanya sales_internal & sales_external
+        allOptions.forEach(opt => {
+            if(opt.value === 'sales_internal' || opt.value === 'sales_external'){
+                positionSelect.appendChild(opt.cloneNode(true));
+            }
+        });
+    } else {
+        // tampilkan semua
+        allOptions.forEach(opt => {
+            if(opt.value !== ""){
+                positionSelect.appendChild(opt.cloneNode(true));
+            }
+        });
+    }
+
+});
 
 // Auto-open modal jika ada validation error
 @if($errors->any())

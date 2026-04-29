@@ -327,7 +327,7 @@
                 <tr>
                     <th class="p-2 text-left">Grade</th>
                     <th class="p-2 text-center">Type</th>
-                    <th class="p-2 text-center">Qty</th>
+                    <th class="p-2 text-center">m³</th>
                     <th class="p-2 text-right">Harga</th>
                     <th class="p-2 text-right">Total</th>
                     <th class="p-2 text-center w-10">#</th>

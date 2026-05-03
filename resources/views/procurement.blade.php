@@ -28,7 +28,8 @@
             </div>
 
             <!-- TABLE ITEM -->
-            <table class="w-full text-sm border border-gray-200 rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border border-gray-200 rounded-xl overflow-hidden min-w-[600px]">
     
                 <thead class="bg-gray-50 text-gray-600">
                     <tr>
@@ -126,7 +127,8 @@
 
         </div>
     
-        <table class="w-full text-left border-collapse">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse whitespace-nowrap">
             <thead>
                 <tr class="text-gray-400 uppercase text-xs tracking-wider border-b border-gray-100">
                     <th class="px-6 py-4 font-medium">No PO</th>
@@ -191,8 +193,8 @@
                 <!-- ROW DETAIL (HIDDEN) -->
                 <tr id="detail-{{ $p->id_po }}" class="hidden bg-gray-50">
                     <td colspan="5" class="px-6 py-4">
-                
-                        <table class="w-full text-sm border">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border min-w-[400px]">
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="p-2 text-left">Item</th>
@@ -228,11 +230,13 @@
                                 </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot class="bg-gray-50 text-gray-800">
+                                <tr>
+                                    <td colspan="3" class="p-2 text-right font-bold">Grand Total</td>
+                                    <td class="p-2 text-right font-bold text-green-600">Rp {{ number_format($p->total, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
                         </table>
-                
-                        <!-- GRAND TOTAL -->
-                        <div class="text-right mt-3 font-bold text-green-600">
-                            Grand Total: Rp {{ number_format($p->total,0,',','.') }}
                         </div>
                 
                     </td>
@@ -240,7 +244,8 @@
                 
                 @endforeach
                 </tbody>
-        </table>
+            </table>
+        </div>
     
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
             <div class="flex items-center space-x-2 text-gray-400 text-sm">
@@ -275,7 +280,8 @@
         </div>
 
         <!-- TABLE ITEM -->
-        <table class="w-full border text-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full border text-sm min-w-[500px]">
             <thead class="bg-gray-100">
                 <tr>
                     <th class="p-2">Item</th>
@@ -286,10 +292,13 @@
                 </tr>
             </thead>
             <tbody id="d_items"></tbody>
+            <tfoot class="bg-gray-50 text-gray-800">
+                <tr>
+                    <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
+                    <td class="p-2 text-right font-bold text-green-600">Rp <span id="d_total"></span></td>
+                </tr>
+            </tfoot>
         </table>
-
-        <div class="text-right mt-4">
-            <strong>Total: Rp <span id="d_total"></span></strong>
         </div>
 
     </div>

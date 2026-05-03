@@ -73,8 +73,9 @@
         </div>
         @else
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 border-b">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 border-b">
                     <tr>
                         <th class="px-4 py-3 text-left">Kode</th>
                         <th class="px-4 py-3 text-left">Customer</th>
@@ -131,6 +132,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
             <div class="flex items-center justify-end px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
                 <span>{{ $crPending->firstItem() ?? 0 }}-{{ $crPending->lastItem() ?? 0 }} of {{ $crPending->total() }}</span>
                 <div class="flex items-center gap-1 ml-4">
@@ -161,8 +163,9 @@
         </div>
         @else
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 border-b">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 border-b">
                     <tr>
                         <th class="px-4 py-3 text-left">Kode</th>
                         <th class="px-4 py-3 text-left">Customer</th>
@@ -202,6 +205,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
             <div class="flex items-center justify-end px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
                 <span>{{ $crHistory->firstItem() ?? 0 }}-{{ $crHistory->lastItem() ?? 0 }} of {{ $crHistory->total() }}</span>
                 <div class="flex items-center gap-1 ml-4">
@@ -239,8 +243,9 @@
         </div>
         @else
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 border-b">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 border-b">
                     <tr>
                         <th class="px-4 py-3 text-left">No PO</th>
                         <th class="px-4 py-3 text-left">Supplier</th>
@@ -288,6 +293,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
             <div class="flex items-center justify-end px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
                 <span>{{ $poPending->firstItem() ?? 0 }}-{{ $poPending->lastItem() ?? 0 }} of {{ $poPending->total() }}</span>
                 <div class="flex items-center gap-1 ml-4">
@@ -318,8 +324,9 @@
         </div>
         @else
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 border-b">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 border-b">
                     <tr>
                         <th class="px-4 py-3 text-left">No PO</th>
                         <th class="px-4 py-3 text-left">Supplier</th>
@@ -353,6 +360,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
             <div class="flex items-center justify-end px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
                 <span>{{ $poHistory->firstItem() ?? 0 }}-{{ $poHistory->lastItem() ?? 0 }} of {{ $poHistory->total() }}</span>
                 <div class="flex items-center gap-1 ml-4">
@@ -383,7 +391,7 @@
     $allCr = collect($crPending->items())->merge($crHistory->items())->unique('id');
 @endphp
 @foreach($allCr as $d)
-    <div id="detailModal-{{ $d->id }}" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div id="detailModal-{{ $d->id }}" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
         <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg overflow-hidden max-h-[85vh] flex flex-col">
 
             <!-- HEADER -->
@@ -460,7 +468,8 @@
                 <h3 class="font-semibold text-gray-700 border-b pb-1">Detail Order</h3>
                 @if($d->details->count())
                     <div class="border rounded-lg overflow-hidden">
-                        <table class="w-full text-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
                             <thead class="bg-gray-100 text-gray-600">
                                 <tr>
                                     <th class="p-2 text-left">Grade</th>
@@ -481,7 +490,14 @@
                                     </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot class="bg-gray-100 text-gray-800">
+                                <tr>
+                                    <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
+                                    <td class="p-2 text-right font-bold text-green-700">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
                         </table>
+                        </div>
                     </div>
                 @else
                     <p class="text-gray-400 italic">Tidak ada detail order.</p>

@@ -213,7 +213,7 @@
             @foreach($grade as $item)
             {{-- MODAL DETAIL --}}
             <div id="detail{{ $item->id_grade }}" class="modal hidden">
-                <div class="modal-box w-[500px] text-left whitespace-normal">
+                <div class="modal-box w-11/12 max-w-[500px] text-left whitespace-normal">
             
                     <h3 class="text-lg font-bold mb-4">Detail Grade Beton</h3>
             
@@ -272,7 +272,7 @@
 
             {{-- MODAL EDIT GRADE --}}
             <div id="editGrade{{ $item->id_grade }}" class="modal hidden">
-                <div class="modal-box w-[550px] text-left whitespace-normal">
+                <div class="modal-box w-11/12 max-w-[550px] text-left whitespace-normal">
 
                     <h3 class="text-lg font-semibold mb-4">Edit Grade Beton</h3>
 
@@ -418,7 +418,7 @@
 
 {{-- ================= MODAL ADD GRADE ================= --}}
 <div id="addGrade" class="modal hidden">
-    <div class="modal-box w-[500px]">
+    <div class="modal-box w-11/12 max-w-[500px]">
 
         <h3 class="text-lg font-semibold mb-4">Add Grade Beton</h3>
 

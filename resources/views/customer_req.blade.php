@@ -31,11 +31,15 @@
         </div>
 
         <!-- ========================= -->
-        <!-- TABLE -->
+        <!-- PENDING TABLE -->
         <!-- ========================= -->
-        <div class="bg-white rounded-xl shadow border overflow-hidden">
+        <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 mt-6">
+            <span class="w-3 h-3 bg-yellow-400 rounded-full"></span> Menunggu Approval
+        </h2>
 
-            <table class="w-full text-sm">
+        <div class="bg-white rounded-xl shadow border overflow-hidden mb-8">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
                 <thead class="bg-gray-100 text-gray-700">
                     <tr>
                         <th class="p-3 text-left">Kode</th>
@@ -48,139 +52,116 @@
                         <th class="p-3 text-center">Action</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    @foreach($data as $d)
-
-                        <!-- MAIN ROW -->
+                    @forelse($pendingCR as $d)
                         <tr class="border-t hover:bg-gray-50">
-
-                            <td class="p-3 text-xs text-gray-500">
-                                {{ $d->request_code }}
-                            </td>
-
-                            <td class="p-3 font-medium">
-                                {{ $d->customer_name }}
-                            </td>
-
+                            <td class="p-3 text-xs text-gray-500">{{ $d->request_code }}</td>
+                            <td class="p-3 font-medium">{{ $d->customer_name }}</td>
+                            <td class="p-3 text-center">{{ $d->phone }}</td>
+                            <td class="p-3 text-center">{{ $d->region }}</td>
+                            <td class="p-3 text-center text-gray-600">{{ $d->user->name_user ?? '-' }}</td>
+                            <td class="p-3 text-center text-gray-500">{{ date('d-m-Y', strtotime($d->tanggal)) }}</td>
                             <td class="p-3 text-center">
-                                {{ $d->phone }}
-                            </td>
-
-                            <td class="p-3 text-center">
-                                {{ $d->region }}
-                            </td>
-
-                            <td class="p-3 text-center text-gray-600">
-                                {{ $d->user->name_user ?? '-' }}
-                            </td>
-
-                            <td class="p-3 text-center text-gray-500">
-                                {{ date('d-m-Y', strtotime($d->tanggal)) }}
-                            </td>
-
-                            <td class="p-3 text-center">
-                                <span class="px-2 py-1 text-xs rounded-full
-                                                                            @if($d->status == 'waiting_approval') bg-yellow-100 text-yellow-700
-                                                                            @elseif($d->status == 'approved') bg-green-100 text-green-700
-                                                                            @elseif($d->status == 'rejected') bg-red-100 text-red-600
-                                                                            @else bg-gray-100 text-gray-600
-                                                                            @endif">
+                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
                                     {{ $d->status }}
                                 </span>
                             </td>
-
                             <td class="p-3 text-center flex justify-center gap-2">
-
-                                <!-- VIEW DETAIL -->
-                                <button type="button" onclick="openDetail({{ $d->id }})"
-                                    class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">
-                                    View
-                                </button>
-
-                                <!-- DOWNLOAD PDF -->
-                                <a href="/customer-request/pdf/{{ $d->id }}?download=1"
-                                    class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">
-                                    Download
-                                </a>
-
-                                <!-- DELETE -->
-                                <form action="/customer-request/delete/{{ $d->id }}" method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                <button type="button" onclick="openDetail({{ $d->id }})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">View</button>
+                                <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">Download</a>
+                                <form action="/customer-request/delete/{{ $d->id }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                     @csrf
                                     @method('DELETE')
-
-                                    <button class="text-red-500 hover:text-red-700">
-                                        Delete
-                                    </button>
+                                    <button class="text-red-500 hover:text-red-700 text-xs mt-1">Delete</button>
                                 </form>
-
                             </td>
                         </tr>
-
-                        <!-- DETAIL ROW -->
-                        <tr id="detail-{{ $d->id }}" class="hidden bg-gray-50">
-                            <td colspan="9" class="p-4">
-
-                                <div class="border rounded-lg overflow-hidden">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-gray-200 text-gray-600">
-                                            <tr>
-                                                <th class="p-2 text-left">Grade</th>
-                                                <th class="p-2 text-center">Type</th>
-                                                <th class="p-2 text-center">Qty</th>
-                                                <th class="p-2 text-right">Harga</th>
-                                                <th class="p-2 text-right">Total</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            @foreach($d->details as $item)
-                                                <tr class="border-t">
-                                                    <td class="p-2">
-                                                        {{ $item->grade->name_grade }}
-                                                    </td>
-
-                                                    <td class="p-2 text-center uppercase">
-                                                        {{ $item->type }}
-                                                    </td>
-
-                                                    <td class="p-2 text-center">
-                                                        {{ number_format($item->qty, 2, ',', '.') }}
-                                                    </td>
-
-                                                    <td class="p-2 text-right">
-                                                        Rp {{ number_format($item->price, 0, ',', '.') }}
-                                                    </td>
-
-                                                    <td class="p-2 text-right font-semibold text-green-600">
-                                                        Rp {{ number_format($item->total, 0, ',', '.') }}
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-
-                                    </table>
-                                </div>
-
-                            </td>
-                        </tr>
-
-                    @endforeach
+                    @empty
+                        <tr><td colspan="8" class="p-6 text-center text-gray-400">Tidak ada request pending.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
-            <div class="p-4">
-                {{ $data->links() }}
             </div>
+            <div class="p-4 border-t bg-gray-50">
+                {{ $pendingCR->links() }}
+            </div>
+        </div>
 
+        <!-- ========================= -->
+        <!-- HISTORY TABLE -->
+        <!-- ========================= -->
+        <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span class="w-3 h-3 bg-gray-400 rounded-full"></span> Riwayat Request
+        </h2>
+
+        <div class="bg-white rounded-xl shadow border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="p-3 text-left">Kode</th>
+                        <th class="p-3 text-left">Customer</th>
+                        <th class="p-3 text-center">Phone</th>
+                        <th class="p-3 text-center">Region</th>
+                        <th class="p-3 text-center">Dibuat Oleh</th>
+                        <th class="p-3 text-center">Tanggal</th>
+                        <th class="p-3 text-center">Status</th>
+                        <th class="p-3 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($historyCR as $d)
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="p-3 text-xs text-gray-500">{{ $d->request_code }}</td>
+                            <td class="p-3 font-medium">{{ $d->customer_name }}</td>
+                            <td class="p-3 text-center">{{ $d->phone }}</td>
+                            <td class="p-3 text-center">{{ $d->region }}</td>
+                            <td class="p-3 text-center text-gray-600">{{ $d->user->name_user ?? '-' }}</td>
+                            <td class="p-3 text-center text-gray-500">{{ date('d-m-Y', strtotime($d->tanggal)) }}</td>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-1 text-xs rounded-full 
+                                    @if($d->status == 'approved') bg-green-100 text-green-700
+                                    @elseif($d->status == 'rejected') bg-red-100 text-red-600
+                                    @elseif($d->status == 'done') bg-blue-100 text-blue-700 font-bold
+                                    @else bg-gray-100 text-gray-600
+                                    @endif">
+                                    {{ $d->status }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-left flex flex-wrap justify-start gap-2">
+                                <button type="button" onclick="openDetail({{ $d->id }})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">View</button>
+                                <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">Download</a>
+                                
+                                @if($d->status == 'approved')
+                                <form action="/customer-request/done/{{ $d->id }}" method="POST" onsubmit="return confirm('Tandai request ini sebagai Selesai (Done) di lapangan?')">
+                                    @csrf
+                                    <button class="bg-emerald-500 text-white px-2 py-1 rounded text-xs hover:bg-emerald-600 shadow-sm font-bold">Done ✓</button>
+                                </form>
+                                @endif
+                                
+
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="8" class="p-6 text-center text-gray-400">Tidak ada riwayat request.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+            </div>
+            <div class="p-4 border-t bg-gray-50">
+                {{ $historyCR->links() }}
+            </div>
         </div>
     </div>
 
     <!-- ========================= -->
     <!-- DETAIL MODALS -->
     <!-- ========================= -->
-    @foreach($data as $d)
-        <div id="detailModal-{{ $d->id }}" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    @php
+        $allCr = collect($pendingCR->items())->merge($historyCR->items())->unique('id');
+    @endphp
+    @foreach($allCr as $d)
+        <div id="detailModal-{{ $d->id }}" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
             <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg overflow-hidden max-h-[85vh] flex flex-col">
 
                 <!-- HEADER -->
@@ -278,6 +259,12 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
+                                <tfoot class="bg-gray-100 text-gray-800">
+                                    <tr>
+                                        <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
+                                        <td class="p-2 text-right font-bold text-green-700">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     @else
@@ -301,7 +288,7 @@
     <!-- ========================= -->
     <!-- MODAL -->
     <!-- ========================= -->
-    <div id="modalForm" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div id="modalForm" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
 
         <div class="bg-white w-full max-w-6xl rounded-xl shadow-lg overflow-hidden max-h-[90vh] flex flex-col">
 
@@ -516,6 +503,16 @@
                                     </td>
                                 </tr>
                             </tbody>
+                            <tfoot class="bg-gray-100 text-gray-800">
+                                <tr>
+                                    <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
+                                    <td class="p-2 text-right font-bold text-green-700">
+                                        Rp <span id="grandTotalDisplay">0</span>
+                                        <input type="hidden" name="grand_total" id="grandTotalInput" value="0">
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
 
@@ -574,6 +571,7 @@
 
                     if (rows.length > 1) {
                         e.target.closest('tr').remove()
+                        updateGrandTotal()
                     }
                 }
             })
@@ -617,7 +615,18 @@
 
                 let totalVal = (qty.value || 0) * (harga || 0)
                 total.value = totalVal
+                updateGrandTotal()
             })
+
+            function updateGrandTotal() {
+                let totalInputs = document.querySelectorAll('.totalInput')
+                let grandTotal = 0
+                totalInputs.forEach(input => {
+                    grandTotal += Number(input.value) || 0
+                })
+                document.getElementById('grandTotalDisplay').innerText = new Intl.NumberFormat('id-ID').format(grandTotal)
+                document.getElementById('grandTotalInput').value = grandTotal
+            }
 
             function formatNumber(num) {
                 return new Intl.NumberFormat('id-ID').format(num)

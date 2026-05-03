@@ -6,6 +6,7 @@ use App\Http\Controllers\inventoryController;
 use App\Http\Controllers\gradebetonController;
 use App\Http\Controllers\procurementcontroller;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 
@@ -29,7 +30,7 @@ Route::post('/users', [UsersController::class, 'store']);
 Route::post('/user/update/{id}', [UsersController::class, 'update']);
 Route::delete('/users/{id}', [UsersController::class, 'destroy']);
 
-Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::get('/customer_req', [CustomerRequestController::class, 'index'])->name('customer_req');
 Route::get('/customer-request', [CustomerRequestController::class, 'index']);
@@ -42,6 +43,7 @@ Route::post('/customer-request/pay/{id}', [CustomerRequestController::class, 'pa
 Route::post('/customer-request/confirm-wa/{id}', [CustomerRequestController::class, 'confirmWa']);
 Route::post('/customer-request/schedule/{id}', [CustomerRequestController::class, 'schedule']);
 Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
+Route::post('/customer-request/done/{id}', [CustomerRequestController::class, 'markAsDone']);
 
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
 Route::post('/inventory/store', [InventoryController::class, 'store']);
@@ -66,7 +68,7 @@ Route::get('/login', function () { return view('login'); })->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 // dashboard (setelah login)
-Route::get('/dashboard', function () { return view('dashboard');})->middleware('auth')->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 
 Route::get('/', function () { return view('index'); });
 

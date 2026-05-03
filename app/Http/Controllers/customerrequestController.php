@@ -30,7 +30,14 @@ class CustomerRequestController extends Controller
             });
         }
 
-        $data = $query->paginate(10)->appends($request->query());
+        $pendingQuery = clone $query;
+        $historyQuery = clone $query;
+
+        $pendingQuery->whereIn('status', ['draft', 'waiting_approval']);
+        $historyQuery->whereIn('status', ['approved', 'rejected', 'done']);
+
+        $pendingCR = $pendingQuery->paginate(5, ['*'], 'pendingPage')->appends($request->query());
+        $historyCR = $historyQuery->paginate(10, ['*'], 'historyPage')->appends($request->query());
         $grades = GradeBeton::all();
 
         // 🔥 TAMBAHAN INI
@@ -40,7 +47,7 @@ class CustomerRequestController extends Controller
             ->distinct()
             ->get();
 
-        return view('customer_req', compact('data', 'grades', 'projects'));
+        return view('customer_req', compact('pendingCR', 'historyCR', 'grades', 'projects'));
     }
 
     public function store(Request $request)
@@ -209,4 +216,17 @@ class CustomerRequestController extends Controller
         return back()->with('success', 'Data berhasil dihapus');
     }
 
+    public function markAsDone($id)
+    {
+        $cr = CustomerRequest::findOrFail($id);
+        
+        if ($cr->status !== 'approved') {
+            return redirect()->back()->with('error', 'Hanya Customer Request dengan status Approved yang dapat ditandai selesai.');
+        }
+
+        $cr->status = 'done';
+        $cr->save();
+
+        return redirect()->back()->with('success', 'Customer Request berhasil ditandai sebagai Selesai (Done).');
+    }
 }

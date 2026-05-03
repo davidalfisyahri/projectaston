@@ -184,7 +184,7 @@
 </div>
 
 {{-- Modal add user --}}
-<div id="addUserModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+<div id="addUserModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl relative">
         <!-- CLOSE -->
         <button onclick="closeAddModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition">
@@ -273,7 +273,7 @@
 </div>
 
 {{-- MODAL DETAIL USER --}}
-<div id="userModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+<div id="userModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-3xl w-full max-w-sm p-6 text-center shadow-2xl relative">
 
         <!-- AVATAR -->
@@ -327,7 +327,7 @@
 </div>
 
 {{-- MODAL EDIT USER --}}
-<div id="editUserModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+<div id="editUserModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
     <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl relative">
         <!-- CLOSE -->
         <button onclick="closeEditModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition">

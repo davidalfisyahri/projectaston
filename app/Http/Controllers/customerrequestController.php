@@ -13,24 +13,24 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class CustomerRequestController extends Controller
 {
     public function index()
-{
-    $data = CustomerRequest::with('details.grade')->latest()->paginate(10);
-    $grades = GradeBeton::all();
+    {
+        $data = CustomerRequest::with('details.grade')->latest()->paginate(10);
+        $grades = GradeBeton::all();
 
-    // 🔥 TAMBAHAN INI
-    $projects = CustomerRequest::select('ongoing_project')
-        ->whereNotNull('ongoing_project')
-        ->where('ongoing_project', '!=', '')
-        ->distinct()
-        ->get();
+        // 🔥 TAMBAHAN INI
+        $projects = CustomerRequest::select('ongoing_project')
+            ->whereNotNull('ongoing_project')
+            ->where('ongoing_project', '!=', '')
+            ->distinct()
+            ->get();
 
-    return view('customer_req', compact('data','grades','projects'));
-}
+        return view('customer_req', compact('data', 'grades', 'projects'));
+    }
 
     public function store(Request $request)
     {
         $req = CustomerRequest::create([
-            'request_code' => 'REQ-'.date('Ymd').rand(100,999),
+            'request_code' => 'REQ-' . date('Ymd') . rand(100, 999),
             'created_by' => Auth::id(),
             'tanggal' => now(),
 
@@ -71,12 +71,15 @@ class CustomerRequestController extends Controller
             'office_address' => $request->office_address,
             'ongoing_project' => $request->ongoing_project,
 
-            'status' => 'waiting_approval'
+            'status' => 'waiting_approval',
+
+            //Schedule
+            'schedule_date' => $request->schedule_date,
         ]);
 
         // DETAIL
-        if($request->grade_id){
-            foreach($request->grade_id as $i => $g){
+        if ($request->grade_id) {
+            foreach ($request->grade_id as $i => $g) {
 
                 $price = str_replace('.', '', $request->price[$i]); // 🔥 FIX
 
@@ -95,7 +98,7 @@ class CustomerRequestController extends Controller
         foreach (['wakil_direktur', 'direktur_utama'] as $role) {
             CustomerRequestApproval::create([
                 'customer_request_id' => $req->id,
-                'role'   => $role,
+                'role' => $role,
                 'status' => 'pending',
             ]);
         }
@@ -117,14 +120,14 @@ class CustomerRequestController extends Controller
             'approved_at' => now()
         ]);
 
-        if($request->action == 'rejected'){
+        if ($request->action == 'rejected') {
             $data->update(['status' => 'rejected']);
         } else {
             $check = CustomerRequestApproval::where('customer_request_id', $id)
-                ->where('status','!=','approved')
+                ->where('status', '!=', 'approved')
                 ->count();
 
-            if($check == 0){
+            if ($check == 0) {
                 $data->update(['status' => 'approved']);
             }
         }
@@ -161,10 +164,10 @@ class CustomerRequestController extends Controller
         ])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.customer_request', compact('data'))
-                ->setPaper('A4', 'portrait');
+            ->setPaper('A4', 'portrait');
 
-        if(request('download')){
-            return $pdf->download('customer_request_'.$data->request_code.'.pdf');
+        if (request('download')) {
+            return $pdf->download('customer_request_' . $data->request_code . '.pdf');
         }
 
         return $pdf->stream();
@@ -189,5 +192,5 @@ class CustomerRequestController extends Controller
 
         return back()->with('success', 'Data berhasil dihapus');
     }
-        
+
 }

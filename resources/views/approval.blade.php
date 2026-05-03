@@ -93,6 +93,10 @@
                                 @else
                                 <span class="text-xs text-gray-400">—</span>
                                 @endif
+                                <button type="button" onclick="openDetail({{ $cr->id }})"
+                                    class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg text-xs font-semibold transition">
+                                    View
+                                </button>
                                 <a href="/customer-request/pdf/{{ $cr->id }}" target="_blank"
                                     class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition">
                                     PDF
@@ -159,10 +163,16 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <a href="/customer-request/pdf/{{ $cr->id }}" target="_blank"
-                                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition">
-                                PDF
-                            </a>
+                            <div class="flex items-center justify-center gap-2">
+                                <button type="button" onclick="openDetail({{ $cr->id }})"
+                                    class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg text-xs font-semibold transition">
+                                    View
+                                </button>
+                                <a href="/customer-request/pdf/{{ $cr->id }}" target="_blank"
+                                    class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition">
+                                    PDF
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -342,6 +352,131 @@
 
 </div>
 
+<!-- ========================= -->
+<!-- DETAIL MODALS CR -->
+<!-- ========================= -->
+@php
+    $allCr = collect($crPending->items())->merge($crHistory->items())->unique('id');
+@endphp
+@foreach($allCr as $d)
+    <div id="detailModal-{{ $d->id }}" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg overflow-hidden max-h-[85vh] flex flex-col">
+
+            <!-- HEADER -->
+            <div class="px-6 py-4 border-b bg-gray-50">
+                <h2 class="text-lg font-bold text-gray-800">Detail Customer Request</h2>
+            </div>
+
+            <!-- BODY -->
+            <div class="p-6 overflow-y-auto space-y-4 text-sm text-left">
+
+                <!-- IDENTITAS -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Identitas Customer</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">Kode Request</td><td class="py-1 font-medium">{{ $d->request_code }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Nama Customer</td><td class="py-1">{{ $d->customer_name }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Phone</td><td class="py-1">{{ $d->phone ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Region</td><td class="py-1">{{ $d->region ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Customer Number</td><td class="py-1">{{ $d->customer_number ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Alamat Pengiriman</td><td class="py-1">{{ $d->address ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Note</td><td class="py-1">{{ $d->note ?? '-' }}</td></tr>
+                </table>
+
+                <!-- PROFIL BISNIS -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Profil Bisnis</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">No Identitas (NIK)</td><td class="py-1">{{ $d->no_identitas ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Bentuk Usaha</td><td class="py-1">{{ $d->form_business ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Kepemilikan</td><td class="py-1">{{ $d->business_ownership ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Bidang Usaha</td><td class="py-1">{{ $d->section_business ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Alamat Usaha</td><td class="py-1">{{ $d->address_business ?? '-' }}</td></tr>
+                </table>
+
+                <!-- PAJAK -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Pajak</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">NPWP</td><td class="py-1">{{ $d->npwp ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Nama Pajak</td><td class="py-1">{{ $d->tax_name ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Alamat Pajak</td><td class="py-1">{{ $d->tax_address ?? '-' }}</td></tr>
+                </table>
+
+                <!-- IZIN -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Perizinan</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">TDP</td><td class="py-1">{{ $d->izin_tdp ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Berlaku TDP</td><td class="py-1">{{ $d->tdp_date ? date('d-m-Y', strtotime($d->tdp_date)) : '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">SIUP</td><td class="py-1">{{ $d->izin_siup ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Berlaku SIUP</td><td class="py-1">{{ $d->siup_date ? date('d-m-Y', strtotime($d->siup_date)) : '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">SIO</td><td class="py-1">{{ $d->izin_sio ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Berlaku SIO</td><td class="py-1">{{ $d->sio_date ? date('d-m-Y', strtotime($d->sio_date)) : '-' }}</td></tr>
+                </table>
+
+                <!-- OWNER -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Owner</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">Nama Pemilik</td><td class="py-1">{{ $d->owner_name ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Alamat Pemilik</td><td class="py-1">{{ $d->owner_address ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Email</td><td class="py-1">{{ $d->email ?? '-' }}</td></tr>
+                </table>
+
+                <!-- PROJECT -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Project</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">Alamat Kantor Induk</td><td class="py-1">{{ $d->office_address ?? '-' }}</td></tr>
+                    <tr><td class="py-1 text-gray-500">Ongoing Project</td><td class="py-1">{{ $d->ongoing_project ?? '-' }}</td></tr>
+                </table>
+
+                <!-- JADWAL -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Jadwal</h3>
+                <table class="w-full">
+                    <tr><td class="py-1 text-gray-500 w-44">Jadwal Pengiriman</td><td class="py-1">{{ $d->schedule_date ? date('d-m-Y', strtotime($d->schedule_date)) : '-' }}</td></tr>
+                </table>
+
+                <!-- DETAIL ORDER -->
+                <h3 class="font-semibold text-gray-700 border-b pb-1">Detail Order</h3>
+                @if($d->details->count())
+                    <div class="border rounded-lg overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-100 text-gray-600">
+                                <tr>
+                                    <th class="p-2 text-left">Grade</th>
+                                    <th class="p-2 text-center">Type</th>
+                                    <th class="p-2 text-center">Qty</th>
+                                    <th class="p-2 text-right">Harga</th>
+                                    <th class="p-2 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($d->details as $item)
+                                    <tr class="border-t">
+                                        <td class="p-2">{{ $item->grade->name_grade }}</td>
+                                        <td class="p-2 text-center uppercase">{{ $item->type }}</td>
+                                        <td class="p-2 text-center">{{ number_format($item->qty, 2, ',', '.') }}</td>
+                                        <td class="p-2 text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                                        <td class="p-2 text-right font-semibold text-green-600">Rp {{ number_format($item->total, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-gray-400 italic">Tidak ada detail order.</p>
+                @endif
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-center">
+                <button type="button" onclick="closeDetail({{ $d->id }})"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg text-sm font-medium">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+@endforeach
+
 <script>
 // TAB SWITCHING
 function switchTab(tab) {
@@ -371,6 +506,16 @@ function switchTab(tab) {
         activeBadge.classList.remove('bg-gray-300', 'text-gray-600');
         activeBadge.classList.add('bg-white/20', 'text-white');
     }
+}
+
+function openDetail(id) {
+    document.getElementById('detailModal-' + id).classList.remove('hidden');
+    document.getElementById('detailModal-' + id).classList.add('flex');
+}
+
+function closeDetail(id) {
+    document.getElementById('detailModal-' + id).classList.add('hidden');
+    document.getElementById('detailModal-' + id).classList.remove('flex');
 }
 </script>
 

@@ -133,13 +133,15 @@
                                 <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">Download</a>
                                 
                                 @if($d->status == 'approved')
+                                <button type="button" onclick="payOrder({{ $d->id }})" class="bg-indigo-500 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600 shadow-sm font-bold">Link Bayar</button>
+                                @endif
+
+                                @if($d->status == 'paid')
                                 <form action="/customer-request/done/{{ $d->id }}" method="POST" onsubmit="return confirm('Tandai request ini sebagai Selesai (Done) di lapangan?')">
                                     @csrf
                                     <button class="bg-emerald-500 text-white px-2 py-1 rounded text-xs hover:bg-emerald-600 shadow-sm font-bold">Done ✓</button>
                                 </form>
                                 @endif
-                                
-
                             </td>
                         </tr>
                     @empty
@@ -702,6 +704,35 @@
             price.value = harga || 0
             total.value = (qty.value || 0) * (harga || 0)
         })
+
+        function payOrder(id) {
+            // Tampilkan loading di cursor
+            document.body.style.cursor = 'wait';
+            
+            fetch(`/payment/token/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.body.style.cursor = 'default';
+                if (data.redirect_url) {
+                    prompt("Silakan copy Link Pembayaran ini dan kirimkan ke WhatsApp Customer:", data.redirect_url);
+                } else if(data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Gagal mendapatkan link pembayaran.');
+                }
+            })
+            .catch(error => {
+                document.body.style.cursor = 'default';
+                console.error('Error:', error);
+                alert('Terjadi kesalahan pada server.');
+            });
+        }
     </script>
 
 @endsection

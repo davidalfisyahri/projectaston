@@ -21,6 +21,14 @@ class CustomerRequestSeeder extends Seeder
             // =====================
             // CUSTOMER REQUEST
             // =====================
+            // Buat status bervariasi untuk testing
+            $status = 'waiting_approval';
+            if ($i <= 5) {
+                $status = 'paid';
+            } elseif ($i <= 15) {
+                $status = 'approved';
+            }
+
             $req = CustomerRequest::create([
                 'request_code' => 'REQ-'.date('YmdHis').rand(1000,9999),
                 'created_by' => $user->id_user,
@@ -45,8 +53,8 @@ class CustomerRequestSeeder extends Seeder
                 'email' => 'customer'.$i.'@mail.com',
 
                 'ongoing_project' => 'Project '.$i,
-
-                'status' => 'waiting_approval'
+                'status' => $status,
+                'is_paid' => $status == 'paid' ? true : false,
             ]);
 
             // =====================
@@ -70,16 +78,18 @@ class CustomerRequestSeeder extends Seeder
             // =====================
             // APPROVAL (2 ROLE)
             // =====================
+            $approvalStatus = in_array($status, ['approved', 'paid', 'done']) ? 'approved' : 'pending';
+
             CustomerRequestApproval::create([
                 'customer_request_id' => $req->id,
                 'role' => 'wakil_direktur',
-                'status' => 'pending',
+                'status' => $approvalStatus,
             ]);
 
             CustomerRequestApproval::create([
                 'customer_request_id' => $req->id,
                 'role' => 'direktur_utama',
-                'status' => 'pending',
+                'status' => $approvalStatus,
             ]);
         }
     }

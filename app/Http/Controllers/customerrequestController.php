@@ -34,7 +34,7 @@ class CustomerRequestController extends Controller
         $historyQuery = clone $query;
 
         $pendingQuery->whereIn('status', ['draft', 'waiting_approval']);
-        $historyQuery->whereIn('status', ['approved', 'rejected', 'done']);
+        $historyQuery->whereIn('status', ['approved', 'paid', 'confirmed_wa', 'scheduled', 'rejected', 'done']);
 
         $pendingCR = $pendingQuery->paginate(5, ['*'], 'pendingPage')->appends($request->query());
         $historyCR = $historyQuery->paginate(10, ['*'], 'historyPage')->appends($request->query());
@@ -220,8 +220,8 @@ class CustomerRequestController extends Controller
     {
         $cr = CustomerRequest::findOrFail($id);
         
-        if ($cr->status !== 'approved') {
-            return redirect()->back()->with('error', 'Hanya Customer Request dengan status Approved yang dapat ditandai selesai.');
+        if (!in_array($cr->status, ['approved', 'paid', 'confirmed_wa', 'scheduled'])) {
+            return redirect()->back()->with('error', 'Pesanan belum dapat ditandai selesai pada status saat ini.');
         }
 
         $cr->status = 'done';

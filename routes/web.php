@@ -45,6 +45,9 @@ Route::post('/customer-request/schedule/{id}', [CustomerRequestController::class
 Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
 Route::post('/customer-request/done/{id}', [CustomerRequestController::class, 'markAsDone']);
 
+Route::post('/payment/token/{id}', [\App\Http\Controllers\PaymentController::class, 'getToken']);
+Route::post('/api/midtrans/webhook', [\App\Http\Controllers\PaymentController::class, 'notificationHandler']);
+
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
 Route::post('/inventory/store', [InventoryController::class, 'store']);
 Route::post('/inventory/update/{id}', [InventoryController::class, 'update']);

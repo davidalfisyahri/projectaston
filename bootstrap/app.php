@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'isSuperAdmin' => \App\Http\Middleware\IsSuperAdmin::class,
             'isDirector'   => \App\Http\Middleware\IsDirector::class,
         ]);
+        
+        $middleware->validateCsrfTokens(except: [
+            'api/midtrans/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

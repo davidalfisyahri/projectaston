@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CustomerRequest;
+use App\Models\CustomerRequestDetail;
 use App\Models\CustomerRequestApproval;
 use App\Models\purchase_order;
+use App\Models\Composition;
+use App\Models\Inventory;
 use Illuminate\Support\Facades\Auth;
 
 class ApprovalController extends Controller
@@ -13,27 +16,49 @@ class ApprovalController extends Controller
     /**
      * Halaman utama approval — tampilkan semua CR & PO yang pending.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $crPending = CustomerRequest::with(['details.grade', 'user', 'approvals'])
-            ->where('status', 'waiting_approval')
-            ->latest()
-            ->paginate(10, ['*'], 'cr_pending');
+        $search = $request->search;
 
-        $crHistory = CustomerRequest::with(['details.grade', 'user', 'approvals'])
-            ->whereIn('status', ['approved', 'rejected'])
-            ->latest()
-            ->paginate(10, ['*'], 'cr_history');
+        $crQuery = CustomerRequest::with(['details.grade', 'user', 'approvals']);
+        if ($search) {
+            $crQuery->where(function($q) use ($search) {
+                $q->where('request_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
 
-        $poPending = purchase_order::with(['supplier', 'details.inventory'])
-            ->where('status', 'pending')
-            ->latest()
-            ->paginate(10, ['*'], 'po_pending');
+        $poQuery = purchase_order::with(['supplier', 'details.inventory']);
+        if ($search) {
+            $poQuery->where(function($q) use ($search) {
+                $q->where('no_po', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', function($sq) use ($search) {
+                      $sq->where('name_pt', 'like', "%{$search}%");
+                  });
+            });
+        }
 
-        $poHistory = purchase_order::with(['supplier', 'details.inventory'])
-            ->whereIn('status', ['approved', 'rejected'])
+        $crPending = (clone $crQuery)->where('status', 'waiting_approval')
             ->latest()
-            ->paginate(10, ['*'], 'po_history');
+            ->paginate(10, ['*'], 'cr_pending')
+            ->appends($request->query());
+
+        $crHistory = (clone $crQuery)->whereIn('status', ['approved', 'rejected'])
+            ->latest()
+            ->paginate(10, ['*'], 'cr_history')
+            ->appends($request->query());
+
+        $poPending = (clone $poQuery)->where('status', 'pending')
+            ->latest()
+            ->paginate(10, ['*'], 'po_pending')
+            ->appends($request->query());
+
+        $poHistory = (clone $poQuery)->whereIn('status', ['approved', 'rejected'])
+            ->latest()
+            ->paginate(10, ['*'], 'po_history')
+            ->appends($request->query());
 
         return view('approval', compact('crPending', 'crHistory', 'poPending', 'poHistory'));
     }
@@ -65,7 +90,50 @@ class ApprovalController extends Controller
             $data->update(['status' => 'rejected']);
         } else {
             // Cukup salah satu direktur/wakil direktur approve, request langsung approved
-            $data->update(['status' => 'approved']);
+            if ($data->status !== 'approved') {
+                
+                // VALIDASI KETERSEDIAAN STOK
+                $insufficient = [];
+                $required_stock = [];
+                $details = CustomerRequestDetail::where('customer_request_id', $id)->get();
+                
+                foreach($details as $detail) {
+                    $qty_ordered = $detail->qty;
+                    $compositions = Composition::where('grade_id', $detail->grade_id)->get();
+                    foreach($compositions as $comp) {
+                        $inv_id = $comp->inventory_id;
+                        if (!isset($required_stock[$inv_id])) {
+                            $required_stock[$inv_id] = 0;
+                        }
+                        $required_stock[$inv_id] += ($comp->qty * $qty_ordered);
+                    }
+                }
+
+                // Cek apakah stok mencukupi
+                foreach($required_stock as $inv_id => $needed) {
+                    $inventory = Inventory::find($inv_id);
+                    if ($inventory && $inventory->stock < $needed) {
+                        $insufficient[] = $inventory->name_material;
+                    }
+                }
+
+                if (count($insufficient) > 0) {
+                    // Batalkan perubahan status approval (kembalikan ke pending)
+                    $approval->update(['status' => 'pending', 'approved_by' => null, 'approved_at' => null]);
+                    return back()->with('error', 'Gagal approve! Stok material kurang untuk: ' . implode(', ', $insufficient));
+                }
+
+                $data->update(['status' => 'approved']);
+
+                // PENGURANGAN INVENTORY
+                foreach($required_stock as $inv_id => $needed) {
+                    $inventory = Inventory::find($inv_id);
+                    if ($inventory) {
+                        $inventory->stock -= $needed;
+                        $inventory->save();
+                    }
+                }
+            }
         }
 
         return back()->with('success', 'Customer Request berhasil di-' . $request->action . '.');

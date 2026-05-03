@@ -12,9 +12,25 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class CustomerRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = CustomerRequest::with('details.grade')->latest()->paginate(10);
+        $query = CustomerRequest::with('details.grade')->latest();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('request_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('region', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('name_user', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $data = $query->paginate(10)->appends($request->query());
         $grades = GradeBeton::all();
 
         // 🔥 TAMBAHAN INI

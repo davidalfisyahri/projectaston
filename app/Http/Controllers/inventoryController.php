@@ -8,10 +8,28 @@ use App\Models\Inventory;
 
 class InventoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $inventories = Inventory::paginate(10, ['*'], 'inventory_page');
-        $grade = gradebeton::with('composition.inventory')->paginate(10, ['*'], 'grade_page');
+        $search = $request->search;
+
+        $invQuery = Inventory::query();
+        if ($search) {
+            $invQuery->where(function($q) use ($search) {
+                $q->where('name_material', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%");
+            });
+        }
+        $inventories = $invQuery->paginate(10, ['*'], 'inventory_page')->appends($request->query());
+
+        $gradeQuery = gradebeton::with('composition.inventory');
+        if ($search) {
+            $gradeQuery->where(function($q) use ($search) {
+                $q->where('name_grade', 'like', "%{$search}%")
+                  ->orWhere('mpa', 'like', "%{$search}%");
+            });
+        }
+        $grade = $gradeQuery->paginate(10, ['*'], 'grade_page')->appends($request->query());
+
         $inventoryList = Inventory::all();
 
         return view('inventory', compact('inventories', 'grade', 'inventoryList'));

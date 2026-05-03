@@ -4,7 +4,22 @@
 
 <div class="max-w-7xl mx-auto">
 
-    <h1 class="text-2xl font-bold mb-6">Approval Management</h1>
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+        <h1 class="text-2xl font-bold text-gray-800">Approval Management</h1>
+
+        <form action="/approval" method="GET" class="flex gap-2 w-full sm:w-auto">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari data approval..." 
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-900 w-full sm:w-64">
+            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm border border-gray-300 font-medium transition">
+                Search
+            </button>
+            @if(request('search'))
+                <a href="/approval" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-200 font-medium transition">
+                    Clear
+                </a>
+            @endif
+        </form>
+    </div>
 
     {{-- FLASH MESSAGE --}}
     @if(session('success'))
@@ -14,9 +29,18 @@
     @endif
 
     @if(session('error'))
-    <div class="mb-4 px-4 py-3 bg-red-100 border border-red-300 text-red-800 rounded-xl text-sm">
-        {{ session('error') }}
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Stok Tidak Mencukupi!',
+                text: {!! json_encode(session('error')) !!},
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Tutup'
+            });
+        });
+    </script>
     @endif
 
     {{-- TAB NAVIGATION --}}

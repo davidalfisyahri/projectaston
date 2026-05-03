@@ -2,7 +2,46 @@
 @section('title','Inventory')
 
 @section('container')
-<h1 class="text-2xl font-bold mb-6">Inventory</h1>
+
+@php
+    $lowStockItems = $inventoryList->filter(function($item) {
+        return $item->stock <= 1000;
+    });
+@endphp
+
+@if($lowStockItems->count() > 0)
+    <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm flex items-start gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+            <h3 class="font-bold">Peringatan: Stok Material Menipis!</h3>
+            <p class="text-sm mt-1">Beberapa material berikut memiliki stok 1.000 kg atau kurang:</p>
+            <ul class="list-disc list-inside mt-2 text-sm font-medium">
+                @foreach($lowStockItems as $item)
+                    <li>{{ $item->name_material }} <span class="text-red-500">(Tersisa: {{ number_format($item->stock, 0, ',', '.') }} kg)</span></li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
+
+<div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+    <h1 class="text-2xl font-bold text-gray-800">Inventory</h1>
+
+    <form action="/inventory" method="GET" class="flex gap-2 w-full sm:w-auto">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari material atau grade..." 
+            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-900 w-full sm:w-64">
+        <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm border border-gray-300 font-medium transition">
+            Search
+        </button>
+        @if(request('search'))
+            <a href="/inventory" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-200 font-medium transition">
+                Clear
+            </a>
+        @endif
+    </form>
+</div>
 
 <div class="p-6">
     <div class="flex flex-col gap-8">

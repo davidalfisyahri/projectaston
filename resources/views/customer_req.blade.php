@@ -540,101 +540,43 @@
     </div>
 
     <script>
-
         document.addEventListener('DOMContentLoaded', function () {
 
-            // =====================
-            // TAMBAH ROW
-            // =====================
-            window.addRow = function () {
-                let table = document.getElementById('detailTable')
-                let row = table.querySelector('tr').cloneNode(true)
-
-                // reset input value
-                row.querySelectorAll('input').forEach(input => input.value = '')
-
-                table.appendChild(row)
-            }
-
-            $(document).ready(function () {
-                $('#ongoing_project').select2({
-                    placeholder: "Cari atau pilih project...",
-                    allowClear: true,
-                    width: '100%',
-                    dropdownParent: $('#modalForm') // 🔥 WAJIB karena modal
+            // Inisialisasi Select2 untuk Project
+            if (typeof $ !== 'undefined') {
+                $(document).ready(function () {
+                    $('#ongoing_project').select2({
+                        placeholder: "Cari atau pilih project...",
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $('#modalForm')
+                    });
                 });
-            });
-            // =====================
-            // HAPUS ROW (AMAN)
-            // =====================
-            document.getElementById('detailTable').addEventListener('click', function (e) {
-                if (e.target.classList.contains('btn-remove')) {
-                    let rows = document.querySelectorAll('#detailTable tr')
-
-                    if (rows.length > 1) {
-                        e.target.closest('tr').remove()
-                        updateGrandTotal()
-                    }
-                }
-            })
-
-            function closeModal() {
-                document.getElementById('modalForm').classList.add('hidden')
             }
 
-            function openModal() {
-                document.getElementById('modalForm').classList.remove('hidden')
-                document.getElementById('modalForm').classList.add('flex')
+            // =====================
+            // FORMAT & HITUNG
+            // =====================
+            function formatNumber(num) {
+                return new Intl.NumberFormat('id-ID').format(num)
             }
-
-            // klik background = close
-            document.getElementById('modalForm').addEventListener('click', function (e) {
-                if (e.target.id === 'modalForm') {
-                    closeModal()
-                }
-            })
-
-            // =====================
-            // AUTO HITUNG
-            // =====================
-            document.getElementById('detailTable').addEventListener('input', function (e) {
-                let row = e.target.closest('tr')
-                if (!row) return
-
-                let grade = row.querySelector('.gradeSelect')
-                let type = row.querySelector('.typeSelect')
-                let qty = row.querySelector('.qtyInput')
-                let price = row.querySelector('.priceInput')
-                let total = row.querySelector('.totalInput')
-
-                let selected = grade.options[grade.selectedIndex]
-
-                let harga = type.value === 'fa'
-                    ? selected.dataset.fa
-                    : selected.dataset.nfa
-
-                price.value = harga || 0
-
-                let totalVal = (qty.value || 0) * (harga || 0)
-                total.value = totalVal
-                updateGrandTotal()
-            })
 
             function updateGrandTotal() {
                 let totalInputs = document.querySelectorAll('.totalInput')
                 let grandTotal = 0
                 totalInputs.forEach(input => {
-                    grandTotal += Number(input.value) || 0
+                    // Ambil angka asli dari data-raw (tanpa titik format)
+                    let rawVal = parseFloat(input.dataset.raw) || 0;
+                    grandTotal += rawVal;
                 })
-                document.getElementById('grandTotalDisplay').innerText = new Intl.NumberFormat('id-ID').format(grandTotal)
-                document.getElementById('grandTotalInput').value = grandTotal
+                document.getElementById('grandTotalDisplay').innerText = formatNumber(grandTotal);
+                document.getElementById('grandTotalInput').value = grandTotal;
             }
 
-            function formatNumber(num) {
-                return new Intl.NumberFormat('id-ID').format(num)
-            }
-
-            document.addEventListener('input', function (e) {
+            // =====================
+            // EVENT LISTENER FORM ITEM
+            // =====================
+            document.getElementById('detailTable').addEventListener('input', function (e) {
                 let row = e.target.closest('tr')
                 if (!row) return
 
@@ -647,92 +589,113 @@
                 if (!grade || !type) return
 
                 let selected = grade.options[grade.selectedIndex]
-                let harga = type.value === 'fa'
-                    ? selected.dataset.fa
-                    : selected.dataset.nfa
+                let harga = type.value === 'fa' ? selected.dataset.fa : selected.dataset.nfa
 
-                // 👉 ubah ke number dulu
                 harga = parseFloat(harga) || 0
                 let qtyVal = parseFloat(qty.value) || 0
 
-                // 👉 tampilkan dengan format ribuan
+                // Tampilkan harga dengan format
                 price.value = formatNumber(harga)
 
+                // Hitung total dan simpan raw-nya
                 let totalVal = qtyVal * harga
                 total.value = formatNumber(totalVal)
+                total.dataset.raw = totalVal
+
+                updateGrandTotal()
             })
 
-        })
+            // =====================
+            // TAMBAH ROW
+            // =====================
+            window.addRow = function () {
+                let table = document.getElementById('detailTable')
+                let row = table.querySelector('tr').cloneNode(true)
 
-        function openModal() {
-            modalForm.classList.remove('hidden')
-            modalForm.classList.add('flex')
-        }
+                // reset input value & dataset
+                row.querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                    if(input.dataset.raw) input.dataset.raw = '0';
+                })
 
-        function closeModal() {
-            modalForm.classList.add('hidden')
-        }
+                table.appendChild(row)
+            }
 
-        function openDetail(id) {
-            document.getElementById('detailModal-' + id).classList.remove('hidden')
-            document.getElementById('detailModal-' + id).classList.add('flex')
-        }
-
-        function closeDetail(id) {
-            document.getElementById('detailModal-' + id).classList.add('hidden')
-            document.getElementById('detailModal-' + id).classList.remove('flex')
-        }
-
-        function addRow() {
-            let row = document.querySelector('#detailTable tr').cloneNode(true)
-            document.getElementById('detailTable').appendChild(row)
-        }
-
-        document.addEventListener('input', function (e) {
-            let row = e.target.closest('tr')
-            if (!row) return
-
-            let grade = row.querySelector('.gradeSelect')
-            let type = row.querySelector('.typeSelect')
-            let qty = row.querySelector('.qtyInput')
-            let price = row.querySelector('.priceInput')
-            let total = row.querySelector('.totalInput')
-
-            let selected = grade.options[grade.selectedIndex]
-            let harga = type.value === 'fa' ? selected.dataset.fa : selected.dataset.nfa
-
-            price.value = harga || 0
-            total.value = (qty.value || 0) * (harga || 0)
-        })
-
-        function payOrder(id) {
-            // Tampilkan loading di cursor
-            document.body.style.cursor = 'wait';
-            
-            fetch(`/payment/token/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            // =====================
+            // HAPUS ROW
+            // =====================
+            document.getElementById('detailTable').addEventListener('click', function (e) {
+                if (e.target.classList.contains('btn-remove')) {
+                    let rows = document.querySelectorAll('#detailTable tr')
+                    if (rows.length > 1) {
+                        e.target.closest('tr').remove()
+                        updateGrandTotal()
+                    }
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                document.body.style.cursor = 'default';
-                if (data.redirect_url) {
-                    prompt("Silakan copy Link Pembayaran ini dan kirimkan ke WhatsApp Customer:", data.redirect_url);
-                } else if(data.error) {
-                    alert(data.error);
-                } else {
-                    alert('Gagal mendapatkan link pembayaran.');
+
+            // =====================
+            // MODAL CONTROL
+            // =====================
+            window.openModal = function () {
+                document.getElementById('modalForm').classList.remove('hidden')
+                document.getElementById('modalForm').classList.add('flex')
+            }
+
+            window.closeModal = function () {
+                document.getElementById('modalForm').classList.add('hidden')
+                document.getElementById('modalForm').classList.remove('flex')
+            }
+
+            window.openDetail = function (id) {
+                document.getElementById('detailModal-' + id).classList.remove('hidden')
+                document.getElementById('detailModal-' + id).classList.add('flex')
+            }
+
+            window.closeDetail = function (id) {
+                document.getElementById('detailModal-' + id).classList.add('hidden')
+                document.getElementById('detailModal-' + id).classList.remove('flex')
+            }
+
+            // Klik background overlay = close modal
+            document.getElementById('modalForm').addEventListener('click', function (e) {
+                if (e.target.id === 'modalForm') {
+                    window.closeModal()
                 }
             })
-            .catch(error => {
-                document.body.style.cursor = 'default';
-                console.error('Error:', error);
-                alert('Terjadi kesalahan pada server.');
-            });
-        }
+
+            // =====================
+            // PAYMENT LINK
+            // =====================
+            window.payOrder = function (id) {
+                document.body.style.cursor = 'wait';
+                
+                fetch(`/payment/token/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.body.style.cursor = 'default';
+                    if (data.redirect_url) {
+                        prompt("Silakan copy Link Pembayaran ini dan kirimkan ke WhatsApp Customer:", data.redirect_url);
+                    } else if(data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Gagal mendapatkan link pembayaran.');
+                    }
+                })
+                .catch(error => {
+                    document.body.style.cursor = 'default';
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan pada server.');
+                });
+            }
+
+        })
     </script>
 
 @endsection

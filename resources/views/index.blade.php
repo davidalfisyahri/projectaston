@@ -50,7 +50,12 @@
         <div></div>
 
         <div class="relative text-center px-6">
+<<<<<<< HEAD
 
+=======
+            <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">ISTIMEWA BETON</h1>
+            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">PT. ISTIMEWA ASTON INDONESIA </p>
+>>>>>>> e44555e086ebdb1f0b9c1c014881797e3979722c
 
         </div>
     </section>
@@ -456,7 +461,7 @@
                 </div>
 
                 <p class="text-sm text-gray-200 leading-relaxed">
-                    PT Istimewa Beton Indonesia. Menyediakan material beton berkualitas tinggi
+                    PT Istimewa Beton. Menyediakan material beton berkualitas tinggi
                     untuk berbagai kebutuhan proyek konstruksi.
                 </p>
             </div>

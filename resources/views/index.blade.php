@@ -44,14 +44,13 @@
     <section id="home" class="h-screen relative flex items-center justify-center text-white">
 
         <div class="absolute inset-0 bg-cover bg-center"
-            style="background-image: url('{{ asset('asset/image/pabrik_aston2.jpg') }}');">
+            style="background-image: url('{{ asset('asset/image/pabrikbaru1.jpg') }}');">
         </div>
 
-        <div class="absolute inset-0 bg-gradient-to-r from-red-900/80 to-black/70"></div>
+        <div></div>
 
         <div class="relative text-center px-6">
-            <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">ISTIMEWA BETON INDONESIA</h1>
-            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">PT. ISTIMEWA ASTON INDONESIA </p>
+
 
         </div>
     </section>
@@ -296,7 +295,7 @@
 
                         <!-- Title di dalam gambar -->
                         <div class="absolute bottom-4 left-4 text-white">
-                            <h4 class="font-heading font-bold text-lg">SEMEN TIGA RODA</h4>
+                            <h4 class="font-heading font-bold text-lg">SEMEN TIPE OPC</h4>
                             <span class="text-xs bg-red-600 px-2 py-1 rounded-full"></span>
                         </div>
                     </div>
@@ -334,7 +333,7 @@
 
                         <!-- Title di dalam gambar -->
                         <div class="absolute bottom-4 left-4 text-white">
-                            <h4 class="font-heading font-bold text-lg">PASIR TAYAN</h4>
+                            <h4 class="font-heading font-bold text-lg">PASIR KUALITAS TERBAIK</h4>
                             <span class="text-xs bg-red-600 px-2 py-1 rounded-full"></span>
                         </div>
                     </div>
@@ -373,7 +372,8 @@
 
                         <!-- Title di dalam gambar -->
                         <div class="absolute bottom-4 left-4 text-white">
-                            <h4 class="font-heading font-bold text-lg">Matrial kualitas tinggi yang telah disesuaikan dengan kebutuhakan ready mix</h4>
+                            <h4 class="font-heading font-bold text-lg">Matrial kualitas tinggi yang telah disesuaikan
+                                dengan kebutuhakan ready mix</h4>
                             <span class="text-xs bg-red-600 px-2 py-1 rounded-full"></span>
                         </div>
                     </div>
@@ -479,23 +479,29 @@
                 <div class="space-y-3 text-sm text-gray-200">
 
                     <div class="flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone-fill" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z" />
                         </svg>
                         <span>0851-2296-3317</span>
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
-                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-envelope" viewBox="0 0 16 16">
+                            <path
+                                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z" />
                         </svg>
-                          <span>istimewabetonindonesiapt@gmail.com</span>
+                        <span>istimewabetonindonesiapt@gmail.com</span>
                     </div>
 
                     <div class="flex items-start gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
-                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                          </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                            class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
+                        </svg>
                         <span>
                             Jl. Raya Bomang, Desa JampangRT 001 / RW 005, Kec. KemangKabupaten Bogor, Jawa Barat 16310.
                         </span>

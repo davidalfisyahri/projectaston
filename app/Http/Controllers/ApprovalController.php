@@ -22,21 +22,21 @@ class ApprovalController extends Controller
 
         $crQuery = CustomerRequest::with(['details.grade', 'user', 'approvals']);
         if ($search) {
-            $crQuery->where(function($q) use ($search) {
+            $crQuery->where(function ($q) use ($search) {
                 $q->where('request_code', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('status', 'like', "%{$search}%");
+                    ->orWhere('customer_name', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
             });
         }
 
         $poQuery = purchase_order::with(['supplier', 'details.inventory']);
         if ($search) {
-            $poQuery->where(function($q) use ($search) {
+            $poQuery->where(function ($q) use ($search) {
                 $q->where('no_po', 'like', "%{$search}%")
-                  ->orWhere('status', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($sq) use ($search) {
-                      $sq->where('name_pt', 'like', "%{$search}%");
-                  });
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhereHas('supplier', function ($sq) use ($search) {
+                        $sq->where('name_pt', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -81,7 +81,7 @@ class ApprovalController extends Controller
         }
 
         $approval->update([
-            'status'      => $request->action, // approved / rejected
+            'status' => $request->action, // approved / rejected
             'approved_by' => $user->id_user,
             'approved_at' => now(),
         ]);
@@ -91,16 +91,16 @@ class ApprovalController extends Controller
         } else {
             // Cukup salah satu direktur/wakil direktur approve, request langsung approved
             if ($data->status !== 'approved') {
-                
+
                 // VALIDASI KETERSEDIAAN STOK
                 $insufficient = [];
                 $required_stock = [];
                 $details = CustomerRequestDetail::where('customer_request_id', $id)->get();
-                
-                foreach($details as $detail) {
+
+                foreach ($details as $detail) {
                     $qty_ordered = $detail->qty;
                     $compositions = Composition::where('grade_id', $detail->grade_id)->get();
-                    foreach($compositions as $comp) {
+                    foreach ($compositions as $comp) {
                         $inv_id = $comp->inventory_id;
                         if (!isset($required_stock[$inv_id])) {
                             $required_stock[$inv_id] = 0;
@@ -110,7 +110,7 @@ class ApprovalController extends Controller
                 }
 
                 // Cek apakah stok mencukupi
-                foreach($required_stock as $inv_id => $needed) {
+                foreach ($required_stock as $inv_id => $needed) {
                     $inventory = Inventory::find($inv_id);
                     if ($inventory && $inventory->stock < $needed) {
                         $insufficient[] = $inventory->name_material;
@@ -126,7 +126,7 @@ class ApprovalController extends Controller
                 $data->update(['status' => 'approved']);
 
                 // PENGURANGAN INVENTORY
-                foreach($required_stock as $inv_id => $needed) {
+                foreach ($required_stock as $inv_id => $needed) {
                     $inventory = Inventory::find($inv_id);
                     if ($inventory) {
                         $inventory->stock -= $needed;
@@ -147,7 +147,7 @@ class ApprovalController extends Controller
         $po = purchase_order::findOrFail($id);
 
         $po->update([
-            'status'      => $request->action, // approved / rejected
+            'status' => $request->action, // approved / rejected
             'approved_by' => Auth::user()->id_user,
             'approved_at' => now(),
         ]);

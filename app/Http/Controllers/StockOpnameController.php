@@ -60,7 +60,7 @@ class StockOpnameController extends Controller
                 'difference' => $difference,
                 'notes' => $item['notes'] ?? null,
                 'opname_date' => $request->opname_date,
-                'checked_by' => $request->user()->id,
+                'checked_by' => $request->user()->id_user,
             ]);
 
             // Update stok di inventory sesuai stok aktual

@@ -7,13 +7,19 @@ use App\Models\GradeBeton;
 use App\Models\CustomerRequest;
 use App\Models\CustomerRequestDetail;
 use App\Models\CustomerRequestApproval;
+use App\Models\DeliveryTariff;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CustomerRequestController extends Controller
 {
     public function index(Request $request)
     {
+        if (Auth::check() && Auth::user()->position === 'kepala_plant') {
+            return redirect()->route('plant_schedule');
+        }
+
         $query = CustomerRequest::with('details.grade')->latest();
 
         if ($request->has('search') && $request->search != '') {
@@ -47,7 +53,9 @@ class CustomerRequestController extends Controller
             ->distinct()
             ->get();
 
-        return view('customer_req', compact('pendingCR', 'historyCR', 'grades', 'projects'));
+        $tariffs = DeliveryTariff::where('is_active', true)->orderBy('min_km')->get();
+
+        return view('customer_req', compact('pendingCR', 'historyCR', 'grades', 'projects', 'tariffs'));
     }
 
     public function store(Request $request)
@@ -98,13 +106,22 @@ class CustomerRequestController extends Controller
 
             //Schedule
             'schedule_date' => $request->schedule_date,
+
+            // DELIVERY
+            'delivery_distance' => $request->delivery_distance,
+            'delivery_fee' => 0,
+            'grand_total' => 0,
+            'delivery_latitude' => $request->delivery_latitude,
+            'delivery_longitude' => $request->delivery_longitude,
         ]);
 
         // DETAIL
+        $itemsTotal = 0;
         if ($request->grade_id) {
             foreach ($request->grade_id as $i => $g) {
 
                 $price = str_replace('.', '', $request->price[$i]); // 🔥 FIX
+                $lineTotal = $request->qty[$i] * $price;
 
                 CustomerRequestDetail::create([
                     'customer_request_id' => $req->id,
@@ -112,10 +129,29 @@ class CustomerRequestController extends Controller
                     'type' => $request->type[$i],
                     'qty' => $request->qty[$i],
                     'price' => $price,
-                    'total' => $request->qty[$i] * $price,
+                    'total' => $lineTotal,
                 ]);
+
+                $itemsTotal += $lineTotal;
             }
         }
+
+        // 🔥 HITUNG DELIVERY FEE
+        $distance = floatval($request->delivery_distance ?? 0);
+        $maxKm = DeliveryTariff::getMaxDistance();
+
+        if ($distance > $maxKm && $request->delivery_fee_custom) {
+            // Jarak > max tier → pakai input manual dari sales
+            $deliveryFee = floatval(str_replace('.', '', $request->delivery_fee_custom));
+        } else {
+            // Dalam range tarif → hitung otomatis
+            $deliveryFee = DeliveryTariff::getFeeByDistance($distance) ?? 0;
+        }
+
+        $req->update([
+            'delivery_fee' => $deliveryFee,
+            'grand_total' => $itemsTotal + $deliveryFee,
+        ]);
 
         // 🔥 BUAT APPROVAL ROWS (untuk direktur & wakil direktur)
         foreach (['wakil_direktur', 'direktur_utama'] as $role) {
@@ -228,5 +264,128 @@ class CustomerRequestController extends Controller
         $cr->save();
 
         return redirect()->back()->with('success', 'Customer Request berhasil ditandai sebagai Selesai (Done).');
+    }
+
+    /**
+     * Resolves Google Maps short URL and extracts coordinates.
+     */
+    public function resolveMapsUrl(Request $request)
+    {
+        $request->validate(['url' => 'required']);
+        $url = $request->url;
+
+        // Extract the URL first in case there is trailing/leading text
+        if (preg_match('/(https?:\/\/[^\s]+)/', $url, $urlMatches)) {
+            $url = $urlMatches[1];
+        }
+
+        // Helper logic to try and parse coordinates directly from any given URL string
+        $parseCoordinates = function($targetUrl) {
+            // 1. Try to find coordinates in query string q or ll
+            $parsed = parse_url($targetUrl);
+            if (isset($parsed['query'])) {
+                parse_str($parsed['query'], $queryParams);
+                if (isset($queryParams['q']) && preg_match('/(-?\d+\.\d+),\s*(-?\d+\.\d+)/', $queryParams['q'], $matches)) {
+                    return [floatval($matches[1]), floatval($matches[2])];
+                }
+                if (isset($queryParams['ll']) && preg_match('/(-?\d+\.\d+),\s*(-?\d+\.\d+)/', $queryParams['ll'], $matches)) {
+                    return [floatval($matches[1]), floatval($matches[2])];
+                }
+            }
+
+            // 2. Try to find coordinates in path (e.g. /place/lat,lng or @lat,lng)
+            if (preg_match('/(?:place|search|\@|place\/|search\/)(-?\d+\.\d+),\s*(-?\d+\.\d+)/', $targetUrl, $matches)) {
+                return [floatval($matches[1]), floatval($matches[2])];
+            }
+
+            // 3. Try to find coordinates in !3d/!4d format
+            if (preg_match('/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/', $targetUrl, $matches)) {
+                return [floatval($matches[1]), floatval($matches[2])];
+            }
+
+            return null;
+        };
+
+        // If coordinates are already present in the URL, return them directly
+        $directCoords = $parseCoordinates($url);
+        if ($directCoords) {
+            return response()->json([
+                'success' => true,
+                'latitude' => $directCoords[0],
+                'longitude' => $directCoords[1]
+            ]);
+        }
+
+        try {
+            // Guzzle / Http client automatically follows redirects
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            ])->timeout(5)->get($url);
+
+            $finalUrl = $response->effectiveUri()->__toString();
+
+            // Try to parse coordinates from the final redirected URL
+            $coords = $parseCoordinates($finalUrl);
+
+            if ($coords) {
+                return response()->json([
+                    'success' => true,
+                    'latitude' => $coords[0],
+                    'longitude' => $coords[1]
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Koordinat tidak ditemukan di dalam link tersebut. Pastikan link adalah Google Maps Share Location.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Gagal membaca link Google Maps: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function spkPdf($id)
+    {
+        $data = CustomerRequest::with([
+            'details.grade',
+            'user',
+            'approvals.user'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.spk', compact('data'))
+            ->setPaper('A4', 'portrait');
+
+        if (request('download')) {
+            return $pdf->download('SPK_' . $data->request_code . '.pdf');
+        }
+
+        return $pdf->stream();
+    }
+
+    public function plantSchedule(Request $request)
+    {
+        $query = CustomerRequest::with('details.grade')
+            ->whereIn('status', ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']);
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('request_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('region', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        $schedules = $query->orderBy('schedule_date', 'asc')
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->appends($request->query());
+
+        return view('plant_schedule', compact('schedules'));
     }
 }

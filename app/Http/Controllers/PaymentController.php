@@ -34,7 +34,7 @@ class PaymentController extends Controller
             return response()->json(['redirect_url' => $url]);
         }
 
-        $grossAmount = $cr->details->sum('total');
+        $grossAmount = $cr->grand_total > 0 ? (float) $cr->grand_total : (float) $cr->details->sum('total');
         
         if ($grossAmount <= 0) {
             return response()->json(['error' => 'Total pesanan tidak valid.'], 400);
@@ -46,10 +46,19 @@ class PaymentController extends Controller
             // Karena Qty beton bisa desimal, kita set quantity Midtrans = 1, 
             // dan price = total harga baris tersebut. Info qty asli ditaruh di nama.
             $itemDetails[] = [
-                'id' => $item->id,
+                'id' => 'item-' . $item->id,
                 'price' => round($item->total),
                 'quantity' => 1,
                 'name' => $item->grade->name_grade . ' (' . $item->qty . ' vol)',
+            ];
+        }
+
+        if ($cr->delivery_distance > 0) {
+            $itemDetails[] = [
+                'id' => 'delivery-' . $cr->id,
+                'price' => round($cr->delivery_fee),
+                'quantity' => 1,
+                'name' => 'Biaya Pengantaran (' . number_format($cr->delivery_distance, 1) . ' km)',
             ];
         }
 

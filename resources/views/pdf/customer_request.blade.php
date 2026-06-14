@@ -115,7 +115,18 @@ td, th {
 
 <tr>
     <td class="label">Sales Code</td>
-    <td colspan="3"><span class="value-line">{{ $data->user->id_user ?? '-' }}</span></td>
+    <td><span class="value-line">{{ $data->user->id_user ?? '-' }}</span></td>
+
+    <td class="label">Delivery Distance</td>
+    <td><span class="value-line">{{ $data->delivery_distance ? $data->delivery_distance . ' km' : '-' }}</span></td>
+</tr>
+
+<tr>
+    <td class="label">Delivery Fee</td>
+    <td><span class="value-line">{{ $data->delivery_fee > 0 ? 'Rp ' . number_format($data->delivery_fee, 0, ',', '.') : 'Rp 0' }}</span></td>
+
+    <td class="label">Grand Total</td>
+    <td><span class="value-line" style="font-weight: bold;">Rp {{ number_format($data->grand_total > 0 ? $data->grand_total : $data->details->sum('total'), 0, ',', '.') }}</span></td>
 </tr>
 
 </table>

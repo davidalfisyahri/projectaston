@@ -14,6 +14,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        if (auth()->check() && auth()->user()->position === 'kepala_plant') {
+            return redirect()->route('plant_schedule');
+        }
+
         // 1. KPIs
         $totalActiveCR = CustomerRequest::where('status', '!=', 'rejected')->count();
         $totalPendingCR = CustomerRequest::where('status', 'waiting_approval')->count();

@@ -54,6 +54,13 @@ class CustomerRequest extends Model
 
         // STATUS
         'status',
+
+        // DELIVERY
+        'delivery_distance',
+        'delivery_fee',
+        'grand_total',
+        'delivery_latitude',
+        'delivery_longitude',
     ];
 
     public function user()

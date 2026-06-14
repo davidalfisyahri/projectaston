@@ -1,8 +1,14 @@
 @extends('main')
 @section('title', 'setting')
 @section('container')
-@if(auth()->user()->role === 'superadmin')
-<div class="p-6 bg-gray-50/50 min-h-screen">
+@php
+    $currentUser = auth()->user();
+    $isSuperAdmin = $currentUser->role === 'superadmin';
+    $isDirector = in_array($currentUser->position, ['direktur_utama', 'wakil_direktur']);
+@endphp
+@if($isSuperAdmin || $isDirector)
+<div class="p-6 bg-gray-50/50 min-h-screen space-y-8">
+    @if($isSuperAdmin)
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Manajemen Pengguna</h1>
         <p class="text-sm text-gray-500">Kelola semua pengguna platform</p>
@@ -239,6 +245,7 @@
                     <option value="superadmin">Superadmin</option>
                     <option value="admin">Admin</option>
                     <option value="sales">Sales</option>
+                    <option value="kepala_plant">Kepala Plant</option>
                 </select>
             </div>
 
@@ -253,6 +260,7 @@
                     <option value="hrga">HRGA</option>
                     <option value="logistik">Logistik</option>
                     <option value="finance">Finance</option>
+                    <option value="kepala_plant">Kepala Plant</option>
                 </select>
             </div>
 
@@ -371,6 +379,7 @@
                     <option value="superadmin">Superadmin</option>
                     <option value="admin">Admin</option>
                     <option value="sales">Sales</option>
+                    <option value="kepala_plant">Kepala Plant</option>
                 </select>
             </div>
 
@@ -385,6 +394,7 @@
                     <option value="hrga">HRGA</option>
                     <option value="logistik">Logistik</option>
                     <option value="finance">Finance</option>
+                    <option value="kepala_plant">Kepala Plant</option>
                 </select>
             </div>
 
@@ -413,6 +423,136 @@
             </div>
         </form>
     </div>
+</div>
+@endif
+
+    <!-- TARIF PENGIRIMAN SECTION -->
+    <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 overflow-hidden mt-6">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124l-.192-3.076a11.966 11.966 0 0 0-1.92-5.414l-.074-.112a3.375 3.375 0 0 0-2.812-1.5H8.25m0 12.75V12m0 0H2.25m12 0H8.25m0 0V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 12.481A6.762 6.762 0 0 1 12 11.25c0-1.78-.686-3.4-1.815-4.615l-.015-.015a6.762 6.762 0 0 0-4.615-1.815c-1.78 0-3.4.686-4.615 1.815l-.015.015A6.762 6.762 0 0 0 1 11.25c0 1.78.686 3.4 1.815 4.615" />
+                </svg>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">Tarif Pengiriman Jarak (Delivery Tariffs)</h2>
+                    <p class="text-xs text-gray-500">Kelola tarif biaya pengantaran berdasarkan rentang jarak dari Plant</p>
+                </div>
+            </div>
+            <button type="button" onclick="openAddTariffModal()" class="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700 transition shadow-sm">
+                + Tambah Tarif Jarak
+            </button>
+        </div>
+
+        <div class="p-6">
+            <p class="text-sm text-gray-500 mb-6 bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-2.5">
+                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Tentukan biaya pengiriman berdasarkan jarak dari Plant. Aturan default: jarak yang melebihi batas tarif maksimum yang terdaftar akan mewajibkan sales untuk menginput biaya secara manual saat pembuatan order request.</span>
+            </p>
+
+            <form action="{{ route('delivery-tariffs.update') }}" method="POST">
+                @csrf
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left whitespace-nowrap mb-6">
+                        <thead class="bg-gray-50 text-gray-600 border-b border-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Batas Min (km)</th>
+                                <th class="px-6 py-3 font-medium">Batas Max (km)</th>
+                                <th class="px-6 py-3 font-medium">Biaya Pengiriman (Rp)</th>
+                                <th class="px-6 py-3 font-medium text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-gray-700">
+                            @forelse($tariffs as $index => $tariff)
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-3">
+                                    <input type="hidden" name="tariffs[{{ $index }}][id]" value="{{ $tariff->id }}">
+                                    <input type="number" step="0.1" name="tariffs[{{ $index }}][min_km]" value="{{ $tariff->min_km }}" class="w-28 border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500" required>
+                                </td>
+                                <td class="px-6 py-3">
+                                    <input type="number" step="0.1" name="tariffs[{{ $index }}][max_km]" value="{{ $tariff->max_km }}" class="w-28 border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500" required>
+                                </td>
+                                <td class="px-6 py-3">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-gray-400">Rp</span>
+                                        <input type="text" data-type="currency" class="tariff-fee-input w-44 border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500" value="{{ number_format($tariff->fee, 0, ',', '.') }}" required>
+                                        <input type="hidden" name="tariffs[{{ $index }}][fee]" value="{{ (int)$tariff->fee }}" class="tariff-fee-raw">
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3 text-center">
+                                    <button type="button" onclick="deleteTariff({{ $tariff->id }}, '{{ $tariff->label }}')" class="text-red-400 hover:text-red-600 transition" title="Hapus">
+                                        <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center text-gray-500">Belum ada data tarif pengiriman. Silakan tambahkan tarif baru.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                
+                @if($tariffs->count() > 0)
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-600 text-white rounded-lg px-6 py-2.5 text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+                        Simpan Semua Perubahan Tarif
+                    </button>
+                </div>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    {{-- Modal add tariff --}}
+    <div id="addTariffModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl relative">
+            <button type="button" onclick="closeAddTariffModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Tambah Tarif Jarak Baru</h2>
+
+            <form action="{{ route('delivery-tariffs.store') }}" method="POST" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Batas Jarak Bawah (km)</label>
+                    <input type="number" step="0.1" name="min_km" placeholder="Batas minimal, contoh 0 atau 10" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Batas Jarak Atas (km)</label>
+                    <input type="number" step="0.1" name="max_km" placeholder="Batas maksimal, contoh 10 atau 15" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Biaya Pengiriman (Rp)</label>
+                    <div class="flex items-center relative">
+                        <span class="absolute left-4 text-gray-400 text-sm">Rp</span>
+                        <input type="text" id="add_tariff_fee_display" placeholder="Contoh 1.000.000" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500" required>
+                        <input type="hidden" name="fee" id="add_tariff_fee_raw">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4 mt-2">
+                    <button type="button" onclick="closeAddTariffModal()" class="w-1/2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2.5 rounded-lg text-sm transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm">
+                        Simpan Tarif
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Hidden Form for Deleting --}}
+    <form id="deleteTariffForm" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
+
 </div>
 
 <script>
@@ -518,6 +658,47 @@ if (successAlert) {
         setTimeout(() => successAlert.remove(), 500);
     }, 4000);
 }
+
+    // Format input currency in settings table
+    document.querySelectorAll('.tariff-fee-input').forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, "");
+            let rawInput = this.parentElement.querySelector('.tariff-fee-raw');
+            if (rawInput) rawInput.value = value;
+            this.value = formatRupiah(value);
+        });
+    });
+
+    const addFeeDisplay = document.getElementById('add_tariff_fee_display');
+    if (addFeeDisplay) {
+        addFeeDisplay.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, "");
+            document.getElementById('add_tariff_fee_raw').value = value;
+            this.value = formatRupiah(value);
+        });
+    }
+
+    function formatRupiah(number) {
+        if (!number) return '';
+        return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(number);
+    }
+
+    function openAddTariffModal() {
+        document.getElementById('addTariffModal').classList.remove('hidden');
+        document.getElementById('addTariffModal').classList.add('flex');
+    }
+
+    function closeAddTariffModal() {
+        document.getElementById('addTariffModal').classList.add('hidden');
+    }
+
+    function deleteTariff(id, label) {
+        if (confirm(`Apakah Anda yakin ingin menghapus tarif untuk rentang jarak ${label || ''}?`)) {
+            const form = document.getElementById('deleteTariffForm');
+            form.action = `/setting/delivery-tariffs/${id}`;
+            form.submit();
+        }
+    }
 </script>
 @endif
 @endsection

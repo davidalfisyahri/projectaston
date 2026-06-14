@@ -38,7 +38,9 @@ class UsersController extends Controller
 
         Session::put('page_url', request()->fullUrl());
 
-        return view('setting', compact('users'));
+        $tariffs = \App\Models\DeliveryTariff::orderBy('min_km')->get();
+
+        return view('setting', compact('users', 'tariffs'));
     }
 
     /**

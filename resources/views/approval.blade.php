@@ -2,6 +2,10 @@
 @section('title', 'Approval')
 @section('container')
 
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <div class="max-w-7xl mx-auto">
 
         <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
@@ -457,10 +461,20 @@
                             <td class="py-1">{{ $d->address ?? '-' }}</td>
                         </tr>
                         <tr>
+                            <td class="py-1 text-gray-500">Jarak Pengiriman</td>
+                            <td class="py-1 font-semibold text-blue-600">{{ $d->delivery_distance ? $d->delivery_distance . ' km' : '-' }}</td>
+                        </tr>
+                        <tr>
                             <td class="py-1 text-gray-500">Note</td>
                             <td class="py-1">{{ $d->note ?? '-' }}</td>
                         </tr>
                     </table>
+
+                    <!-- Jarak & Peta Lokasi Pengiriman -->
+                    @if($d->delivery_latitude && $d->delivery_longitude)
+                    <h3 class="font-semibold text-gray-700 border-b pb-1">Lokasi Pengiriman di Peta</h3>
+                    <div id="detail-map-{{ $d->id }}" style="height: 200px; z-index: 10;" class="rounded-lg border shadow-sm my-2 detail-map" data-plat="-6.476278" data-plng="106.733417" data-dlat="{{ $d->delivery_latitude }}" data-dlng="{{ $d->delivery_longitude }}" data-code="{{ $d->request_code }}"></div>
+                    @endif
 
                     <!-- PROFIL BISNIS -->
                     <h3 class="font-semibold text-gray-700 border-b pb-1">Profil Bisnis</h3>
@@ -599,11 +613,20 @@
                                             </tr>
                                         @endforeach
                                     </tbody>
-                                    <tfoot class="bg-gray-100 text-gray-800">
+                                    <tfoot class="bg-gray-100 text-gray-800 text-xs">
                                         <tr>
-                                            <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
-                                            <td class="p-2 text-right font-bold text-green-700">Rp
-                                                {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
+                                            <td colspan="4" class="p-2 text-right font-semibold">Subtotal</td>
+                                            <td class="p-2 text-right font-semibold">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
+                                        </tr>
+                                        @if($d->delivery_distance > 0)
+                                        <tr>
+                                            <td colspan="4" class="p-2 text-right font-semibold">Biaya Pengiriman ({{ $d->delivery_distance }} km)</td>
+                                            <td class="p-2 text-right font-semibold text-orange-600">Rp {{ number_format($d->delivery_fee, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endif
+                                        <tr class="border-t font-bold">
+                                            <td colspan="4" class="p-2 text-right text-sm">Grand Total</td>
+                                            <td class="p-2 text-right text-sm text-green-700">Rp {{ number_format($d->grand_total > 0 ? $d->grand_total : $d->details->sum('total'), 0, ',', '.') }}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -658,9 +681,51 @@
             }
         }
 
+        const detailMapInstances = {};
+
         function openDetail(id) {
             document.getElementById('detailModal-' + id).classList.remove('hidden');
             document.getElementById('detailModal-' + id).classList.add('flex');
+
+            // Inisialisasi peta detail setelah modal tampil
+            const mapEl = document.getElementById('detail-map-' + id);
+            if (mapEl && !detailMapInstances[id]) {
+                const plat = parseFloat(mapEl.dataset.plat);
+                const plng = parseFloat(mapEl.dataset.plng);
+                const dlat = parseFloat(mapEl.dataset.dlat);
+                const dlng = parseFloat(mapEl.dataset.dlng);
+                const code = mapEl.dataset.code;
+
+                setTimeout(() => {
+                    const dMap = L.map('detail-map-' + id).setView([dlat, dlng], 12);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
+                    }).addTo(dMap);
+
+                    const redIcon = new L.Icon({
+                      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                      iconSize: [25, 41],
+                      iconAnchor: [12, 41],
+                      popupAnchor: [1, -34],
+                      shadowSize: [41, 41]
+                    });
+
+                    L.marker([plat, plng], {icon: redIcon}).addTo(dMap).bindPopup("Plant (Mulai)").openPopup();
+                    L.marker([dlat, dlng]).addTo(dMap).bindPopup(`Tujuan (${code})`);
+
+                    // Draw dashed line
+                    L.polyline([[plat, plng], [dlat, dlng]], {color: 'blue', weight: 3, dashArray: '5, 10'}).addTo(dMap);
+
+                    detailMapInstances[id] = dMap;
+                    dMap.invalidateSize();
+                }, 200);
+            } else if (detailMapInstances[id]) {
+                setTimeout(() => {
+                    detailMapInstances[id].invalidateSize();
+                }, 200);
+            }
         }
 
         function closeDetail(id) {

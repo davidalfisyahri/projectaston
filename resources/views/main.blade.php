@@ -61,7 +61,8 @@
 
             <div class="space-y-4">
 
-                <!-- DASHBOARD (SEMUA ROLE) -->
+                <!-- DASHBOARD (SEMUA ROLE KECUALI KEPALA PLANT) -->
+                @if($position !== 'kepala_plant')
                 <a href="{{ route('dashboard') }}"
                 class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -74,16 +75,34 @@
                         Dashboard
                     </span>
                 </a>
+                @endif
+
+                <!-- JADWAL PENGIRIMAN (SUPERADMIN, ADMIN, DIREKTUR, KEPALA PLANT) -->
+                @if(in_array($role, ['superadmin', 'admin', 'kepala_plant']) || in_array($position, ['direktur_utama', 'wakil_direktur', 'kepala_plant']))
+                <a href="{{ route('plant_schedule') }}"
+                class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-6 h-6 flex-shrink-0"
+                                    fill="currentColor"
+                                    viewBox="0 0 16 16">
+                                    <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                </svg>
+                    <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-300 whitespace-nowrap">
+                        Jadwal Pengiriman
+                    </span>
+                </a>
+                @endif
 
                 <!-- CUSTOMER REQUEST (SUPERADMIN + SALES) -->
-                @if(in_array($role, ['superadmin', 'sales']))
+                @if(in_array($role, ['superadmin', 'sales']) && $position !== 'kepala_plant')
                 <a href="{{ route('customer_req') }}"
                 class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
                     <svg xmlns="http://www.w3.org/2000/svg"
                                     class="w-6 h-6 flex-shrink-0"
                                     fill="currentColor"
                                     viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                                    <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
                                 </svg>
                     <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-300 whitespace-nowrap">
                         Customer request
@@ -92,7 +111,7 @@
                 @endif
 
                 <!-- MENU KHUSUS ADMIN & SUPERADMIN -->
-                @if(in_array($role, ['superadmin', 'admin']))
+                @if(in_array($role, ['superadmin', 'admin']) && $position !== 'kepala_plant')
 
                     <!-- APPROVAL (KHUSUS DIREKSI) -->
                     @if(in_array($position, ['direktur_utama', 'wakil_direktur']))
@@ -120,7 +139,7 @@
                                     class="w-6 h-6 flex-shrink-0"
                                     fill="currentColor"
                                     viewBox="0 0 16 16">
-                                    <path d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434zM4.25 7.504 1.508 9.071l2.742 1.567 2.742-1.567zM7.5 9.933l-2.75 1.571v3.134l2.75-1.571zm1 3.134 2.75 1.571v-3.134L8.5 9.933zm.508-3.996 2.742 1.567 2.742-1.567-2.742-1.567zm2.242-2.433V3.504L8.5 5.076V8.21zM7.5 8.21V5.076L4.75 3.504v3.134zM5.258 2.643 8 4.21l2.742-1.567L8 1.076zM15 9.933l-2.75 1.571v3.134L15 13.067zM3.75 14.638v-3.134L1 9.933v3.134z"/>
+                                    <path d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434zM4.25 7.504 1.508 9.071l2.742 1.567 2.742-1.567zM7.5 9.933l-2.75 1.571v3.134l2.75-1.571zm1 3.134 2.75 1.571v-3.134L8.5 9.933zm.508-3.996 2.742 1.567 2.742-1.567-2.742-1.567-2.742-1.567zm2.242-2.433V3.504L8.5 5.076V8.21zM7.5 8.21V5.076L4.75 3.504v3.134zM5.258 2.643 8 4.21l2.742-1.567L8 1.076zM15 9.933l-2.75 1.571v3.134L15 13.067zM3.75 14.638v-3.134L1 9.933v3.134z"/>
                                 </svg>
                         <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-300 whitespace-nowrap">
                             Stock Opname
@@ -160,8 +179,8 @@
 
                 @endif
 
-                <!-- SETTINGS (HANYA SUPERADMIN) -->
-                @if($role === 'superadmin')
+                <!-- SETTINGS (SUPERADMIN, DIRUT, WADIRUT) -->
+                @if(($role === 'superadmin' || in_array($position, ['direktur_utama', 'wakil_direktur'])) && $position !== 'kepala_plant')
                 <a href="{{ route('setting') }}"
                 class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
                     <svg xmlns="http://www.w3.org/2000/svg"

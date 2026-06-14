@@ -2,6 +2,10 @@
 @section('title', 'customer_req')
 @section('container')
 
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <div class="max-w-6xl mx-auto">
 
         <!-- HEADER -->
@@ -132,6 +136,10 @@
                                 <button type="button" onclick="openDetail({{ $d->id }})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">View</button>
                                 <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">Download</a>
                                 
+                                @if(in_array($d->status, ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']))
+                                <a href="/customer-request/spk-pdf/{{ $d->id }}?download=1" class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs hover:bg-orange-200 font-semibold" title="Download SPK Kepala Plant">SPK</a>
+                                @endif
+
                                 @if($d->status == 'approved')
                                 <button type="button" onclick="payOrder({{ $d->id }})" class="bg-indigo-500 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600 shadow-sm font-bold">Link Bayar</button>
                                 @endif
@@ -183,8 +191,15 @@
                         <tr><td class="py-1 text-gray-500">Region</td><td class="py-1">{{ $d->region ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Customer Number</td><td class="py-1">{{ $d->customer_number ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Alamat Pengiriman</td><td class="py-1">{{ $d->address ?? '-' }}</td></tr>
+                        <tr><td class="py-1 text-gray-500">Jarak Pengiriman</td><td class="py-1 font-semibold text-blue-600">{{ $d->delivery_distance ? $d->delivery_distance . ' km' : '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Note</td><td class="py-1">{{ $d->note ?? '-' }}</td></tr>
                     </table>
+
+                    <!-- Jarak & Peta Lokasi Pengiriman -->
+                    @if($d->delivery_latitude && $d->delivery_longitude)
+                    <h3 class="font-semibold text-gray-700 border-b pb-1">Lokasi Pengiriman di Peta</h3>
+                    <div id="detail-map-{{ $d->id }}" style="height: 200px; z-index: 10;" class="rounded-lg border shadow-sm my-2 detail-map" data-plat="-6.476278" data-plng="106.733417" data-dlat="{{ $d->delivery_latitude }}" data-dlng="{{ $d->delivery_longitude }}" data-code="{{ $d->request_code }}"></div>
+                    @endif
 
                     <!-- PROFIL BISNIS -->
                     <h3 class="font-semibold text-gray-700 border-b pb-1">Profil Bisnis</h3>
@@ -261,10 +276,20 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
-                                <tfoot class="bg-gray-100 text-gray-800">
+                                <tfoot class="bg-gray-100 text-gray-800 text-xs">
                                     <tr>
-                                        <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
-                                        <td class="p-2 text-right font-bold text-green-700">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
+                                        <td colspan="4" class="p-2 text-right font-semibold">Subtotal</td>
+                                        <td class="p-2 text-right font-semibold">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    @if($d->delivery_distance > 0)
+                                    <tr>
+                                        <td colspan="4" class="p-2 text-right font-semibold">Biaya Pengiriman ({{ $d->delivery_distance }} km)</td>
+                                        <td class="p-2 text-right font-semibold text-orange-600">Rp {{ number_format($d->delivery_fee, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
+                                    <tr class="border-t font-bold">
+                                        <td colspan="4" class="p-2 text-right text-sm">Grand Total</td>
+                                        <td class="p-2 text-right text-sm text-green-700">Rp {{ number_format($d->grand_total > 0 ? $d->grand_total : $d->details->sum('total'), 0, ',', '.') }}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -276,7 +301,15 @@
                 </div>
 
                 <!-- FOOTER -->
-                <div class="px-6 py-4 border-t bg-gray-50 flex justify-center">
+                <div class="px-6 py-4 border-t bg-gray-50 flex justify-between items-center w-full">
+                    @if(in_array($d->status, ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']))
+                    <a href="/customer-request/spk-pdf/{{ $d->id }}?download=1" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm flex items-center gap-1.5 transition">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download SPK
+                    </a>
+                    @else
+                    <div></div>
+                    @endif
                     <button type="button" onclick="closeDetail({{ $d->id }})"
                         class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg text-sm font-medium">
                         Close
@@ -348,8 +381,46 @@
 
                         <input name="npwp" placeholder="NPWP" class="border p-2 rounded">
                         <input name="tax_name" placeholder="Nama Pajak" class="border p-2 rounded">
-                        <textarea name="address" placeholder="Alamat pengiriman"
+                        <textarea name="address" id="address_input" placeholder="Alamat pengiriman"
                             class="col-span-2 border p-2 rounded"></textarea>
+
+
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Cari Lewat Link Share Loc Google Maps / Koordinat (Opsional)</label>
+                            <input type="text" id="maps_link_input" placeholder="Tempel link https://maps.app.goo.gl/... atau koordinat lat,lng" class="w-full border p-2 rounded bg-white focus:outline-none focus:border-blue-500">
+                            <p class="text-[10px] text-gray-500 mt-1">Tempel tautan lokasi Google Maps yang dishare customer dari WhatsApp untuk auto-pointing instan.</p>
+                        </div>
+                        
+                        <div class="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border border-blue-100 p-4 rounded-xl bg-blue-50/30">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Jarak Pengantaran (km)</label>
+                                <input type="number" step="0.1" name="delivery_distance" id="delivery_distance" placeholder="Jarak dalam km, contoh: 12.5" class="w-full border p-2 rounded bg-white focus:outline-none focus:border-blue-500" required>
+                                
+                                <!-- Map Picker -->
+                                <div class="mt-3">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Tandai Lokasi Tujuan di Peta</label>
+                                    <div id="map" style="height: 250px; z-index: 10;" class="rounded-lg border shadow-sm"></div>
+                                    <p class="text-[10px] text-gray-500 mt-1">Klik pada peta untuk menaruh pin lokasi tujuan pengiriman. Pin merah adalah lokasi Plant.</p>
+                                </div>
+                                
+                                <input type="hidden" name="delivery_latitude" id="delivery_latitude">
+                                <input type="hidden" name="delivery_longitude" id="delivery_longitude">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Biaya Pengiriman (Rp)</label>
+                                <div id="delivery_fee_auto_display" class="w-full p-2 border rounded bg-gray-100 font-semibold text-gray-800">Rp 0</div>
+                                
+                                <div id="delivery_fee_custom_container" class="hidden mt-2">
+                                    <label class="block text-xs font-semibold text-red-600 mb-1">Jarak melebihi tarif maksimum. Masukkan manual:</label>
+                                    <div class="flex items-center relative">
+                                        <span class="absolute left-3 text-gray-400 text-sm">Rp</span>
+                                        <input type="text" id="delivery_fee_custom_display" placeholder="Contoh 1.500.000" class="w-full border pl-8 p-2 rounded bg-white font-semibold text-red-600 focus:outline-none focus:border-red-500">
+                                        <input type="hidden" name="delivery_fee_custom" id="delivery_fee_custom" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <textarea name="tax_address" placeholder="Alamat Pajak"
                             class="col-span-2 border p-2 rounded"></textarea>
                     </div>
@@ -557,20 +628,92 @@
             // =====================
             // FORMAT & HITUNG
             // =====================
+            // =====================
+            // FORMAT & HITUNG
+            // =====================
+            const deliveryTariffs = @json($tariffs);
+            const distanceInput = document.getElementById('delivery_distance');
+            const feeAutoDisplay = document.getElementById('delivery_fee_auto_display');
+            const customFeeContainer = document.getElementById('delivery_fee_custom_container');
+            const customFeeDisplay = document.getElementById('delivery_fee_custom_display');
+            const customFeeHidden = document.getElementById('delivery_fee_custom');
+
             function formatNumber(num) {
                 return new Intl.NumberFormat('id-ID').format(num)
             }
 
-            function updateGrandTotal() {
+            function formatRupiah(number) {
+                if (!number) return '';
+                return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(number);
+            }
+
+            function getDeliveryFee(distance) {
+                if (isNaN(distance) || distance <= 0) return 0;
+                
+                // Cari tier yang cocok
+                const tariff = deliveryTariffs.find(t => {
+                    return distance >= parseFloat(t.min_km) && distance <= parseFloat(t.max_km);
+                });
+
+                if (tariff) {
+                    return parseFloat(tariff.fee);
+                }
+
+                return null; // out of range
+            }
+
+            function updateAllTotals() {
+                // 1. Hitung total item order
                 let totalInputs = document.querySelectorAll('.totalInput')
-                let grandTotal = 0
+                let itemsTotal = 0
                 totalInputs.forEach(input => {
-                    // Ambil angka asli dari data-raw (tanpa titik format)
                     let rawVal = parseFloat(input.dataset.raw) || 0;
-                    grandTotal += rawVal;
-                })
+                    itemsTotal += rawVal;
+                });
+
+                // 2. Hitung delivery fee
+                let distance = parseFloat(distanceInput.value) || 0;
+                let fee = 0;
+
+                if (distance > 0) {
+                    const calculatedFee = getDeliveryFee(distance);
+                    if (calculatedFee !== null) {
+                        fee = calculatedFee;
+                        feeAutoDisplay.innerText = 'Rp ' + formatNumber(fee);
+                        customFeeContainer.classList.add('hidden');
+                        customFeeDisplay.required = false;
+                    } else {
+                        // Di luar jangkauan (custom fee)
+                        feeAutoDisplay.innerText = 'Input Manual';
+                        customFeeContainer.classList.remove('hidden');
+                        customFeeDisplay.required = true;
+                        
+                        let customVal = parseFloat(customFeeHidden.value) || 0;
+                        fee = customVal;
+                    }
+                } else {
+                    feeAutoDisplay.innerText = 'Rp 0';
+                    customFeeContainer.classList.add('hidden');
+                    customFeeDisplay.required = false;
+                }
+
+                // 3. Tampilkan Grand Total
+                let grandTotal = itemsTotal + fee;
                 document.getElementById('grandTotalDisplay').innerText = formatNumber(grandTotal);
                 document.getElementById('grandTotalInput').value = grandTotal;
+            }
+
+            if (distanceInput) {
+                distanceInput.addEventListener('input', updateAllTotals);
+            }
+
+            if (customFeeDisplay) {
+                customFeeDisplay.addEventListener('input', function() {
+                    let value = this.value.replace(/\D/g, "");
+                    customFeeHidden.value = value || 0;
+                    this.value = formatRupiah(value);
+                    updateAllTotals();
+                });
             }
 
             // =====================
@@ -602,7 +745,7 @@
                 total.value = formatNumber(totalVal)
                 total.dataset.raw = totalVal
 
-                updateGrandTotal()
+                updateAllTotals()
             })
 
             // =====================
@@ -629,17 +772,222 @@
                     let rows = document.querySelectorAll('#detailTable tr')
                     if (rows.length > 1) {
                         e.target.closest('tr').remove()
-                        updateGrandTotal()
+                        updateAllTotals()
                     }
                 }
             })
 
             // =====================
-            // MODAL CONTROL
+            // MAP PICKER & ROUTING LOGIC
             // =====================
+            let pickerMap = null;
+            let pickerMarker = null;
+            const plantCoords = [-6.476278, 106.733417];
+
+            function setPickerDestination(lat, lng) {
+                document.getElementById('delivery_latitude').value = lat;
+                document.getElementById('delivery_longitude').value = lng;
+
+                if (!pickerMarker) {
+                    pickerMarker = L.marker([lat, lng], {draggable: true}).addTo(pickerMap);
+                    pickerMarker.on('dragend', function(e) {
+                        const marker = e.target;
+                        const position = marker.getLatLng();
+                        setPickerDestination(position.lat, position.lng);
+                    });
+                } else {
+                    pickerMarker.setLatLng([lat, lng]);
+                }
+
+                // Kalkulasi jarak jalan mobil dari Plant
+                calculateRouteDistance(plantCoords[0], plantCoords[1], lat, lng);
+            }
+
+            function calculateRouteDistance(lat1, lng1, lat2, lng2) {
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=false`;
+                
+                document.getElementById('delivery_distance').value = '';
+                document.getElementById('delivery_distance').placeholder = 'Menghitung rute...';
+                
+                fetch(osrmUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                            const distanceInMeters = data.routes[0].distance;
+                            const distanceInKm = (distanceInMeters / 1000).toFixed(1);
+                            document.getElementById('delivery_distance').value = distanceInKm;
+                            updateAllTotals();
+                        } else {
+                            throw new Error('OSRM route failed');
+                        }
+                    })
+                    .catch(err => {
+                        console.warn('OSRM failed, falling back to Haversine straight-line distance:', err);
+                        // Fallback Haversine
+                        const distanceInKm = haversineDistance(lat1, lng1, lat2, lng2).toFixed(1);
+                        document.getElementById('delivery_distance').value = distanceInKm;
+                        updateAllTotals();
+                    });
+            }
+
+            function haversineDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; // km
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+
+            // =====================
+            // GEOCONDING & GMAPS LINK RESOLVER LOGIC
+            // =====================
+            const mapsLinkInput = document.getElementById('maps_link_input');
+
+            function finishGeocode(lat, lon) {
+                if (pickerMap) {
+                    pickerMap.setView([lat, lon], 14);
+                    setPickerDestination(lat, lon);
+                }
+            }
+
+            // Google Maps Link Parser / Resolver
+            function handleMapsLinkInput() {
+                const inputVal = mapsLinkInput.value.trim();
+                if (!inputVal) return;
+
+                // Extract URL if present anywhere in the text
+                const urlRegex = /(https?:\/\/[^\s]+)/;
+                const urlMatch = inputVal.match(urlRegex);
+                const targetUrl = urlMatch ? urlMatch[0] : null;
+
+                if (targetUrl) {
+                    // 1. Cek jika URL adalah Google Maps Long URL dengan q=lat,lng
+                    const qMatch = targetUrl.match(/[?&]q=(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    if (qMatch) {
+                        finishGeocode(parseFloat(qMatch[1]), parseFloat(qMatch[2]));
+                        mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
+                        return;
+                    }
+                    
+                    // 2. Cek jika URL mengandung /place/lat,lng
+                    const placeMatch = targetUrl.match(/\/place\/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    if (placeMatch) {
+                        finishGeocode(parseFloat(placeMatch[1]), parseFloat(placeMatch[2]));
+                        mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
+                        return;
+                    }
+
+                    // 3. Cek jika URL mengandung @lat,lng
+                    const atMatch = targetUrl.match(/@(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    if (atMatch) {
+                        finishGeocode(parseFloat(atMatch[1]), parseFloat(atMatch[2]));
+                        mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
+                        return;
+                    }
+
+                    // 4. Jika itu short URL (misal maps.app.goo.gl, goo.gl, atau maps.google.com)
+                    if (targetUrl.includes('goo.gl') || targetUrl.includes('maps.app') || targetUrl.includes('maps.google')) {
+                        mapsLinkInput.placeholder = "Membaca link Google Maps...";
+                        mapsLinkInput.disabled = true;
+
+                        fetch('/api/resolve-maps-url', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ url: targetUrl })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            mapsLinkInput.disabled = false;
+                            mapsLinkInput.placeholder = "Tempel link https://maps.app.goo.gl/... atau koordinat lat,lng";
+                            if (data.success) {
+                                finishGeocode(data.latitude, data.longitude);
+                                mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
+                            } else {
+                                mapsLinkInput.className = "w-full border border-red-400 p-2 rounded bg-red-50/20 focus:outline-none";
+                                alert(data.error || 'Gagal membaca koordinat dari link tersebut.');
+                            }
+                        })
+                        .catch(err => {
+                            mapsLinkInput.disabled = false;
+                            mapsLinkInput.placeholder = "Tempel link https://maps.app.goo.gl/... atau koordinat lat,lng";
+                            mapsLinkInput.className = "w-full border border-red-400 p-2 rounded bg-red-50/20 focus:outline-none";
+                            console.error('Resolve short url failed:', err);
+                            alert('Terjadi kesalahan koneksi saat membaca link Google Maps.');
+                        });
+                        return;
+                    }
+                }
+
+                // 5. Cek jika di dalam teks ada koordinat langsung (lat, lng) di mana saja
+                const coordRegex = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/;
+                const coordMatch = inputVal.match(coordRegex);
+                if (coordMatch) {
+                    const lat = parseFloat(coordMatch[1]);
+                    const lon = parseFloat(coordMatch[2]);
+                    finishGeocode(lat, lon);
+                    mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
+                    return;
+                }
+
+                mapsLinkInput.className = "w-full border border-red-400 p-2 rounded bg-red-50/20 focus:outline-none";
+                alert('Format link atau teks tidak dikenali. Gunakan link share location WhatsApp/Google Maps resmi atau koordinat lat,lng.');
+            }
+
+
+            if (mapsLinkInput) {
+                mapsLinkInput.addEventListener('change', handleMapsLinkInput);
+                mapsLinkInput.addEventListener('paste', () => {
+                    setTimeout(handleMapsLinkInput, 100);
+                });
+            }
+
+            // =====================
+            // MODAL CONTROL & MAP INITIALIZATION
+            // =====================
+            const detailMapInstances = {};
+
             window.openModal = function () {
                 document.getElementById('modalForm').classList.remove('hidden')
                 document.getElementById('modalForm').classList.add('flex')
+                
+                if (!pickerMap) {
+                    setTimeout(() => {
+                        pickerMap = L.map('map').setView(plantCoords, 12);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            attribution: '© OpenStreetMap'
+                        }).addTo(pickerMap);
+
+                        // Icon merah untuk Plant
+                        const redIcon = new L.Icon({
+                          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                          iconSize: [25, 41],
+                          iconAnchor: [12, 41],
+                          popupAnchor: [1, -34],
+                          shadowSize: [41, 41]
+                        });
+                        L.marker(plantCoords, {icon: redIcon}).addTo(pickerMap).bindPopup("Plant (Mulai)").openPopup();
+
+                        // Klik peta untuk taruh pin tujuan
+                        pickerMap.on('click', function(e) {
+                            setPickerDestination(e.latlng.lat, e.latlng.lng);
+                        });
+
+                        pickerMap.invalidateSize();
+                    }, 200);
+                } else {
+                    setTimeout(() => {
+                        pickerMap.invalidateSize();
+                    }, 200);
+                }
             }
 
             window.closeModal = function () {
@@ -650,6 +998,46 @@
             window.openDetail = function (id) {
                 document.getElementById('detailModal-' + id).classList.remove('hidden')
                 document.getElementById('detailModal-' + id).classList.add('flex')
+                
+                // Inisialisasi peta detail setelah modal tampil
+                const mapEl = document.getElementById('detail-map-' + id);
+                if (mapEl && !detailMapInstances[id]) {
+                    const plat = parseFloat(mapEl.dataset.plat);
+                    const plng = parseFloat(mapEl.dataset.plng);
+                    const dlat = parseFloat(mapEl.dataset.dlat);
+                    const dlng = parseFloat(mapEl.dataset.dlng);
+                    const code = mapEl.dataset.code;
+
+                    setTimeout(() => {
+                        const dMap = L.map('detail-map-' + id).setView([dlat, dlng], 12);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            attribution: '© OpenStreetMap'
+                        }).addTo(dMap);
+
+                        const redIcon = new L.Icon({
+                          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                          iconSize: [25, 41],
+                          iconAnchor: [12, 41],
+                          popupAnchor: [1, -34],
+                          shadowSize: [41, 41]
+                        });
+
+                        L.marker([plat, plng], {icon: redIcon}).addTo(dMap).bindPopup("Plant (Mulai)").openPopup();
+                        L.marker([dlat, dlng]).addTo(dMap).bindPopup(`Tujuan (${code})`);
+
+                        // Draw dashed line
+                        L.polyline([[plat, plng], [dlat, dlng]], {color: 'blue', weight: 3, dashArray: '5, 10'}).addTo(dMap);
+
+                        detailMapInstances[id] = dMap;
+                        dMap.invalidateSize();
+                    }, 200);
+                } else if (detailMapInstances[id]) {
+                    setTimeout(() => {
+                        detailMapInstances[id].invalidateSize();
+                    }, 200);
+                }
             }
 
             window.closeDetail = function (id) {

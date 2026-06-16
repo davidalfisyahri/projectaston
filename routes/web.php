@@ -34,6 +34,8 @@ Route::post('/customer-request/store', [CustomerRequestController::class, 'store
 Route::delete('/customer-request/delete/{id}', [CustomerRequestController::class, 'destroy']);
 Route::get('/customer-request/pdf/{id}', [CustomerRequestController::class, 'pdf']);
 Route::get('/customer-request/spk-pdf/{id}', [CustomerRequestController::class, 'spkPdf'])->name('customer-request.spk-pdf');
+Route::get('/customer-request/invoice-pdf/{id}', [CustomerRequestController::class, 'invoicePdf'])->name('customer-request.invoice-pdf');
+
 
 Route::post('/customer-request/approve/{id}', [CustomerRequestController::class, 'approve']);
 Route::post('/customer-request/pay/{id}', [CustomerRequestController::class, 'pay']);

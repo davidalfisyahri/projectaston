@@ -347,6 +347,24 @@ class CustomerRequestController extends Controller
         }
     }
 
+    public function invoicePdf($id)
+    {
+        $data = CustomerRequest::with([
+            'details.grade',
+            'user',
+            'approvals.user'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.invoice', compact('data'))
+            ->setPaper('A4', 'portrait');
+
+        if (request('download')) {
+            return $pdf->download('Invoice_' . $data->request_code . '.pdf');
+        }
+
+        return $pdf->stream();
+    }
+
     public function spkPdf($id)
     {
         $data = CustomerRequest::with([

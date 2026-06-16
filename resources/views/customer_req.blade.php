@@ -134,8 +134,19 @@
                             </td>
                             <td class="p-3 text-left flex flex-wrap justify-start gap-2">
                                 <button type="button" onclick="openDetail({{ $d->id }})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">View</button>
-                                <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">Download</a>
-                                
+
+                                <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                  </svg>
+                                </a>
+
+                                {{-- <a href="/invoice/pdf/{{ $d->id }}?download=1" class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs hover:bg-yellow-200">Invoice</a> --}}
+                                <a href="/customer-request/invoice-pdf/{{ $d->id }}?download=1"
+                                    class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs hover:bg-yellow-200">
+                                     Invoice
+                                 </a>
+
                                 @if(in_array($d->status, ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']))
                                 <a href="/customer-request/spk-pdf/{{ $d->id }}?download=1" class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs hover:bg-orange-200 font-semibold" title="Download SPK Kepala Plant">SPK</a>
                                 @endif
@@ -507,14 +518,15 @@
                             class="col-span-2 border p-2 rounded"></textarea>
                     </div>
 
-                    <h3 class="mb-3 font-semibold text-gray-800 border-b pb-2">
+                    {{-- <h3 class="mb-3 font-semibold text-gray-800 border-b pb-2">
                         Jadwal
                     </h3>
                     <div>
                         <label class="text-xs text-gray-600">Jadwal Pengiriman</label>
                         <input type="date" name="schedule_date" class="border p-2 rounded w-full">
                     </div>
-                    <br>
+                    <br> --}}
+                    
                     <!--=====================-->
                     <!-- DETAIL -->
                     <!-- ===================== -->

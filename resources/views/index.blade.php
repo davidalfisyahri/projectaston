@@ -344,12 +344,12 @@
                         class="-mt-10 backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl p-5 shadow-md mx-3">
 
                         <p class="text-sm text-gray-700">
-                            Menurut SNI 03-2834-2000, Pasir tayan
+                            Menurut SNI 03-2834-2000, Pasir
                             sering kali memenuhi gradasi Zone I
                             (Pasir Kasar) hingga zone II. ini
                             menjadkannya sangat baik untuk
                             campuran beton struktural
-                            Pasir Tayan berkualitas baik umumnya
+                            Pasir yang berkualitas baik umumnya
                             memiliki kadar lumpur yang rendah,
                             memenuhi syarat kadar lumpur < 5% berat sesuai persyaratan agregat halus, sehingga cocok
                                 untuk beton yang sesuai dengan spesifikasi project. </p>

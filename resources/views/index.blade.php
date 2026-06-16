@@ -44,18 +44,14 @@
     <section id="home" class="h-screen relative flex items-center justify-center text-white">
 
         <div class="absolute inset-0 bg-cover bg-center"
-            style="background-image: url('{{ asset('asset/image/pabrikbaru1.jpg') }}');">
+            style="background-image: url('{{ asset('asset/image/pabrikbaru2.png') }}');">
         </div>
 
         <div></div>
 
         <div class="relative text-center px-6">
-<<<<<<< HEAD
-
-=======
-            <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">ISTIMEWA BETON</h1>
-            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">PT. ISTIMEWA ASTON INDONESIA </p>
->>>>>>> e44555e086ebdb1f0b9c1c014881797e3979722c
+            {{-- <h1 class="font-heading text-4xl md:text-6xl font-bold mb-4 tracking-wide">ISTIMEWA BETON</h1>
+            <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">PT. ISTIMEWA ASTON INDONESIA </p> --}}
 
         </div>
     </section>
@@ -292,7 +288,7 @@
                     <div class="relative h-[500px] rounded-3xl overflow-hidden shadow-lg">
 
                         <!-- Gambar -->
-                        <img src="{{ asset('asset/image/semen_3_roda.jpg') }}" alt="Semen Tiga Roda"
+                        <img src="{{ asset('asset/image/karungsemenopc.png') }}" alt="Semen Tiga Roda"
                             class="absolute inset-0 w-full h-full object-cover">
 
                         <!-- Overlay gradient -->
@@ -310,7 +306,7 @@
                         class="-mt-10 backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl p-5 shadow-md mx-3">
 
                         <p class="text-sm text-gray-700">
-                            Semen Tiga Roda OPC (Ordinary
+                            Semen OPC Terbaik (Ordinary
                             Portland Cement) tipe I adalah semen
                             kualitas tinggi dari indocement untuk
                             struktur utama. Ini ideal untuk konstruksi

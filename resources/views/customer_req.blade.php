@@ -127,6 +127,9 @@
                                     @if($d->status == 'approved') bg-green-100 text-green-700
                                     @elseif($d->status == 'rejected') bg-red-100 text-red-600
                                     @elseif($d->status == 'done') bg-blue-100 text-blue-700 font-bold
+                                    @elseif($d->status == 'paid') bg-emerald-100 text-emerald-700 font-semibold
+                                    @elseif($d->status == 'confirmed_wa') bg-purple-100 text-purple-700
+                                    @elseif($d->status == 'scheduled') bg-indigo-100 text-indigo-700
                                     @else bg-gray-100 text-gray-600
                                     @endif">
                                     {{ $d->status }}
@@ -141,13 +144,14 @@
                                   </svg>
                                 </a>
 
-                                {{-- <a href="/invoice/pdf/{{ $d->id }}?download=1" class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs hover:bg-yellow-200">Invoice</a> --}}
+                                @if(in_array($d->status, ['paid', 'confirmed_wa', 'scheduled', 'done']))
                                 <a href="/customer-request/invoice-pdf/{{ $d->id }}?download=1"
                                     class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs hover:bg-yellow-200">
                                      Invoice
                                  </a>
+                                @endif
 
-                                @if(in_array($d->status, ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']))
+                                @if(in_array($d->status, ['confirmed_wa', 'scheduled', 'done']))
                                 <a href="/customer-request/spk-pdf/{{ $d->id }}?download=1" class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs hover:bg-orange-200 font-semibold" title="Download SPK Kepala Plant">SPK</a>
                                 @endif
 
@@ -156,6 +160,16 @@
                                 @endif
 
                                 @if($d->status == 'paid')
+                                <button type="button" onclick="openScheduleModal({{ $d->id }})" class="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded text-xs font-bold transition hover:bg-indigo-200 flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                                    </svg>
+                                    Schedule
+                                </button>
+                                @endif
+
+                                @if(in_array($d->status, ['confirmed_wa', 'scheduled']))
                                 <form action="/customer-request/done/{{ $d->id }}" method="POST" onsubmit="return confirm('Tandai request ini sebagai Selesai (Done) di lapangan?')">
                                     @csrf
                                     <button class="bg-emerald-500 text-white px-2 py-1 rounded text-xs hover:bg-emerald-600 shadow-sm font-bold">Done ✓</button>
@@ -197,6 +211,7 @@
                     <h3 class="font-semibold text-gray-700 border-b pb-1">Identitas Customer</h3>
                     <table class="w-full">
                         <tr><td class="py-1 text-gray-500 w-44">Kode Request</td><td class="py-1 font-medium">{{ $d->request_code }}</td></tr>
+                        <tr><td class="py-1 text-gray-500">Dibuat Oleh</td><td class="py-1 font-medium text-gray-700">{{ $d->user->name_user ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Nama Customer</td><td class="py-1">{{ $d->customer_name }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Phone</td><td class="py-1">{{ $d->phone ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Region</td><td class="py-1">{{ $d->region ?? '-' }}</td></tr>
@@ -216,6 +231,20 @@
                     <h3 class="font-semibold text-gray-700 border-b pb-1">Profil Bisnis</h3>
                     <table class="w-full">
                         <tr><td class="py-1 text-gray-500 w-44">No Identitas (NIK)</td><td class="py-1">{{ $d->no_identitas ?? '-' }}</td></tr>
+                        <tr>
+                            <td class="py-1 text-gray-500 w-44">File KTP</td>
+                            <td class="py-1">
+                                @if($d->ktp_file)
+                                    @if(in_array(strtolower(pathinfo($d->ktp_file, PATHINFO_EXTENSION)), ['jpg','jpeg','png','webp']))
+                                        <a href="{{ asset($d->ktp_file) }}" target="_blank"><img src="{{ asset($d->ktp_file) }}" class="h-16 rounded border hover:opacity-80 transition" alt="KTP"></a>
+                                    @else
+                                        <a href="{{ asset($d->ktp_file) }}" target="_blank" class="text-blue-600 hover:underline text-xs">📄 Lihat PDF KTP</a>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-xs italic">Belum diupload</span>
+                                @endif
+                            </td>
+                        </tr>
                         <tr><td class="py-1 text-gray-500">Bentuk Usaha</td><td class="py-1">{{ $d->form_business ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Kepemilikan</td><td class="py-1">{{ $d->business_ownership ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Bidang Usaha</td><td class="py-1">{{ $d->section_business ?? '-' }}</td></tr>
@@ -226,6 +255,20 @@
                     <h3 class="font-semibold text-gray-700 border-b pb-1">Pajak</h3>
                     <table class="w-full">
                         <tr><td class="py-1 text-gray-500 w-44">NPWP</td><td class="py-1">{{ $d->npwp ?? '-' }}</td></tr>
+                        <tr>
+                            <td class="py-1 text-gray-500 w-44">File NPWP</td>
+                            <td class="py-1">
+                                @if($d->npwp_file)
+                                    @if(in_array(strtolower(pathinfo($d->npwp_file, PATHINFO_EXTENSION)), ['jpg','jpeg','png','webp']))
+                                        <a href="{{ asset($d->npwp_file) }}" target="_blank"><img src="{{ asset($d->npwp_file) }}" class="h-16 rounded border hover:opacity-80 transition" alt="NPWP"></a>
+                                    @else
+                                        <a href="{{ asset($d->npwp_file) }}" target="_blank" class="text-blue-600 hover:underline text-xs">📄 Lihat PDF NPWP</a>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-xs italic">Belum diupload</span>
+                                @endif
+                            </td>
+                        </tr>
                         <tr><td class="py-1 text-gray-500">Nama Pajak</td><td class="py-1">{{ $d->tax_name ?? '-' }}</td></tr>
                         <tr><td class="py-1 text-gray-500">Alamat Pajak</td><td class="py-1">{{ $d->tax_address ?? '-' }}</td></tr>
                     </table>
@@ -289,12 +332,30 @@
                                 </tbody>
                                 <tfoot class="bg-gray-100 text-gray-800 text-xs">
                                     <tr>
-                                        <td colspan="4" class="p-2 text-right font-semibold">Subtotal</td>
+                                        <td colspan="4" class="p-2 text-right font-semibold">Subtotal Beton</td>
                                         <td class="p-2 text-right font-semibold">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
                                     </tr>
+                                    @if($d->discount_amount > 0)
+                                    <tr class="text-red-600">
+                                        <td colspan="4" class="p-2 text-right font-semibold">
+                                            Diskon
+                                            @if($d->discount_type == 'percentage')
+                                                ({{ number_format($d->discount_value, 0) }}%)
+                                            @endif
+                                        </td>
+                                        <td class="p-2 text-right font-semibold">- Rp {{ number_format($d->discount_amount, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
                                     @if($d->delivery_distance > 0)
                                     <tr>
-                                        <td colspan="4" class="p-2 text-right font-semibold">Biaya Pengiriman ({{ $d->delivery_distance }} km)</td>
+                                        <td colspan="4" class="p-2 text-right font-semibold">
+                                            Biaya Pengiriman ({{ $d->delivery_distance }} km)
+                                            @if($d->delivery_distance > 25)
+                                                <span class="text-[10px] text-gray-500 font-normal block">
+                                                    ({{ ceil(($d->delivery_distance - 25) / 5) }} × Rp 20.000 × {{ number_format($d->details->sum('qty'), 0, ',', '.') }} m³)
+                                                </span>
+                                            @endif
+                                        </td>
                                         <td class="p-2 text-right font-semibold text-orange-600">Rp {{ number_format($d->delivery_fee, 0, ',', '.') }}</td>
                                     </tr>
                                     @endif
@@ -313,7 +374,7 @@
 
                 <!-- FOOTER -->
                 <div class="px-6 py-4 border-t bg-gray-50 flex justify-between items-center w-full">
-                    @if(in_array($d->status, ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']))
+                    @if(in_array($d->status, ['confirmed_wa', 'scheduled', 'done']))
                     <a href="/customer-request/spk-pdf/{{ $d->id }}?download=1" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm flex items-center gap-1.5 transition">
                         <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         Download SPK
@@ -329,6 +390,41 @@
 
             </div>
         </div>
+
+        @if($d->status == 'paid')
+        <div id="scheduleModal-{{ $d->id }}" onclick="if(event.target === this) closeScheduleModal({{ $d->id }})" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-md rounded-xl shadow-lg overflow-hidden flex flex-col animate-fade-in">
+                <!-- HEADER -->
+                <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                    <h2 class="text-base font-bold text-gray-800">Atur Jadwal Pengiriman</h2>
+                    <button type="button" onclick="closeScheduleModal({{ $d->id }})" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+                </div>
+                <!-- BODY -->
+                <form action="/customer-request/schedule/{{ $d->id }}" method="POST">
+                    @csrf
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Kode Request</label>
+                            <div class="text-sm font-mono text-gray-800 bg-gray-50 p-2 rounded border">{{ $d->request_code }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Customer</label>
+                            <div class="text-sm text-gray-800 bg-gray-50 p-2 rounded border">{{ $d->customer_name }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Pengiriman</label>
+                            <input type="date" name="schedule_date" required class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                        </div>
+                    </div>
+                    <!-- FOOTER -->
+                    <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
+                        <button type="button" onclick="closeScheduleModal({{ $d->id }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Batal</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">Simpan Jadwal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
     @endforeach
 
     <!-- ========================= -->
@@ -353,7 +449,7 @@
             <!-- BODY -->
             <div class="p-6 overflow-y-auto">
 
-                <form action="/customer-request/store" method="POST">
+                <form action="/customer-request/store" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <!-- ===================== -->
@@ -375,23 +471,41 @@
                     <h3 class="font-semibold mb-2">Profil Bisnis</h3>
 
                     <div class="grid grid-cols-2 gap-3 mb-4">
-                        <input name="no_identitas" placeholder="NIK" class="border p-2 rounded">
-                        <input name="form_business" placeholder="Bentuk Usaha" class="border p-2 rounded">
-                        <select name="business_ownership" class="border p-2 rounded w-full">
-                            <option value="">-- Pilih Kepemilikan --</option>
-                            <option value="milik_sendiri">Milik Sendiri</option>
-                            <option value="tidak_ada_cabang">Tidak Ada Cabang</option>
-                            <option value="sewa_kontrak">Sewa / Kontrak</option>
-                            <option value="kantor_pusat">Kantor Pusat / Induk</option>
-                            <option value="cabang">Cabang</option>
-                            <option value="proyek">Proyek</option>
-                        </select>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">NIK</label>
+                            <input name="no_identitas" placeholder="NIK" class="border p-2 rounded w-full">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Upload KTP (Opsional)</label>
+                            <input type="file" name="ktp_file" accept="image/*,application/pdf" class="border p-1.5 rounded w-full text-sm">
+                        </div>
+
+                        <div class="col-span-2 grid grid-cols-2 gap-3">
+                            <input name="form_business" placeholder="Bentuk Usaha" class="border p-2 rounded w-full">
+                            <select name="business_ownership" class="border p-2 rounded w-full">
+                                <option value="">-- Pilih Kepemilikan --</option>
+                                <option value="milik_sendiri">Milik Sendiri</option>
+                                <option value="tidak_ada_cabang">Tidak Ada Cabang</option>
+                                <option value="sewa_kontrak">Sewa / Kontrak</option>
+                                <option value="kantor_pusat">Kantor Pusat / Induk</option>
+                                <option value="cabang">Cabang</option>
+                                <option value="proyek">Proyek</option>
+                            </select>
+                        </div>
 
                         <input name="section_business" placeholder="Bidang Usaha" class="border p-2 rounded">
                         <textarea name="address_business" placeholder="Alamat Usaha" class="border p-2 rounded"></textarea>
 
-                        <input name="npwp" placeholder="NPWP" class="border p-2 rounded">
-                        <input name="tax_name" placeholder="Nama Pajak" class="border p-2 rounded">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">NPWP</label>
+                            <input name="npwp" placeholder="NPWP" class="border p-2 rounded w-full">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Upload NPWP (Opsional)</label>
+                            <input type="file" name="npwp_file" accept="image/*,application/pdf" class="border p-1.5 rounded w-full text-sm">
+                        </div>
+
+                        <input name="tax_name" placeholder="Nama Pajak" class="col-span-2 border p-2 rounded">
                         <textarea name="address" id="address_input" placeholder="Alamat pengiriman"
                             class="col-span-2 border p-2 rounded"></textarea>
 
@@ -420,15 +534,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1">Biaya Pengiriman (Rp)</label>
                                 <div id="delivery_fee_auto_display" class="w-full p-2 border rounded bg-gray-100 font-semibold text-gray-800">Rp 0</div>
-                                
-                                <div id="delivery_fee_custom_container" class="hidden mt-2">
-                                    <label class="block text-xs font-semibold text-red-600 mb-1">Jarak melebihi tarif maksimum. Masukkan manual:</label>
-                                    <div class="flex items-center relative">
-                                        <span class="absolute left-3 text-gray-400 text-sm">Rp</span>
-                                        <input type="text" id="delivery_fee_custom_display" placeholder="Contoh 1.500.000" class="w-full border pl-8 p-2 rounded bg-white font-semibold text-red-600 focus:outline-none focus:border-red-500">
-                                        <input type="hidden" name="delivery_fee_custom" id="delivery_fee_custom" value="0">
-                                    </div>
-                                </div>
+                                <p class="text-[10px] text-gray-500 mt-1">0–25 km gratis. Lebih dari 25 km: Rp 20.000 per kelipatan 5 km × qty (m³)</p>
                             </div>
                         </div>
 
@@ -590,6 +696,20 @@
                             </tbody>
                             <tfoot class="bg-gray-100 text-gray-800">
                                 <tr>
+                                    <td colspan="4" class="p-2 text-right font-semibold">Subtotal Item (Beton)</td>
+                                    <td class="p-2 text-right font-semibold text-gray-700">
+                                        Rp <span id="subtotalDisplay">0</span>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr id="discountDisplayRow" class="hidden text-red-600 font-semibold">
+                                    <td colspan="4" class="p-2 text-right">Potongan Diskon</td>
+                                    <td class="p-2 text-right" id="discountAmountDisplay">
+                                        - Rp 0
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
                                     <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
                                     <td class="p-2 text-right font-bold text-green-700">
                                         Rp <span id="grandTotalDisplay">0</span>
@@ -601,9 +721,26 @@
                         </table>
                     </div>
 
-                    <button type="button" onclick="addRow()" class="mt-3 text-blue-600 text-sm">
-                        + Tambah Item
-                    </button>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-3 gap-3">
+                        <button type="button" onclick="addRow()" class="text-blue-600 text-sm font-semibold hover:underline">
+                            + Tambah Item
+                        </button>
+
+                        <div class="flex gap-2 items-center bg-gray-50 border p-3 rounded-xl shadow-sm">
+                            <div class="flex flex-col gap-0.5">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase">Tipe Diskon</label>
+                                <select name="discount_type" id="discount_type" class="border px-2 py-1 rounded bg-white text-xs focus:outline-none focus:border-blue-500 w-36">
+                                    <option value="">Tanpa Diskon</option>
+                                    <option value="percentage">Persentase (%)</option>
+                                    <option value="fixed">Nominal (Rupiah)</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                                <label class="text-[10px] font-bold text-gray-500 uppercase">Nilai Diskon</label>
+                                <input type="number" step="any" name="discount_value" id="discount_value" placeholder="0" class="border px-2 py-1 rounded bg-white text-xs focus:outline-none focus:border-blue-500 w-28" min="0">
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- FOOTER -->
                     <div class="mt-6 flex justify-end gap-2">
@@ -643,12 +780,10 @@
             // =====================
             // FORMAT & HITUNG
             // =====================
-            const deliveryTariffs = @json($tariffs);
             const distanceInput = document.getElementById('delivery_distance');
             const feeAutoDisplay = document.getElementById('delivery_fee_auto_display');
-            const customFeeContainer = document.getElementById('delivery_fee_custom_container');
-            const customFeeDisplay = document.getElementById('delivery_fee_custom_display');
-            const customFeeHidden = document.getElementById('delivery_fee_custom');
+            const discountTypeInput = document.getElementById('discount_type');
+            const discountValueInput = document.getElementById('discount_value');
 
             function formatNumber(num) {
                 return new Intl.NumberFormat('id-ID').format(num)
@@ -659,19 +794,18 @@
                 return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(number);
             }
 
-            function getDeliveryFee(distance) {
+            /**
+             * Hitung biaya pengiriman:
+             * - 0–25 km  : GRATIS
+             * - >25 km   : Rp 20.000 per kelipatan 5 km × qty m³
+             */
+            function getDeliveryFee(distance, totalQtyM3) {
                 if (isNaN(distance) || distance <= 0) return 0;
-                
-                // Cari tier yang cocok
-                const tariff = deliveryTariffs.find(t => {
-                    return distance >= parseFloat(t.min_km) && distance <= parseFloat(t.max_km);
-                });
+                if (distance <= 25) return 0; // gratis
 
-                if (tariff) {
-                    return parseFloat(tariff.fee);
-                }
-
-                return null; // out of range
+                const extraKm = distance - 25;
+                const increments = Math.ceil(extraKm / 5);
+                return increments * 20000 * totalQtyM3;
             }
 
             function updateAllTotals() {
@@ -683,34 +817,60 @@
                     itemsTotal += rawVal;
                 });
 
-                // 2. Hitung delivery fee
-                let distance = parseFloat(distanceInput.value) || 0;
-                let fee = 0;
-
-                if (distance > 0) {
-                    const calculatedFee = getDeliveryFee(distance);
-                    if (calculatedFee !== null) {
-                        fee = calculatedFee;
-                        feeAutoDisplay.innerText = 'Rp ' + formatNumber(fee);
-                        customFeeContainer.classList.add('hidden');
-                        customFeeDisplay.required = false;
-                    } else {
-                        // Di luar jangkauan (custom fee)
-                        feeAutoDisplay.innerText = 'Input Manual';
-                        customFeeContainer.classList.remove('hidden');
-                        customFeeDisplay.required = true;
-                        
-                        let customVal = parseFloat(customFeeHidden.value) || 0;
-                        fee = customVal;
-                    }
-                } else {
-                    feeAutoDisplay.innerText = 'Rp 0';
-                    customFeeContainer.classList.add('hidden');
-                    customFeeDisplay.required = false;
+                const subtotalDisplayEl = document.getElementById('subtotalDisplay');
+                if (subtotalDisplayEl) {
+                    subtotalDisplayEl.innerText = formatNumber(itemsTotal);
                 }
 
-                // 3. Tampilkan Grand Total
-                let grandTotal = itemsTotal + fee;
+                // Hitung total qty m³
+                let totalQtyM3 = 0;
+                document.querySelectorAll('#detailTable tr').forEach(row => {
+                    let qtyInput = row.querySelector('input[name="qty[]"]');
+                    if (qtyInput) {
+                        totalQtyM3 += parseFloat(qtyInput.value) || 0;
+                    }
+                });
+
+                // 2. Hitung delivery fee (0-25km gratis, >25km Rp 20.000 per 5km × qty m³)
+                let distance = parseFloat(distanceInput.value) || 0;
+                let fee = getDeliveryFee(distance, totalQtyM3);
+
+                if (distance <= 25) {
+                    feeAutoDisplay.innerText = distance > 0 ? 'GRATIS (≤ 25 km)' : 'Rp 0';
+                } else {
+                    const extraKm = distance - 25;
+                    const increments = Math.ceil(extraKm / 5);
+                    feeAutoDisplay.innerText = 'Rp ' + formatNumber(fee) + ' (' + increments + ' × Rp 20.000 × ' + formatNumber(totalQtyM3) + ' m³)';
+                }
+
+                // 3. Hitung diskon
+                let discountType = discountTypeInput ? discountTypeInput.value : '';
+                let discountValue = discountValueInput ? parseFloat(discountValueInput.value) || 0 : 0;
+                let discountAmount = 0;
+
+                if (discountType === 'percentage') {
+                    discountAmount = itemsTotal * (discountValue / 100);
+                } else if (discountType === 'fixed') {
+                    discountAmount = discountValue;
+                }
+
+                if (discountAmount > itemsTotal) {
+                    discountAmount = itemsTotal;
+                }
+
+                // Tampilkan diskon jika ada
+                const discountDisplayEl = document.getElementById('discountDisplayRow');
+                if (discountDisplayEl) {
+                    if (discountAmount > 0) {
+                        discountDisplayEl.classList.remove('hidden');
+                        document.getElementById('discountAmountDisplay').innerText = '- Rp ' + formatNumber(discountAmount);
+                    } else {
+                        discountDisplayEl.classList.add('hidden');
+                    }
+                }
+
+                // 4. Tampilkan Grand Total
+                let grandTotal = (itemsTotal - discountAmount) + fee;
                 document.getElementById('grandTotalDisplay').innerText = formatNumber(grandTotal);
                 document.getElementById('grandTotalInput').value = grandTotal;
             }
@@ -718,14 +878,11 @@
             if (distanceInput) {
                 distanceInput.addEventListener('input', updateAllTotals);
             }
-
-            if (customFeeDisplay) {
-                customFeeDisplay.addEventListener('input', function() {
-                    let value = this.value.replace(/\D/g, "");
-                    customFeeHidden.value = value || 0;
-                    this.value = formatRupiah(value);
-                    updateAllTotals();
-                });
+            if (discountTypeInput) {
+                discountTypeInput.addEventListener('change', updateAllTotals);
+            }
+            if (discountValueInput) {
+                discountValueInput.addEventListener('input', updateAllTotals);
             }
 
             // =====================
@@ -878,15 +1035,15 @@
 
                 if (targetUrl) {
                     // 1. Cek jika URL adalah Google Maps Long URL dengan q=lat,lng
-                    const qMatch = targetUrl.match(/[?&]q=(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    const qMatch = targetUrl.match(/[?&]q=([+-]?\d+\.\d+)(?:\s*|\+*),(?:\s*|\+*)([+-]?\d+\.\d+)/);
                     if (qMatch) {
                         finishGeocode(parseFloat(qMatch[1]), parseFloat(qMatch[2]));
                         mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
                         return;
                     }
                     
-                    // 2. Cek jika URL mengandung /place/lat,lng
-                    const placeMatch = targetUrl.match(/\/place\/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    // 2. Cek jika URL mengandung /place/lat,lng atau /search/lat,lng
+                    const placeMatch = targetUrl.match(/\/(?:place|search)\/([+-]?\d+\.\d+)(?:\s*|\+*),(?:\s*|\+*)([+-]?\d+\.\d+)/);
                     if (placeMatch) {
                         finishGeocode(parseFloat(placeMatch[1]), parseFloat(placeMatch[2]));
                         mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
@@ -894,7 +1051,7 @@
                     }
 
                     // 3. Cek jika URL mengandung @lat,lng
-                    const atMatch = targetUrl.match(/@(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+                    const atMatch = targetUrl.match(/@([+-]?\d+\.\d+)(?:\s*|\+*),(?:\s*|\+*)([+-]?\d+\.\d+)/);
                     if (atMatch) {
                         finishGeocode(parseFloat(atMatch[1]), parseFloat(atMatch[2]));
                         mapsLinkInput.className = "w-full border border-green-400 p-2 rounded bg-green-50/20 focus:outline-none";
@@ -938,7 +1095,7 @@
                 }
 
                 // 5. Cek jika di dalam teks ada koordinat langsung (lat, lng) di mana saja
-                const coordRegex = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/;
+                const coordRegex = /([+-]?\d+\.\d+)(?:\s*|\+*),(?:\s*|\+*)([+-]?\d+\.\d+)/;
                 const coordMatch = inputVal.match(coordRegex);
                 if (coordMatch) {
                     const lat = parseFloat(coordMatch[1]);
@@ -1055,6 +1212,22 @@
             window.closeDetail = function (id) {
                 document.getElementById('detailModal-' + id).classList.add('hidden')
                 document.getElementById('detailModal-' + id).classList.remove('flex')
+            }
+
+            window.openScheduleModal = function (id) {
+                const modal = document.getElementById('scheduleModal-' + id);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+            }
+
+            window.closeScheduleModal = function (id) {
+                const modal = document.getElementById('scheduleModal-' + id);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
             }
 
             // Klik background overlay = close modal

@@ -53,13 +53,74 @@ class CustomerRequestController extends Controller
             ->distinct()
             ->get();
 
-        $tariffs = DeliveryTariff::where('is_active', true)->orderBy('min_km')->get();
+        return view('customer_req', compact('pendingCR', 'historyCR', 'grades', 'projects'));
+    }
 
-        return view('customer_req', compact('pendingCR', 'historyCR', 'grades', 'projects', 'tariffs'));
+    private function uploadAndCompressFile($file, $subFolder)
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = uniqid('doc_', true) . '_' . time() . '.' . $extension;
+        $targetDir = 'uploads/' . $subFolder;
+        $destinationPath = public_path($targetDir);
+
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+
+        $filePath = $destinationPath . '/' . $filename;
+        $relativeDbPath = $targetDir . '/' . $filename;
+
+        // Compress image files if gd extension is available
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp']) && extension_loaded('gd')) {
+            try {
+                // Read image based on format
+                if ($extension === 'jpg' || $extension === 'jpeg') {
+                    $image = @imagecreatefromjpeg($file->getRealPath());
+                    if ($image) {
+                        imagejpeg($image, $filePath, 60);
+                        imagedestroy($image);
+                        return $relativeDbPath;
+                    }
+                } elseif ($extension === 'png') {
+                    $image = @imagecreatefrompng($file->getRealPath());
+                    if ($image) {
+                        imagealphablending($image, false);
+                        imagesavealpha($image, true);
+                        imagepng($image, $filePath, 6);
+                        imagedestroy($image);
+                        return $relativeDbPath;
+                    }
+                } elseif ($extension === 'webp') {
+                    $image = @imagecreatefromwebp($file->getRealPath());
+                    if ($image) {
+                        imagewebp($image, $filePath, 60);
+                        imagedestroy($image);
+                        return $relativeDbPath;
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Image compression failed: ' . $e->getMessage());
+            }
+        }
+
+        // Default upload (e.g., for PDF or if GD fails)
+        $file->move($destinationPath, $filename);
+        return $relativeDbPath;
     }
 
     public function store(Request $request)
     {
+        // Upload & Compress files if exists
+        $ktpPath = null;
+        if ($request->hasFile('ktp_file')) {
+            $ktpPath = $this->uploadAndCompressFile($request->file('ktp_file'), 'ktp');
+        }
+
+        $npwpPath = null;
+        if ($request->hasFile('npwp_file')) {
+            $npwpPath = $this->uploadAndCompressFile($request->file('npwp_file'), 'npwp');
+        }
+
         $req = CustomerRequest::create([
             'request_code' => 'REQ-' . date('Ymd') . rand(100, 999),
             'created_by' => Auth::id(),
@@ -113,6 +174,10 @@ class CustomerRequestController extends Controller
             'grand_total' => 0,
             'delivery_latitude' => $request->delivery_latitude,
             'delivery_longitude' => $request->delivery_longitude,
+
+            // FILE UPLOADS
+            'ktp_file' => $ktpPath,
+            'npwp_file' => $npwpPath,
         ]);
 
         // DETAIL
@@ -136,21 +201,42 @@ class CustomerRequestController extends Controller
             }
         }
 
-        // 🔥 HITUNG DELIVERY FEE
+        // 🔥 HITUNG DELIVERY FEE (0-25km gratis, >25km: Rp 20.000 per kelipatan 5km × total qty m³)
         $distance = floatval($request->delivery_distance ?? 0);
-        $maxKm = DeliveryTariff::getMaxDistance();
+        $totalQtyM3 = collect($request->qty)->sum(function ($q) { return floatval($q); });
 
-        if ($distance > $maxKm && $request->delivery_fee_custom) {
-            // Jarak > max tier → pakai input manual dari sales
-            $deliveryFee = floatval(str_replace('.', '', $request->delivery_fee_custom));
+        if ($distance <= 25) {
+            $deliveryFee = 0;
         } else {
-            // Dalam range tarif → hitung otomatis
-            $deliveryFee = DeliveryTariff::getFeeByDistance($distance) ?? 0;
+            $extraKm = $distance - 25;
+            $increments = ceil($extraKm / 5);
+            $deliveryFee = $increments * 20000 * $totalQtyM3;
         }
 
+        // 🔥 HITUNG DISKON (Diskon memotong harga beton, bukan ongkos kirim)
+        $discountType = $request->discount_type;
+        $discountValue = floatval($request->discount_value ?? 0);
+        $discountAmount = 0;
+
+        if ($discountType === 'percentage') {
+            $discountAmount = $itemsTotal * ($discountValue / 100);
+        } elseif ($discountType === 'fixed') {
+            $discountAmount = $discountValue;
+        }
+
+        // Diskon tidak boleh melebihi subtotal item beton
+        if ($discountAmount > $itemsTotal) {
+            $discountAmount = $itemsTotal;
+        }
+
+        $grandTotal = ($itemsTotal - $discountAmount) + $deliveryFee;
+
         $req->update([
+            'discount_type' => $discountType,
+            'discount_value' => $discountValue,
+            'discount_amount' => $discountAmount,
             'delivery_fee' => $deliveryFee,
-            'grand_total' => $itemsTotal + $deliveryFee,
+            'grand_total' => $grandTotal,
         ]);
 
         // 🔥 BUAT APPROVAL ROWS (untuk direktur & wakil direktur)
@@ -285,21 +371,21 @@ class CustomerRequestController extends Controller
             $parsed = parse_url($targetUrl);
             if (isset($parsed['query'])) {
                 parse_str($parsed['query'], $queryParams);
-                if (isset($queryParams['q']) && preg_match('/(-?\d+\.\d+),\s*(-?\d+\.\d+)/', $queryParams['q'], $matches)) {
+                if (isset($queryParams['q']) && preg_match('/([+-]?\d+\.\d+),(?:\s*|\+*)([+-]?\d+\.\d+)/', $queryParams['q'], $matches)) {
                     return [floatval($matches[1]), floatval($matches[2])];
                 }
-                if (isset($queryParams['ll']) && preg_match('/(-?\d+\.\d+),\s*(-?\d+\.\d+)/', $queryParams['ll'], $matches)) {
+                if (isset($queryParams['ll']) && preg_match('/([+-]?\d+\.\d+),(?:\s*|\+*)([+-]?\d+\.\d+)/', $queryParams['ll'], $matches)) {
                     return [floatval($matches[1]), floatval($matches[2])];
                 }
             }
 
             // 2. Try to find coordinates in path (e.g. /place/lat,lng or @lat,lng)
-            if (preg_match('/(?:place|search|\@|place\/|search\/)(-?\d+\.\d+),\s*(-?\d+\.\d+)/', $targetUrl, $matches)) {
+            if (preg_match('/(?:place|search|\@|place\/|search\/)([+-]?\d+\.\d+),(?:\s*|\+*)([+-]?\d+\.\d+)/', $targetUrl, $matches)) {
                 return [floatval($matches[1]), floatval($matches[2])];
             }
 
             // 3. Try to find coordinates in !3d/!4d format
-            if (preg_match('/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/', $targetUrl, $matches)) {
+            if (preg_match('/!3d([+-]?\d+\.\d+)!4d([+-]?\d+\.\d+)/', $targetUrl, $matches)) {
                 return [floatval($matches[1]), floatval($matches[2])];
             }
 

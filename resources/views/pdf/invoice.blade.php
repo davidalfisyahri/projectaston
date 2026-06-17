@@ -305,7 +305,7 @@ Kemang,
 
 <br><br><br><br>
 
-<img src="{{ public_path('asset/image/Qr_dirut.jpeg') }}"
+<img src="{{ public_path('asset/image/QR_dirut.jpeg') }}"
      width="70">
 
 <br>

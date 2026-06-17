@@ -123,10 +123,34 @@ td, th {
 
 <tr>
     <td class="label">Delivery Fee</td>
-    <td><span class="value-line">{{ $data->delivery_fee > 0 ? 'Rp ' . number_format($data->delivery_fee, 0, ',', '.') : 'Rp 0' }}</span></td>
+    <td>
+        <span class="value-line">{{ $data->delivery_fee > 0 ? 'Rp ' . number_format($data->delivery_fee, 0, ',', '.') : 'Rp 0' }}</span>
+        @if($data->delivery_distance > 25)
+            <br>
+            <span style="font-size: 8px; color: #666; font-weight: normal; font-style: italic;">
+                ({{ ceil(($data->delivery_distance - 25) / 5) }} &times; Rp 20.000 &times; {{ number_format($data->details->sum('qty'), 0, ',', '.') }} m³)
+            </span>
+        @endif
+    </td>
 
+    <td class="label">Discount</td>
+    <td>
+        @if($data->discount_amount > 0)
+            <span class="value-line" style="color: red;">
+                - Rp {{ number_format($data->discount_amount, 0, ',', '.') }}
+                @if($data->discount_type == 'percentage')
+                    ({{ number_format($data->discount_value, 0) }}%)
+                @endif
+            </span>
+        @else
+            <span class="value-line">-</span>
+        @endif
+    </td>
+</tr>
+
+<tr>
     <td class="label">Grand Total</td>
-    <td><span class="value-line" style="font-weight: bold;">Rp {{ number_format($data->grand_total > 0 ? $data->grand_total : $data->details->sum('total'), 0, ',', '.') }}</span></td>
+    <td colspan="3"><span class="value-line" style="font-weight: bold;">Rp {{ number_format($data->grand_total > 0 ? $data->grand_total : $data->details->sum('total'), 0, ',', '.') }}</span></td>
 </tr>
 
 </table>
@@ -180,6 +204,13 @@ td, th {
 <tr>
     <td class="label">NPWP</td>
     <td colspan="3"><span class="value-line">{{ $data->npwp ?? '-' }}</span></td>
+</tr>
+
+<tr>
+    <td class="label">File KTP</td>
+    <td><span class="value-line">{{ $data->ktp_file ? 'Uploaded' : '-' }}</span></td>
+    <td class="label">File NPWP</td>
+    <td><span class="value-line">{{ $data->npwp_file ? 'Uploaded' : '-' }}</span></td>
 </tr>
 
 <tr>
@@ -313,7 +344,7 @@ td, th {
         
             @if(($wadir && $wadir->approved_at) || ($dirut && $dirut->approved_at))
                 <br>
-                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/Qr_dirut.jpeg'))) }}" 
+                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/QR_dirut.jpeg'))) }}" 
                      style="width:80px; margin-top:5px;">
             @endif
         </td>

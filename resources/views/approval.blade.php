@@ -484,6 +484,20 @@
                             <td class="py-1">{{ $d->no_identitas ?? '-' }}</td>
                         </tr>
                         <tr>
+                            <td class="py-1 text-gray-500 w-44">File KTP</td>
+                            <td class="py-1">
+                                @if($d->ktp_file)
+                                    @if(in_array(strtolower(pathinfo($d->ktp_file, PATHINFO_EXTENSION)), ['jpg','jpeg','png','webp']))
+                                        <a href="{{ asset($d->ktp_file) }}" target="_blank"><img src="{{ asset($d->ktp_file) }}" class="h-16 rounded border hover:opacity-80 transition" alt="KTP"></a>
+                                    @else
+                                        <a href="{{ asset($d->ktp_file) }}" target="_blank" class="text-blue-600 hover:underline text-xs">📄 Lihat PDF KTP</a>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-xs italic">Belum diupload</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
                             <td class="py-1 text-gray-500">Bentuk Usaha</td>
                             <td class="py-1">{{ $d->form_business ?? '-' }}</td>
                         </tr>
@@ -507,6 +521,20 @@
                         <tr>
                             <td class="py-1 text-gray-500 w-44">NPWP</td>
                             <td class="py-1">{{ $d->npwp ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 text-gray-500 w-44">File NPWP</td>
+                            <td class="py-1">
+                                @if($d->npwp_file)
+                                    @if(in_array(strtolower(pathinfo($d->npwp_file, PATHINFO_EXTENSION)), ['jpg','jpeg','png','webp']))
+                                        <a href="{{ asset($d->npwp_file) }}" target="_blank"><img src="{{ asset($d->npwp_file) }}" class="h-16 rounded border hover:opacity-80 transition" alt="NPWP"></a>
+                                    @else
+                                        <a href="{{ asset($d->npwp_file) }}" target="_blank" class="text-blue-600 hover:underline text-xs">📄 Lihat PDF NPWP</a>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-xs italic">Belum diupload</span>
+                                @endif
+                            </td>
                         </tr>
                         <tr>
                             <td class="py-1 text-gray-500">Nama Pajak</td>
@@ -615,9 +643,20 @@
                                     </tbody>
                                     <tfoot class="bg-gray-100 text-gray-800 text-xs">
                                         <tr>
-                                            <td colspan="4" class="p-2 text-right font-semibold">Subtotal</td>
+                                            <td colspan="4" class="p-2 text-right font-semibold">Subtotal Beton</td>
                                             <td class="p-2 text-right font-semibold">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
                                         </tr>
+                                        @if($d->discount_amount > 0)
+                                        <tr class="text-red-600">
+                                            <td colspan="4" class="p-2 text-right font-semibold">
+                                                Diskon
+                                                @if($d->discount_type == 'percentage')
+                                                    ({{ number_format($d->discount_value, 0) }}%)
+                                                @endif
+                                            </td>
+                                            <td class="p-2 text-right font-semibold">- Rp {{ number_format($d->discount_amount, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endif
                                         @if($d->delivery_distance > 0)
                                         <tr>
                                             <td colspan="4" class="p-2 text-right font-semibold">Biaya Pengiriman ({{ $d->delivery_distance }} km)</td>

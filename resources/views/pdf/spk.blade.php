@@ -250,9 +250,9 @@ td, th {
     </td>
     <td width="34%">
         <div class="signature-role">Diketahui / Diotorisasi Oleh,</div>
-        <div class="signature-space" style="height: 10px;">
+        <div class="signature-space">
             @if(($wadir && $wadir->approved_at) || ($dirut && $dirut->approved_at))
-                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/Qr_dirut.jpeg'))) }}" 
+                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/QR_dirut.jpeg'))) }}" 
                      style="width:55px; margin-top:5px; margin-bottom:5px;">
             @endif
         </div>

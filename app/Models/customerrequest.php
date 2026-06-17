@@ -61,6 +61,15 @@ class CustomerRequest extends Model
         'grand_total',
         'delivery_latitude',
         'delivery_longitude',
+
+        // FILE UPLOADS
+        'ktp_file',
+        'npwp_file',
+
+        // DISCOUNTS
+        'discount_type',
+        'discount_value',
+        'discount_amount',
     ];
 
     public function user()

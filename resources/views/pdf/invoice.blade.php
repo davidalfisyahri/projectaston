@@ -1,3 +1,35 @@
+@php
+if (!function_exists('terbilang')) {
+    function terbilang($angka) {
+        $angka = abs($angka);
+        $baca = array("", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas");
+        $terbilang = "";
+        
+        if ($angka < 12) {
+            $terbilang = " " . $baca[$angka];
+        } else if ($angka < 20) {
+            $terbilang = terbilang($angka - 10) . " belas";
+        } else if ($angka < 100) {
+            $terbilang = terbilang(floor($angka / 10)) . " puluh" . terbilang($angka % 10);
+        } else if ($angka < 200) {
+            $terbilang = " seratus" . terbilang($angka - 100);
+        } else if ($angka < 1000) {
+            $terbilang = terbilang(floor($angka / 100)) . " ratus" . terbilang($angka % 100);
+        } else if ($angka < 2000) {
+            $terbilang = " seribu" . terbilang($angka - 1000);
+        } else if ($angka < 1000000) {
+            $terbilang = terbilang(floor($angka / 1000)) . " ribu" . terbilang($angka % 1000);
+        } else if ($angka < 1000000000) {
+            $terbilang = terbilang(floor($angka / 1000000)) . " juta" . terbilang($angka % 1000000);
+        } else if ($angka < 1000000000000) {
+            $terbilang = terbilang(floor($angka / 1000000000)) . " milyar" . terbilang(fmod($angka, 1000000000));
+        } else if ($angka < 1000000000000000) {
+            $terbilang = terbilang(floor($angka / 1000000000000)) . " trilyun" . terbilang(fmod($angka, 1000000000000));
+        }
+        return trim($terbilang);
+    }
+}
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -95,9 +127,9 @@ table{
 </tr>
 
 <tr>
-    <td>Tanggal</td>
+    <td>Tanggal Invoice</td>
     <td>:</td>
-    <td>{{ \Carbon\Carbon::parse($data->tanggal)->format('d/m/Y') }}</td>
+    <td>{{ $data->invoice_date ? \Carbon\Carbon::parse($data->invoice_date)->format('d/m/Y') : '-' }}</td>
 </tr>
 </table>
 
@@ -177,30 +209,43 @@ $subtotal += $total;
 
 @endforeach
 
+<tr>
+    <td colspan="3"></td>
+    <td colspan="3" class="text-center">
+        <b>SUBTOTAL BETON</b>
+    </td>
+    <td class="text-right">
+        {{ number_format($subtotal,0,',','.') }}
+    </td>
+</tr>
+
+@if($data->discount_amount > 0)
+<tr>
+    <td colspan="3"></td>
+    <td colspan="3" class="text-center">
+        <b>DISKON</b>
+    </td>
+    <td class="text-right">
+        - {{ number_format($data->discount_amount,0,',','.') }}
+    </td>
+</tr>
+@endif
+
+@if($data->delivery_fee > 0)
+<tr>
+    <td colspan="3"></td>
+    <td colspan="3" class="text-center">
+        <b>BIAYA PENGIRIMAN ({{ $data->delivery_distance }} km)</b>
+    </td>
+    <td class="text-right">
+        {{ number_format($data->delivery_fee,0,',','.') }}
+    </td>
+</tr>
+@endif
+
 @php
-$dpp = $subtotal / 1.12;
-$ppn = $dpp * 0.12;
+$grandTotal = ($subtotal - ($data->discount_amount ?? 0)) + ($data->delivery_fee ?? 0);
 @endphp
-
-<tr>
-    <td colspan="3"></td>
-    <td colspan="3" class="text-center">
-        <b>DPP Nilai Lain ( Total * 11 / 12 )</b>
-    </td>
-    <td class="text-right">
-        {{ number_format($dpp,0,',','.') }}
-    </td>
-</tr>
-
-<tr>
-    <td colspan="3"></td>
-    <td colspan="3" class="text-center">
-        <b>PPN ( DPP Nilai Lain * 12% )</b>
-    </td>
-    <td class="text-right">
-        {{ number_format($ppn,0,',','.') }}
-    </td>
-</tr>
 
 <tr>
     <td colspan="3"></td>
@@ -208,7 +253,7 @@ $ppn = $dpp * 0.12;
         <b>GRAND TOTAL</b>
     </td>
     <td class="text-right">
-        <b>{{ number_format($subtotal,0,',','.') }}</b>
+        <b>{{ number_format($grandTotal,0,',','.') }}</b>
     </td>
 </tr>
 
@@ -223,17 +268,6 @@ $ppn = $dpp * 0.12;
 <tr>
 
 <td width="50%">
-
-<b>Bank :</b> BRI <br>
-<b>ACC :</b> 0387 01 0022 123 04 <br>
-<b>A/N :</b> PT ISTIMEWA ASTON INDONESIA <br>
-
-<br>
-
-<b>Bank :</b> BCA <br>
-<b>ACC :</b> 8721510107 <br>
-<b>A/N :</b> NENENG ASENG YUNIAR
-
 </td>
 
 <td width="50%" style="vertical-align:top">
@@ -244,7 +278,7 @@ $ppn = $dpp * 0.12;
 
 <br><br>
 
-{{ function_exists('terbilang') ? ucwords(terbilang(round($subtotal))) : number_format($subtotal,0,',','.') }}
+{{ function_exists('terbilang') ? ucwords(terbilang(round($grandTotal))) : number_format($grandTotal,0,',','.') }}
 
 Rupiah
 

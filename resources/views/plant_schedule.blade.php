@@ -35,7 +35,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Total Scheduled</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $schedules->where('status', 'scheduled')->count() }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $totalScheduled }}</p>
             </div>
         </div>
 
@@ -45,7 +45,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Paid / Confirmed</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $schedules->whereIn('status', ['paid', 'confirmed_wa'])->count() }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $totalPaid }}</p>
             </div>
         </div>
 
@@ -55,7 +55,7 @@
             </div>
             <div>
                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Selesai (Done)</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $schedules->where('status', 'done')->count() }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $totalDone }}</p>
             </div>
         </div>
     </div>

@@ -90,48 +90,28 @@ class ApprovalController extends Controller
             $data->update(['status' => 'rejected']);
         } else {
             // Cukup salah satu direktur/wakil direktur approve, request langsung approved
-            if ($data->status !== 'approved') {
+            $data->update(['status' => 'approved']);
 
-                // VALIDASI KETERSEDIAAN STOK
-                $insufficient = [];
-                $required_stock = [];
-                $details = CustomerRequestDetail::where('customer_request_id', $id)->get();
-
-                foreach ($details as $detail) {
-                    $qty_ordered = $detail->qty;
-                    $compositions = Composition::where('grade_id', $detail->grade_id)->get();
-                    foreach ($compositions as $comp) {
-                        $inv_id = $comp->inventory_id;
-                        if (!isset($required_stock[$inv_id])) {
-                            $required_stock[$inv_id] = 0;
-                        }
-                        $required_stock[$inv_id] += ($comp->qty * $qty_ordered);
+            // PENGURANGAN INVENTORY (tetap dikurangi meskipun stok mungkin tidak mencukupi)
+            $required_stock = [];
+            $details = CustomerRequestDetail::where('customer_request_id', $id)->get();
+            foreach ($details as $detail) {
+                $qty_ordered = $detail->qty;
+                $compositions = Composition::where('grade_id', $detail->grade_id)->get();
+                foreach ($compositions as $comp) {
+                    $inv_id = $comp->inventory_id;
+                    if (!isset($required_stock[$inv_id])) {
+                        $required_stock[$inv_id] = 0;
                     }
+                    $required_stock[$inv_id] += ($comp->qty * $qty_ordered);
                 }
+            }
 
-                // Cek apakah stok mencukupi
-                foreach ($required_stock as $inv_id => $needed) {
-                    $inventory = Inventory::find($inv_id);
-                    if ($inventory && $inventory->stock < $needed) {
-                        $insufficient[] = $inventory->name_material;
-                    }
-                }
-
-                if (count($insufficient) > 0) {
-                    // Batalkan perubahan status approval (kembalikan ke pending)
-                    $approval->update(['status' => 'pending', 'approved_by' => null, 'approved_at' => null]);
-                    return back()->with('error', 'Gagal approve! Stok material kurang untuk: ' . implode(', ', $insufficient));
-                }
-
-                $data->update(['status' => 'approved']);
-
-                // PENGURANGAN INVENTORY
-                foreach ($required_stock as $inv_id => $needed) {
-                    $inventory = Inventory::find($inv_id);
-                    if ($inventory) {
-                        $inventory->stock -= $needed;
-                        $inventory->save();
-                    }
+            foreach ($required_stock as $inv_id => $needed) {
+                $inventory = Inventory::find($inv_id);
+                if ($inventory) {
+                    $inventory->stock -= $needed;
+                    $inventory->save();
                 }
             }
         }

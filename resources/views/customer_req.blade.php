@@ -144,7 +144,7 @@
                                   </svg>
                                 </a>
 
-                                @if(in_array($d->status, ['paid', 'confirmed_wa', 'scheduled', 'done']))
+                                @if(in_array($d->status, ['approved', 'paid', 'confirmed_wa', 'scheduled', 'done']))
                                 <a href="/customer-request/invoice-pdf/{{ $d->id }}?download=1"
                                     class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs hover:bg-yellow-200">
                                      Invoice
@@ -156,7 +156,7 @@
                                 @endif
 
                                 @if($d->status == 'approved')
-                                <button type="button" onclick="openPayModal({{ $d->id }})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs hover:bg-emerald-700 shadow-sm font-bold">💳 Konfirmasi Bayar</button>
+                                <button type="button" onclick="openPayModal({{ $d->id }})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs hover:bg-emerald-700 shadow-sm font-bold">💳 Info Rekening & Bayar</button>
                                 @endif
 
                                 @if($d->status == 'paid')
@@ -462,19 +462,36 @@
 
                     {{-- Bank Info --}}
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
-                        <p class="font-semibold text-amber-800 mb-2">📋 Info Rekening Tujuan</p>
-                        <div class="space-y-1 text-gray-700">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Bank</span>
-                                <span class="font-semibold">{{ env('BANK_NAME', 'BCA') }}</span>
+                        <p class="font-semibold text-amber-800 mb-2">📋 Info Rekening Tujuan Transfer</p>
+                        <div class="space-y-3 text-gray-700">
+                            <!-- Bank BCA -->
+                            <div class="border-b border-amber-200/60 pb-2">
+                                <div class="flex justify-between font-semibold text-gray-800">
+                                    <span>Bank BCA</span>
+                                </div>
+                                <div class="flex justify-between text-xs mt-1">
+                                    <span class="text-gray-500">No. Rekening</span>
+                                    <span class="font-bold font-mono">8721510107</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-500">Atas Nama</span>
+                                    <span class="font-medium">NENENG AJENG YUNIAR</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">No. Rekening</span>
-                                <span class="font-semibold font-mono">{{ env('BANK_ACCOUNT_NUMBER', '123-456-7890') }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Atas Nama</span>
-                                <span class="font-semibold">{{ env('BANK_ACCOUNT_NAME', 'PT Aston') }}</span>
+                            
+                            <!-- Bank BRI -->
+                            <div>
+                                <div class="flex justify-between font-semibold text-gray-800">
+                                    <span>Bank BRI</span>
+                                </div>
+                                <div class="flex justify-between text-xs mt-1">
+                                    <span class="text-gray-500">No. Rekening</span>
+                                    <span class="font-bold font-mono">0387 01 0022 123 04</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-500">Atas Nama</span>
+                                    <span class="font-medium">PT ISTIMEWA ASTON INDONESIA</span>
+                                </div>
                             </div>
                         </div>
                     </div>

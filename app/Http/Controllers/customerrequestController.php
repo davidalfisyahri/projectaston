@@ -394,6 +394,7 @@ class CustomerRequestController extends Controller
         }
 
         $cr->status = 'done';
+        $cr->invoice_date = now()->toDateString();
         $cr->save();
 
         return redirect()->back()->with('success', 'Customer Request berhasil ditandai sebagai Selesai (Done).');
@@ -532,11 +533,15 @@ class CustomerRequestController extends Controller
             });
         }
 
+        $totalScheduled = (clone $query)->where('status', 'scheduled')->count();
+        $totalPaid = (clone $query)->whereIn('status', ['paid', 'confirmed_wa'])->count();
+        $totalDone = (clone $query)->where('status', 'done')->count();
+
         $schedules = $query->orderBy('schedule_date', 'asc')
             ->orderBy('id', 'desc')
             ->paginate(10)
             ->appends($request->query());
 
-        return view('plant_schedule', compact('schedules'));
+        return view('plant_schedule', compact('schedules', 'totalScheduled', 'totalPaid', 'totalDone'));
     }
 }

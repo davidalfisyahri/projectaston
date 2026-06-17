@@ -70,6 +70,9 @@ class CustomerRequest extends Model
         'discount_type',
         'discount_value',
         'discount_amount',
+
+        // INVOICE DATE
+        'invoice_date',
     ];
 
     public function user()

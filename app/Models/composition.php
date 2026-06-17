@@ -9,7 +9,7 @@ class Composition extends Model
     protected $table = 'composition';
     protected $primaryKey = 'id_composition';
 
-    protected $fillable = ['grade_id','inventory_id','qty'];
+    protected $fillable = ['grade_id','inventory_id','recipe_type','qty'];
 
     public function inventory()
     {

@@ -6,12 +6,15 @@ use App\Models\Inventory;
 use App\Models\StockOpname;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockOpnameController extends Controller
 {
     public function index(Request $request)
     {
-        $inventories = Inventory::all();
+        $inventories = Inventory::whereNotIn('type', ['utility'])
+            ->whereNotIn('name_material', ['Air', 'Air PAM', 'Water'])
+            ->get();
 
         $query = StockOpname::with(['inventory', 'checker'])->orderBy('created_at', 'desc');
 
@@ -45,27 +48,29 @@ class StockOpnameController extends Controller
             'opname_date.required' => 'Tanggal opname wajib diisi.',
         ]);
 
-        foreach ($request->items as $item) {
-            $inventory = Inventory::find($item['inventory_id']);
-            if (!$inventory) continue;
+        DB::transaction(function () use ($request) {
+            foreach ($request->items as $item) {
+                $inventory = Inventory::find($item['inventory_id']);
+                if (!$inventory) continue;
 
-            $stockSystem = $inventory->stock;
-            $stockActual = (int) $item['stock_actual'];
-            $difference = $stockActual - $stockSystem;
+                $stockSystem = $inventory->stock;
+                $stockActual = (int) $item['stock_actual'];
+                $difference = $stockActual - $stockSystem;
 
-            StockOpname::create([
-                'inventory_id' => $item['inventory_id'],
-                'stock_system' => $stockSystem,
-                'stock_actual' => $stockActual,
-                'difference' => $difference,
-                'notes' => $item['notes'] ?? null,
-                'opname_date' => $request->opname_date,
-                'checked_by' => $request->user()->id_user,
-            ]);
+                StockOpname::create([
+                    'inventory_id' => $item['inventory_id'],
+                    'stock_system' => $stockSystem,
+                    'stock_actual' => $stockActual,
+                    'difference' => $difference,
+                    'notes' => $item['notes'] ?? null,
+                    'opname_date' => $request->opname_date,
+                    'checked_by' => $request->user()->id_user,
+                ]);
 
-            // Update stok di inventory sesuai stok aktual
-            $inventory->update(['stock' => $stockActual]);
-        }
+                // Update stok di inventory sesuai stok aktual
+                $inventory->update(['stock' => $stockActual]);
+            }
+        });
 
         return redirect('/stock-opname')->with('success', 'Stock opname berhasil disimpan dan stok telah diperbarui.');
     }

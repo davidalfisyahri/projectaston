@@ -11,6 +11,7 @@ use App\Models\DeliveryTariff;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class CustomerRequestController extends Controller
 {
@@ -110,6 +111,50 @@ class CustomerRequestController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string',
+            'region' => 'nullable|string|max:255',
+            'customer_number' => 'nullable|string|max:255',
+            'note' => 'nullable|string',
+            'no_identitas' => 'nullable|string|max:100',
+            'form_business' => 'nullable|string|max:255',
+            'business_ownership' => 'nullable|in:milik_sendiri,tidak_ada_cabang,sewa_kontrak,kantor_pusat,cabang,proyek',
+            'section_business' => 'nullable|string|max:255',
+            'address_business' => 'nullable|string',
+            'npwp' => 'nullable|string|max:100',
+            'tax_name' => 'nullable|string|max:255',
+            'tax_address' => 'nullable|string',
+            'izin_tdp' => 'nullable|string|max:255',
+            'tdp_date' => 'nullable|date',
+            'izin_siup' => 'nullable|string|max:255',
+            'siup_date' => 'nullable|date',
+            'izin_sio' => 'nullable|string|max:255',
+            'sio_date' => 'nullable|date',
+            'owner_name' => 'nullable|string|max:255',
+            'owner_address' => 'nullable|string',
+            'email' => 'nullable|email|max:255',
+            'office_address' => 'nullable|string',
+            'ongoing_project' => 'nullable|string',
+            'schedule_date' => 'nullable|date',
+            'delivery_distance' => 'nullable|numeric|min:0',
+            'delivery_latitude' => 'nullable|numeric',
+            'delivery_longitude' => 'nullable|numeric',
+            'ktp_file' => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:5120',
+            'npwp_file' => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:5120',
+            'discount_type' => 'nullable|in:none,percentage,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+            
+            // Detail
+            'grade_id' => 'required|array|min:1',
+            'grade_id.*' => 'required|exists:gradebeton,id_grade',
+            'type' => 'required|array|min:1',
+            'qty' => 'required|array|min:1',
+            'qty.*' => 'required|numeric|min:0.01',
+            'price' => 'required|array|min:1',
+        ]);
+
         // Upload & Compress files if exists
         $ktpPath = null;
         if ($request->hasFile('ktp_file')) {
@@ -121,132 +166,134 @@ class CustomerRequestController extends Controller
             $npwpPath = $this->uploadAndCompressFile($request->file('npwp_file'), 'npwp');
         }
 
-        $req = CustomerRequest::create([
-            'request_code' => 'REQ-' . date('Ymd') . rand(100, 999),
-            'created_by' => Auth::id(),
-            'tanggal' => now(),
+        DB::transaction(function () use ($request, $ktpPath, $npwpPath) {
+            $req = CustomerRequest::create([
+                'request_code' => 'REQ-' . date('Ymd') . rand(100, 999),
+                'created_by' => Auth::id(),
+                'tanggal' => now(),
 
-            // IDENTITAS
-            'customer_name' => $request->customer_name,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'region' => $request->region,
-            'customer_number' => $request->customer_number,
-            'note' => $request->note,
+                // IDENTITAS
+                'customer_name' => $request->customer_name,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'region' => $request->region,
+                'customer_number' => $request->customer_number,
+                'note' => $request->note,
 
-            // PROFIL BISNIS
-            'no_identitas' => $request->no_identitas,
-            'form_business' => $request->form_business,
-            'business_ownership' => $request->business_ownership,
-            'section_business' => $request->section_business,
-            'address_business' => $request->address_business,
+                // PROFIL BISNIS
+                'no_identitas' => $request->no_identitas,
+                'form_business' => $request->form_business,
+                'business_ownership' => $request->business_ownership,
+                'section_business' => $request->section_business,
+                'address_business' => $request->address_business,
 
-            // PAJAK
-            'npwp' => $request->npwp,
-            'tax_name' => $request->tax_name,
-            'tax_address' => $request->tax_address,
+                // PAJAK
+                'npwp' => $request->npwp,
+                'tax_name' => $request->tax_name,
+                'tax_address' => $request->tax_address,
 
-            // IZIN
-            'izin_tdp' => $request->izin_tdp,
-            'tdp_date' => $request->tdp_date,
-            'izin_siup' => $request->izin_siup,
-            'siup_date' => $request->siup_date,
-            'izin_sio' => $request->izin_sio,
-            'sio_date' => $request->sio_date,
+                // IZIN
+                'izin_tdp' => $request->izin_tdp,
+                'tdp_date' => $request->tdp_date,
+                'izin_siup' => $request->izin_siup,
+                'siup_date' => $request->siup_date,
+                'izin_sio' => $request->izin_sio,
+                'sio_date' => $request->sio_date,
 
-            // OWNER
-            'owner_name' => $request->owner_name,
-            'owner_address' => $request->owner_address,
-            'email' => $request->email,
+                // OWNER
+                'owner_name' => $request->owner_name,
+                'owner_address' => $request->owner_address,
+                'email' => $request->email,
 
-            // PROJECT
-            'office_address' => $request->office_address,
-            'ongoing_project' => $request->ongoing_project,
+                // PROJECT
+                'office_address' => $request->office_address,
+                'ongoing_project' => $request->ongoing_project,
 
-            'status' => 'waiting_approval',
+                'status' => 'waiting_approval',
 
-            //Schedule
-            'schedule_date' => $request->schedule_date,
+                //Schedule
+                'schedule_date' => $request->schedule_date,
 
-            // DELIVERY
-            'delivery_distance' => $request->delivery_distance,
-            'delivery_fee' => 0,
-            'grand_total' => 0,
-            'delivery_latitude' => $request->delivery_latitude,
-            'delivery_longitude' => $request->delivery_longitude,
+                // DELIVERY
+                'delivery_distance' => $request->delivery_distance,
+                'delivery_fee' => 0,
+                'grand_total' => 0,
+                'delivery_latitude' => $request->delivery_latitude,
+                'delivery_longitude' => $request->delivery_longitude,
 
-            // FILE UPLOADS
-            'ktp_file' => $ktpPath,
-            'npwp_file' => $npwpPath,
-        ]);
-
-        // DETAIL
-        $itemsTotal = 0;
-        if ($request->grade_id) {
-            foreach ($request->grade_id as $i => $g) {
-
-                $price = str_replace('.', '', $request->price[$i]); // 🔥 FIX
-                $lineTotal = $request->qty[$i] * $price;
-
-                CustomerRequestDetail::create([
-                    'customer_request_id' => $req->id,
-                    'grade_id' => $g,
-                    'type' => $request->type[$i],
-                    'qty' => $request->qty[$i],
-                    'price' => $price,
-                    'total' => $lineTotal,
-                ]);
-
-                $itemsTotal += $lineTotal;
-            }
-        }
-
-        // 🔥 HITUNG DELIVERY FEE (0-25km gratis, >25km: Rp 20.000 per kelipatan 5km × total qty m³)
-        $distance = floatval($request->delivery_distance ?? 0);
-        $totalQtyM3 = collect($request->qty)->sum(function ($q) { return floatval($q); });
-
-        if ($distance <= 25) {
-            $deliveryFee = 0;
-        } else {
-            $extraKm = $distance - 25;
-            $increments = ceil($extraKm / 5);
-            $deliveryFee = $increments * 20000 * $totalQtyM3;
-        }
-
-        // 🔥 HITUNG DISKON (Diskon memotong harga beton, bukan ongkos kirim)
-        $discountType = $request->discount_type;
-        $discountValue = floatval($request->discount_value ?? 0);
-        $discountAmount = 0;
-
-        if ($discountType === 'percentage') {
-            $discountAmount = $itemsTotal * ($discountValue / 100);
-        } elseif ($discountType === 'fixed') {
-            $discountAmount = $discountValue;
-        }
-
-        // Diskon tidak boleh melebihi subtotal item beton
-        if ($discountAmount > $itemsTotal) {
-            $discountAmount = $itemsTotal;
-        }
-
-        $grandTotal = ($itemsTotal - $discountAmount) + $deliveryFee;
-
-        $req->update([
-            'discount_type' => $discountType,
-            'discount_value' => $discountValue,
-            'discount_amount' => $discountAmount,
-            'delivery_fee' => $deliveryFee,
-            'grand_total' => $grandTotal,
-        ]);
-
-        // 🔥 BUAT APPROVAL ROWS (untuk direktur & wakil direktur)
-        foreach (['wakil_direktur', 'direktur_utama'] as $role) {
-            CustomerRequestApproval::create([
-                'customer_request_id' => $req->id,
-                'role' => $role,
-                'status' => 'pending',
+                // FILE UPLOADS
+                'ktp_file' => $ktpPath,
+                'npwp_file' => $npwpPath,
             ]);
-        }
+
+            // DETAIL
+            $itemsTotal = 0;
+            if ($request->grade_id) {
+                foreach ($request->grade_id as $i => $g) {
+
+                    $price = str_replace('.', '', $request->price[$i]); // 🔥 FIX
+                    $lineTotal = $request->qty[$i] * $price;
+
+                    CustomerRequestDetail::create([
+                        'customer_request_id' => $req->id,
+                        'grade_id' => $g,
+                        'type' => $request->type[$i],
+                        'qty' => $request->qty[$i],
+                        'price' => $price,
+                        'total' => $lineTotal,
+                    ]);
+
+                    $itemsTotal += $lineTotal;
+                }
+            }
+
+            // 🔥 HITUNG DELIVERY FEE (0-25km gratis, >25km: Rp 20.000 per kelipatan 5km × total qty m³)
+            $distance = floatval($request->delivery_distance ?? 0);
+            $totalQtyM3 = collect($request->qty)->sum(function ($q) { return floatval($q); });
+
+            if ($distance <= 25) {
+                $deliveryFee = 0;
+            } else {
+                $extraKm = $distance - 25;
+                $increments = ceil($extraKm / 5);
+                $deliveryFee = $increments * 20000 * $totalQtyM3;
+            }
+
+            // 🔥 HITUNG DISKON (Diskon memotong harga beton, bukan ongkos kirim)
+            $discountType = $request->discount_type;
+            $discountValue = floatval($request->discount_value ?? 0);
+            $discountAmount = 0;
+
+            if ($discountType === 'percentage') {
+                $discountAmount = $itemsTotal * ($discountValue / 100);
+            } elseif ($discountType === 'fixed') {
+                $discountAmount = $discountValue;
+            }
+
+            // Diskon tidak boleh melebihi subtotal item beton
+            if ($discountAmount > $itemsTotal) {
+                $discountAmount = $itemsTotal;
+            }
+
+            $grandTotal = ($itemsTotal - $discountAmount) + $deliveryFee;
+
+            $req->update([
+                'discount_type' => $discountType,
+                'discount_value' => $discountValue,
+                'discount_amount' => $discountAmount,
+                'delivery_fee' => $deliveryFee,
+                'grand_total' => $grandTotal,
+            ]);
+
+            // 🔥 BUAT APPROVAL ROWS (untuk direktur & wakil direktur)
+            foreach (['wakil_direktur', 'direktur_utama'] as $role) {
+                CustomerRequestApproval::create([
+                    'customer_request_id' => $req->id,
+                    'role' => $role,
+                    'status' => 'pending',
+                ]);
+            }
+        });
 
         return back();
     }

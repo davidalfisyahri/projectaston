@@ -156,7 +156,7 @@
                                 @endif
 
                                 @if($d->status == 'approved')
-                                <button type="button" onclick="payOrder({{ $d->id }})" class="bg-indigo-500 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600 shadow-sm font-bold">Link Bayar</button>
+                                <button type="button" onclick="openPayModal({{ $d->id }})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs hover:bg-emerald-700 shadow-sm font-bold">💳 Konfirmasi Bayar</button>
                                 @endif
 
                                 @if($d->status == 'paid')
@@ -425,6 +425,80 @@
             </div>
         </div>
         @endif
+
+        {{-- ── MODAL KONFIRMASI PEMBAYARAN MANUAL ────────────────────── --}}
+        @if($d->status == 'approved')
+        <div id="payModal-{{ $d->id }}"
+             onclick="if(event.target===this) closePayModal({{ $d->id }})"
+             class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-sm rounded-xl shadow-xl overflow-hidden">
+
+                {{-- Header --}}
+                <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                    <h2 class="text-base font-bold text-gray-800">💳 Konfirmasi Pembayaran</h2>
+                    <button type="button" onclick="closePayModal({{ $d->id }})" class="text-gray-400 hover:text-gray-600 font-bold text-xl leading-none">✕</button>
+                </div>
+
+                {{-- Body --}}
+                <div class="p-6 space-y-4">
+
+                    {{-- Order Summary --}}
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Kode</span>
+                            <span class="font-mono font-semibold text-gray-800">{{ $d->request_code }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Customer</span>
+                            <span class="font-semibold text-gray-800">{{ $d->customer_name }}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-blue-200 pt-2">
+                            <span class="font-semibold text-gray-700">Grand Total</span>
+                            <span class="font-bold text-green-700 text-base">
+                                Rp {{ number_format($d->grand_total > 0 ? $d->grand_total : $d->details->sum('total'), 0, ',', '.') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- Bank Info --}}
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
+                        <p class="font-semibold text-amber-800 mb-2">📋 Info Rekening Tujuan</p>
+                        <div class="space-y-1 text-gray-700">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Bank</span>
+                                <span class="font-semibold">{{ env('BANK_NAME', 'BCA') }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">No. Rekening</span>
+                                <span class="font-semibold font-mono">{{ env('BANK_ACCOUNT_NUMBER', '123-456-7890') }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Atas Nama</span>
+                                <span class="font-semibold">{{ env('BANK_ACCOUNT_NAME', 'PT Aston') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-400 italic">Klik <strong>Tandai Lunas</strong> setelah transfer masuk dikonfirmasi.</p>
+                </div>
+
+                {{-- Footer --}}
+                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
+                    <button type="button" onclick="closePayModal({{ $d->id }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Batal</button>
+                    <form action="/customer-request/pay/{{ $d->id }}" method="POST" style="display:inline">
+                        @csrf
+                        <button type="submit"
+                            onclick="return confirm('Yakin pembayaran sudah diterima? Status akan berubah ke PAID.')"
+                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition shadow-sm">
+                            ✓ Tandai Lunas
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        @endif
+
     @endforeach
 
     <!-- ========================= -->
@@ -1238,34 +1312,22 @@
             })
 
             // =====================
-            // PAYMENT LINK
+            // KONFIRMASI PEMBAYARAN MANUAL
             // =====================
-            window.payOrder = function (id) {
-                document.body.style.cursor = 'wait';
-                
-                fetch(`/payment/token/${id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.body.style.cursor = 'default';
-                    if (data.redirect_url) {
-                        prompt("Silakan copy Link Pembayaran ini dan kirimkan ke WhatsApp Customer:", data.redirect_url);
-                    } else if(data.error) {
-                        alert(data.error);
-                    } else {
-                        alert('Gagal mendapatkan link pembayaran.');
-                    }
-                })
-                .catch(error => {
-                    document.body.style.cursor = 'default';
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan pada server.');
-                });
+            window.openPayModal = function (id) {
+                const modal = document.getElementById('payModal-' + id);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+            }
+
+            window.closePayModal = function (id) {
+                const modal = document.getElementById('payModal-' + id);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
             }
 
         })

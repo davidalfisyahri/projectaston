@@ -171,20 +171,24 @@
                 <td align="center">{{ $i+1 }}</td>
                 <td>{{ $d->inventory->name_material ?? '-' }}</td>
 
-                @if($d->qty >= 1000)
-                    <td align="center">Ton</td>
-                    <td align="center">
-                        {{ rtrim(rtrim(number_format($d->qty / 1000, 2, ',', '.'), '0'), ',') }} ton
+                <td align="center">
+                    @if(strtolower($d->unit) === 'kg' && $d->qty >= 1000)
+                        Ton
+                    @else
+                        {{ ucfirst($d->unit ?? 'Kg') }}
+                    @endif
+                </td>
+                
+                <td align="center">
+                    @if(strtolower($d->unit) === 'kg' && $d->qty >= 1000)
+                        {{ rtrim(rtrim(number_format($d->qty / 1000, 2, ',', '.'), '0'), ',') }}
                         <div style="font-size:10px; color:#777;">
-                            ({{ number_format($d->qty,0,',','.') }} kg)
+                            ({{ number_format($d->qty,0,',','.') }} Kg)
                         </div>
-                    </td>
-                @else
-                    <td align="center">Kg</td>
-                    <td align="center">
-                        {{ number_format($d->qty,0,',','.') }} kg
-                    </td>
-                @endif
+                    @else
+                        {{ number_format($d->qty,0,',','.') }}
+                    @endif
+                </td>
 
                 <td align="center">Rp {{ number_format($d->price,0,',','.') }}</td>
                 <td align="center">Rp {{ number_format($d->total,0,',','.') }}</td>

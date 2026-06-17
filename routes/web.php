@@ -56,6 +56,7 @@ Route::get('/inventory/delete/{id}', [InventoryController::class, 'destroy']);
 Route::post('/grade/store', [gradebetonController::class, 'store']);
 Route::post('/grade/update/{id}', [gradebetonController::class, 'update']);
 Route::get('/grade/delete/{id}', [gradebetonController::class, 'destroy']);
+Route::post('/grade/bulk-store', [gradebetonController::class, 'bulkStore']);
 
 Route::get('/procurement', [procurementcontroller::class, 'index']) ->name('procurement');
 Route::post('/procurement/store', [procurementcontroller::class, 'store']);

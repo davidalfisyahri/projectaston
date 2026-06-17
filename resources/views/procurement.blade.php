@@ -77,6 +77,7 @@
                                 class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full">
                                 <option value="kg">Kg</option>
                                 <option value="ton">Ton</option>
+                                <option value="L">Liter (L)</option>
                             </select>
                         </td>
             
@@ -210,13 +211,13 @@
                                     <td class="p-2">{{ $d->inventory->name_material ?? '-' }}</td>
                                 
                                     <td class="p-2 text-center">
-                                        @if($d->qty >= 1000)
-                                            {{ rtrim(rtrim(number_format($d->qty / 1000, 2, ',', '.'), '0'), ',') }} ton
+                                        @if(strtolower($d->unit) === 'kg' && $d->qty >= 1000)
+                                            {{ rtrim(rtrim(number_format($d->qty / 1000, 2, ',', '.'), '0'), ',') }} Ton
                                             <div class="text-xs text-gray-400">
-                                                ({{ number_format($d->qty, 0, ',', '.') }} kg)
+                                                ({{ number_format($d->qty, 0, ',', '.') }} Kg)
                                             </div>
                                         @else
-                                            {{ number_format($d->qty, 0, ',', '.') }} kg
+                                            {{ number_format($d->qty, 0, ',', '.') }} {{ ucfirst($d->unit ?? 'Kg') }}
                                         @endif
                                     </td>
                                 
@@ -371,6 +372,7 @@ function addRow(){
                                 class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full">
                                 <option value="kg">Kg</option>
                                 <option value="ton">Ton</option>
+                                <option value="L">Liter (L)</option>
                             </select>
                         </td>
             

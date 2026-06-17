@@ -3,29 +3,6 @@
 
 @section('container')
 
-@php
-    $lowStockItems = $inventoryList->filter(function($item) {
-        return $item->stock <= 1000;
-    });
-@endphp
-
-@if($lowStockItems->count() > 0)
-    <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm flex items-start gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <div>
-            <h3 class="font-bold">Peringatan: Stok Material Menipis!</h3>
-            <p class="text-sm mt-1">Beberapa material berikut memiliki stok 1.000 kg atau kurang:</p>
-            <ul class="list-disc list-inside mt-2 text-sm font-medium">
-                @foreach($lowStockItems as $item)
-                    <li>{{ $item->name_material }} <span class="text-red-500">(Tersisa: {{ number_format($item->stock, 0, ',', '.') }} kg)</span></li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-@endif
-
 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
     <h1 class="text-2xl font-bold text-gray-800">Inventory</h1>
 
@@ -74,7 +51,7 @@
                             <td class="px-6 py-4">{{ $inv->type }}</td>
                             <td class="px-6 py-4 text-right">
                                 <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
-                                    {{ number_format($inv->stock, 0, ',', '.') }} Kg
+                                    {{ number_format($inv->stock, 0, ',', '.') }} {{ $inv->unit }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-center space-x-3">
@@ -150,26 +127,46 @@
 
             <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
                 <h2 class="text-xl font-semibold text-gray-800">Grade Beton</h2>
-                <button onclick="openModal('addGrade')" 
-                    class="bg-[#E53E3E] text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition border-0">
-                    + Add Grade
-                </button>
+                <div class="flex gap-2">
+                    <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-1.5 shadow-sm" title="Import file Excel berisi resep bahan (FA / NFA) atau harga FA / NFA">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        <span>Import Excel</span>
+                        <input type="file" id="excel_recipe" accept=".xlsx,.xls,.csv" class="hidden" onchange="importRecipeExcel(this)">
+                    </label>
+                    <button onclick="openModal('addGrade')" 
+                        class="bg-[#E53E3E] text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition border-0">
+                        + Add Grade
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left whitespace-nowrap">
                     <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
                         <tr>
-                            <th class="px-6 py-4 font-medium">Nama Grade</th>
-                            <th class="px-6 py-4 font-medium">MPA</th>
+                            <th class="px-6 py-4 font-medium text-center" colspan="2">GRADE</th>
+                            <th class="px-6 py-4 font-medium text-right">FA</th>
+                            <th class="px-6 py-4 font-medium text-right">NFA</th>
                             <th class="px-6 py-4 font-medium text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-700">
                         @foreach($grade as $item)
                         <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium text-gray-900">{{ $item->name_grade }}</td>
-                            <td class="px-6 py-4">{{ $item->mpa }}</td>
+                            <td class="px-6 py-4 font-semibold text-gray-900 text-center w-24">
+                                {{ $item->name_grade }}
+                            </td>
+                            <td class="px-6 py-4 font-semibold text-gray-900 text-center w-24">
+                                {{ $item->mpa }}
+                            </td>
+                            <td class="px-6 py-4 text-right w-32">
+                                {{ number_format($item->harga_fa, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-right w-32">
+                                {{ number_format($item->harga_nfa, 0, ',', '.') }}
+                            </td>
                             <td class="px-6 py-4 text-center space-x-3">
                                 <button onclick="openModal('detail{{ $item->id_grade }}')" 
                                     class="text-blue-500 hover:text-blue-600 font-medium transition cursor-pointer">
@@ -246,18 +243,62 @@
             
                     <!-- COMPOSITION -->
                     <div class="mt-4">
-                        <h4 class="font-semibold mb-2 text-gray-800">Composition Material</h4>
-            
-                        <div class="border rounded-lg bg-gray-50 overflow-hidden">
-                            @foreach($item->composition as $c)
-                            <div class="flex justify-between border-b last:border-0 px-4 py-2 text-sm text-gray-700">
-                                <span>{{ $c->inventory->name_material }}</span>
-                                <span class="font-medium">
-                                    {{ rtrim(rtrim(number_format($c->qty, 2, ',', '.'), '0'), ',') }} Kg
-                                </span>
+                        <h4 class="font-semibold mb-2 text-gray-800">Resep Komposisi</h4>
+
+                        @php
+                            $faComps    = $item->composition->where('recipe_type', 'FA');
+                            $nfaComps   = $item->composition->where('recipe_type', 'NFA');
+                            $otherComps = $item->composition->filter(fn($c) => !in_array($c->recipe_type, ['FA','NFA']));
+                        @endphp
+
+                        {{-- FA --}}
+                        @if($faComps->count() > 0)
+                        <div class="mb-3">
+                            <p class="text-xs font-semibold text-emerald-700 mb-1 uppercase tracking-wide">🟢 FA (Fly Ash)</p>
+                            <div class="border border-emerald-100 rounded-lg bg-emerald-50 overflow-hidden">
+                                @foreach($faComps as $c)
+                                <div class="flex justify-between border-b border-emerald-100 last:border-0 px-4 py-2 text-sm text-gray-700">
+                                    <span>{{ $c->inventory->name_material }}</span>
+                                    <span class="font-medium">{{ rtrim(rtrim(number_format($c->qty, 2, ',', '.'), '0'), ',') }} {{ $c->inventory->unit }}</span>
+                                </div>
+                                @endforeach
                             </div>
-                            @endforeach
                         </div>
+                        @endif
+
+                        {{-- NFA --}}
+                        @if($nfaComps->count() > 0)
+                        <div class="mb-3">
+                            <p class="text-xs font-semibold text-blue-700 mb-1 uppercase tracking-wide">🔵 NFA (Non Fly Ash)</p>
+                            <div class="border border-blue-100 rounded-lg bg-blue-50 overflow-hidden">
+                                @foreach($nfaComps as $c)
+                                <div class="flex justify-between border-b border-blue-100 last:border-0 px-4 py-2 text-sm text-gray-700">
+                                    <span>{{ $c->inventory->name_material }}</span>
+                                    <span class="font-medium">{{ rtrim(rtrim(number_format($c->qty, 2, ',', '.'), '0'), ',') }} {{ $c->inventory->unit }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        {{-- Others (legacy / no type) --}}
+                        @if($otherComps->count() > 0)
+                        <div class="mb-3">
+                            <p class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Material Lainnya</p>
+                            <div class="border rounded-lg bg-gray-50 overflow-hidden">
+                                @foreach($otherComps as $c)
+                                <div class="flex justify-between border-b last:border-0 px-4 py-2 text-sm text-gray-700">
+                                    <span>{{ $c->inventory->name_material }}</span>
+                                    <span class="font-medium">{{ rtrim(rtrim(number_format($c->qty, 2, ',', '.'), '0'), ',') }} {{ $c->inventory->unit }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($item->composition->count() === 0)
+                        <p class="text-sm text-gray-400 italic text-center py-3">Belum ada komposisi material.</p>
+                        @endif
                     </div>
             
                     <!-- ACTION -->
@@ -644,6 +685,189 @@ function addRowEdit(id) {
     table.insertAdjacentHTML('beforeend', row);
 }
 
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+function importRecipeExcel(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const alertId = 'upload-alert-' + Date.now();
+    const alertHtml = `
+    <div id="${alertId}" class="fixed top-4 right-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3">
+        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <span id="alert-msg-${alertId}">Sedang membaca file Excel...</span>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data     = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const ws       = workbook.Sheets[workbook.SheetNames[0]];
+            const rows     = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+            if (rows.length < 2) {
+                alert('File Excel kosong atau tidak memiliki baris data.');
+                document.getElementById(alertId).remove();
+                input.value = '';
+                return;
+            }
+
+            const headerRow = rows[0].map(cell => String(cell || '').trim());
+
+            // ── Detect column indices ──────────────────────────────────────────
+            let hargaFAIndex  = -1;
+            let hargaNFAIndex = -1;
+            let typeColIndex  = -1;
+            for (let i = 0; i < headerRow.length; i++) {
+                const h = headerRow[i].toUpperCase();
+                if (h === 'FA'   || h === 'HARGA FA')   hargaFAIndex  = i;
+                if (h === 'NFA'  || h === 'HARGA NFA')  hargaNFAIndex = i;
+                if (h === 'TYPE' || h === 'TIPE' || h === 'RECIPE TYPE') typeColIndex = i;
+            }
+
+            // Price Excel = has dedicated FA / NFA price columns
+            const isPriceExcel = (hargaFAIndex !== -1 || hargaNFAIndex !== -1);
+
+            const IGNORE_COLS = ['slump', 'w/c', 'keterangan', 'total', 'volume'];
+
+            let parsedGrades = [];
+
+            for (let r = 1; r < rows.length; r++) {
+                const row  = rows[r];
+                if (!row || row.length === 0) continue;
+
+                const col0 = String(row[0] || '').trim();
+                const col1 = String(row[1] || '').trim();
+                if (!col0 && !col1) continue;
+
+                let nameGrade  = '';
+                let mpa        = '-';
+                let harga_fa   = 0;
+                let harga_nfa  = 0;
+                let recipe_type = '';
+                let compositions = {};
+
+                // ── MODE 1 : new format (col0 = "K 100", col1 = "Fc' 8" or MPA) ──
+                const isMode1 = col1.toLowerCase().includes('fc')
+                    || col0.toUpperCase().startsWith('K ')
+                    || col0.toUpperCase().startsWith('FC');
+
+                if (isMode1) {
+                    nameGrade = col0;
+                    mpa = (!isNaN(col1) && col1 !== '') ? "Fc' " + col1 : col1;
+
+                    if (isPriceExcel) {
+                        // ── Price Excel: grab harga only, send empty compositions ──
+                        if (hargaFAIndex !== -1) {
+                            harga_fa  = parseInt(String(row[hargaFAIndex]  || '0').replace(/[^0-9]/g, '')) || 0;
+                        }
+                        if (hargaNFAIndex !== -1) {
+                            harga_nfa = parseInt(String(row[hargaNFAIndex] || '0').replace(/[^0-9]/g, '')) || 0;
+                        }
+                        // compositions stays {}, recipe_type stays ''
+                    } else {
+                        // ── Recipe Excel: grab compositions & recipe_type ──
+                        if (typeColIndex !== -1) {
+                            recipe_type = String(row[typeColIndex] || '').trim().toUpperCase();
+                        }
+
+                        for (let i = 2; i < headerRow.length; i++) {
+                            if (i === typeColIndex) continue;
+                            const matName = headerRow[i];
+                            if (!matName) continue;
+                            if (IGNORE_COLS.some(c => matName.toLowerCase().includes(c))) continue;
+                            const qty = parseFloat(row[i]);
+                            if (!isNaN(qty) && qty > 0) compositions[matName] = qty;
+                        }
+
+                        // Auto-detect recipe_type from materials if not explicit
+                        if (!recipe_type) {
+                            const hasFlyAsh = Object.keys(compositions).some(m => {
+                                const ml = m.toLowerCase();
+                                return ml.includes('fly ash') || ml === 'fa';
+                            });
+                            recipe_type = hasFlyAsh ? 'FA' : 'NFA';
+                        }
+                    }
+
+                } else {
+                    // ── MODE 2 : old format (col0=K, col1=125, col2=FA/NFA) ──
+                    const col2 = String(row[2] || '').trim().toUpperCase();
+                    if (!col1) continue;
+
+                    // Build name WITHOUT the FA/NFA suffix
+                    const prefix = col0.toUpperCase() === 'K' ? 'K ' : (col0 ? col0.toUpperCase() + ' ' : 'K ');
+                    nameGrade   = prefix + col1;            // e.g. "K 125"
+                    recipe_type = (col2 === 'FA' || col2 === 'NFA') ? col2 : '';
+
+                    for (let i = 3; i < headerRow.length; i++) {
+                        const matName = headerRow[i];
+                        if (!matName) continue;
+                        if (IGNORE_COLS.some(c => matName.toLowerCase().includes(c))) continue;
+                        const qty = parseFloat(row[i]);
+                        if (!isNaN(qty) && qty > 0) compositions[matName] = qty;
+                    }
+
+                    // Auto-detect if not set
+                    if (!recipe_type) {
+                        const hasFlyAsh = Object.keys(compositions).some(m => {
+                            const ml = m.toLowerCase();
+                            return ml.includes('fly ash') || ml === 'fa';
+                        });
+                        recipe_type = hasFlyAsh ? 'FA' : 'NFA';
+                    }
+                }
+
+                parsedGrades.push({ name_grade: nameGrade, mpa, harga_fa, harga_nfa, recipe_type, compositions });
+            }
+
+            if (parsedGrades.length > 0) {
+                const mode = isPriceExcel ? 'harga' : 'resep';
+                document.getElementById(`alert-msg-${alertId}`).innerText =
+                    `Menyimpan ${parsedGrades.length} data ${mode} ke database...`;
+
+                fetch('/grade/bulk-store', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ grades: parsedGrades })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    document.getElementById(alertId).remove();
+                    if (res.success) {
+                        alert(res.message);
+                        window.location.reload();
+                    } else {
+                        alert('Gagal: ' + res.message);
+                    }
+                })
+                .catch(err => {
+                    document.getElementById(alertId).remove();
+                    console.error(err);
+                    alert('Terjadi kesalahan saat mengirim data ke server.');
+                });
+            } else {
+                document.getElementById(alertId).remove();
+                alert('Tidak ada data valid ditemukan di file Excel.');
+            }
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById(alertId).remove();
+            alert('Gagal membaca file Excel. Pastikan format file benar.');
+        }
+
+        input.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
 </script>
 
 @endsection

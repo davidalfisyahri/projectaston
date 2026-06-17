@@ -9,6 +9,7 @@ use App\Models\supplier;
 use App\Models\Inventory;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class procurementcontroller extends Controller
 {
@@ -22,62 +23,64 @@ class procurementcontroller extends Controller
     }
 
     public function store(Request $request)
-{
-    // 1. BUAT SUPPLIER OTOMATIS
-    $supplier = supplier::create([
-        'name_pt' => $request->name_pt,
-        'name' => $request->supplier_name,
-        'address' => $request->supplier_address,
-    ]);
+    {
+        DB::transaction(function () use ($request) {
+            // 1. BUAT SUPPLIER OTOMATIS
+            $supplier = supplier::create([
+                'name_pt' => $request->name_pt,
+                'name' => $request->supplier_name,
+                'address' => $request->supplier_address,
+            ]);
 
-    // 2. BUAT PO
-    $po = purchase_order::create([
-        'no_po' => $request->no_po,
-        'supplier_id' => $supplier->id_supplier, // 🔥 FIX DISINI
-        'tanggal' => $request->tanggal,
-        'created_by' => $request->created_by,
-    ]);
+            // 2. BUAT PO
+            $po = purchase_order::create([
+                'no_po' => $request->no_po,
+                'supplier_id' => $supplier->id_supplier, // 🔥 FIX DISINI
+                'tanggal' => $request->tanggal,
+                'created_by' => $request->created_by,
+            ]);
 
-    $total = 0;
+            $total = 0;
 
-    foreach ($request->inventory_id as $i => $inv_id) {
+            foreach ($request->inventory_id as $i => $inv_id) {
 
-        $qty_input = $request->qty[$i]; // angka yg diketik user
-        $unit = $request->unit[$i];
-        $price = str_replace('.', '', $request->price[$i]);
+                $qty_input = $request->qty[$i]; // angka yg diketik user
+                $unit = $request->unit[$i];
+                $price = str_replace('.', '', $request->price[$i]);
 
-        // 🔥 1. KONVERSI KE KG (UNTUK DATABASE)
-        if($unit == 'ton'){
-            $qty_db = $qty_input * 1000;
-        } else {
-            $qty_db = $qty_input;
-        }
+                // 🔥 1. KONVERSI KE KG (UNTUK DATABASE)
+                if($unit == 'ton'){
+                    $qty_db = $qty_input * 1000;
+                } else {
+                    $qty_db = $qty_input;
+                }
 
-        // 🔥 2. HITUNG TOTAL (PAKAI INPUT ASLI, BUKAN KG)
-        $subtotal = $qty_input * $price;
-    
-        purchase_order_detail::create([
-            'po_id' => $po->id_po,
-            'inventory_id' => $inv_id,
-            'unit' => 'kg', // 🔥 SIMPAN SELALU KG
-            'qty' => $qty_db,
-            'price' => $price,
-            'total' => $subtotal,
-        ]);
-    
-        // 🔥 TAMBAH STOCK (SUDAH KG)
-        $inventory = Inventory::find($inv_id);
-        if ($inventory) {
-            $inventory->update(['stock' => $inventory->stock + $qty_db]);
-        }
-    
-        $total += $subtotal;
+                // 🔥 2. HITUNG TOTAL (PAKAI INPUT ASLI, BUKAN KG)
+                $subtotal = $qty_input * $price;
+            
+                purchase_order_detail::create([
+                    'po_id' => $po->id_po,
+                    'inventory_id' => $inv_id,
+                    'unit' => 'kg', // 🔥 SIMPAN SELALU KG
+                    'qty' => $qty_db,
+                    'price' => $price,
+                    'total' => $subtotal,
+                ]);
+            
+                // 🔥 TAMBAH STOCK (SUDAH KG)
+                $inventory = Inventory::find($inv_id);
+                if ($inventory) {
+                    $inventory->update(['stock' => $inventory->stock + $qty_db]);
+                }
+            
+                $total += $subtotal;
+            }
+
+            $po->update(['total' => $total]);
+        });
+
+        return back();
     }
-
-    $po->update(['total' => $total]);
-
-    return back();
-}
 
 public function pdf($id)
 {
@@ -94,20 +97,23 @@ public function pdf($id)
 }
 
 
-public function delete($id)
-{
-    $po = purchase_order::with('details')->findOrFail($id);
+    public function delete($id)
+    {
+        DB::transaction(function () use ($id) {
+            $po = purchase_order::with('details')->findOrFail($id);
 
-    // Kembalikan Stok (Kurangi stok yang tadinya ditambah)
-    foreach ($po->details as $detail) {
-        $inventory = Inventory::find($detail->inventory_id);
-        if ($inventory) {
-            $inventory->update(['stock' => $inventory->stock - $detail->qty]);
-        }
+            // Kembalikan Stok (Kurangi stok yang tadinya ditambah)
+            foreach ($po->details as $detail) {
+                $inventory = Inventory::find($detail->inventory_id);
+                if ($inventory) {
+                    $inventory->update(['stock' => $inventory->stock - $detail->qty]);
+                }
+            }
+
+            $po->delete();
+        });
+
+        return back();
     }
-
-    $po->delete();
-    return back();
-}
 
 }

@@ -12,7 +12,7 @@
     </div>
 
     <!-- KPI CARDS -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
         <!-- Active CR -->
         <div
@@ -59,29 +59,7 @@
             </div>
         </div>
 
-        <!-- Low Stock Alert -->
-        <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-            <div
-                class="w-14 h-14 rounded-full {{ $lowStockCount > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }} flex items-center justify-center shrink-0">
-                @if($lowStockCount > 0)
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                @else
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                @endif
-            </div>
-            <div>
-                <p class="text-sm text-gray-500 font-medium">Low Stock Materials</p>
-                <h3 class="text-2xl font-bold {{ $lowStockCount > 0 ? 'text-red-600' : 'text-gray-800' }}">
-                    {{ $lowStockCount }} Item(s)
-                </h3>
-            </div>
-        </div>
+
 
     </div>
 
@@ -108,7 +86,7 @@
     </div>
 
     <!-- TABLES SECTION -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6">
 
         <!-- Recent CR Table -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -153,45 +131,7 @@
             </div>
         </div>
 
-        <!-- Low Stock Materials Table -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-800">Peringatan Stok Menipis (<= 1.000 kg)</h2>
-            </div>
 
-            <div class="overflow-y-auto max-h-[300px] pr-2">
-                @if($lowStockCount > 0)
-                    <div class="space-y-3">
-                        @foreach($lowStockMaterials as $item)
-                            <div class="flex items-center justify-between p-3 bg-red-50 border border-red-100 rounded-xl">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-10 h-10 rounded-full bg-red-200 text-red-600 flex justify-center items-center font-bold">
-                                        !
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-gray-800">{{ $item->name_material }}</p>
-                                        <p class="text-xs text-red-500 font-medium uppercase">{{ $item->type }}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-bold text-red-600">{{ number_format($item->stock, 0, ',', '.') }}</p>
-                                    <p class="text-xs text-gray-500">kg tersisa</p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="flex flex-col items-center justify-center h-48 text-gray-400">
-                        <svg class="w-12 h-12 mb-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p class="text-sm font-medium">Aman! Tidak ada material yang stoknya menipis.</p>
-                    </div>
-                @endif
-            </div>
-        </div>
 
     </div>
 

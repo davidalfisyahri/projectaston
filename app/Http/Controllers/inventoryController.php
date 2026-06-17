@@ -28,7 +28,7 @@ class InventoryController extends Controller
                   ->orWhere('mpa', 'like', "%{$search}%");
             });
         }
-        $grade = $gradeQuery->paginate(10, ['*'], 'grade_page')->appends($request->query());
+        $grade = $gradeQuery->orderBy('id_grade', 'desc')->paginate(10, ['*'], 'grade_page')->appends($request->query());
 
         $inventoryList = Inventory::all();
 

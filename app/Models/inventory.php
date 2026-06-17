@@ -15,4 +15,16 @@ class Inventory extends Model
     {
         return $this->hasMany(Composition::class, 'inventory_id');
     }
+
+    public function getUnitAttribute()
+    {
+        $name = strtolower($this->name_material ?? '');
+        $type = strtolower($this->type ?? '');
+        
+        if ($type === 'admixture' || str_contains($name, 'air') || str_contains($name, 'type d') || str_contains($name, 'type f') || str_contains($name, 'liter') || str_contains($name, 'water')) {
+            return 'L';
+        }
+        
+        return 'Kg';
+    }
 }

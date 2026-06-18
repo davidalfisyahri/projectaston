@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
-class procurementcontroller extends Controller
+class ProcurementController extends Controller
 {
     public function index()
     {

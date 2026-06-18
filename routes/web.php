@@ -2,9 +2,9 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\CustomerRequestController;
-use App\Http\Controllers\inventoryController;
-use App\Http\Controllers\gradebetonController;
-use App\Http\Controllers\procurementcontroller;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\GradebetonController;
+use App\Http\Controllers\ProcurementController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;

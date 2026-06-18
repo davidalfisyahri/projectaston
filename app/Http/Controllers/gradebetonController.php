@@ -13,6 +13,10 @@ class GradebetonController extends Controller
 {
     public function store(Request $request)
 {
+    if (auth()->user()->role !== 'superadmin' && auth()->user()->position === 'direktur_utama') {
+        abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+    }
+
     $request->validate([
         'name_grade' => 'required',
         'mpa' => 'required|string',
@@ -47,6 +51,10 @@ class GradebetonController extends Controller
 
 public function update(Request $request, $id)
 {
+    if (auth()->user()->role !== 'superadmin' && auth()->user()->position === 'direktur_utama') {
+        abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+    }
+
     $grade = GradeBeton::find($id);
 
     $grade->update([
@@ -79,12 +87,20 @@ public function update(Request $request, $id)
 
     public function destroy($id)
     {
+        if (auth()->user()->role !== 'superadmin' && auth()->user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         GradeBeton::find($id)->delete();
         return back();
     }
 
     public function bulkStore(Request $request)
     {
+        if (auth()->user()->role !== 'superadmin' && auth()->user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         $request->validate([
             'grades'                    => 'required|array',
             'grades.*.name_grade'       => 'required|string',

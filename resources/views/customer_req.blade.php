@@ -28,9 +28,11 @@
                     @endif
                 </form>
 
-                <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-lg text-sm shadow w-full sm:w-auto whitespace-nowrap">
+                @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
+                <button onclick="openModal('addRequest')" class="bg-[#E53E3E] text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition w-full sm:w-auto whitespace-nowrap">
                     + Buat Request
                 </button>
+                @endif
             </div>
         </div>
 
@@ -73,11 +75,13 @@
                             <td class="p-3 text-center flex justify-center gap-2">
                                 <button type="button" onclick="openDetail({{ $d->id }})" class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-200">View</button>
                                 <a href="/customer-request/pdf/{{ $d->id }}?download=1" class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs hover:bg-green-200">Download</a>
+                                @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                                 <form action="/customer-request/delete/{{ $d->id }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                     @csrf
                                     @method('DELETE')
                                     <button class="text-red-500 hover:text-red-700 text-xs mt-1">Delete</button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -155,21 +159,12 @@
                                 <a href="/customer-request/spk-pdf/{{ $d->id }}?download=1" class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs hover:bg-orange-200 font-semibold" title="Download SPK Kepala Plant">SPK</a>
                                 @endif
 
-                                @if($d->status == 'approved')
+                                @if($d->status == 'approved' && (auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama'))
                                 <button type="button" onclick="openPayModal({{ $d->id }})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs hover:bg-emerald-700 shadow-sm font-bold">💳 Info Rekening & Bayar</button>
                                 @endif
 
-                                @if($d->status == 'paid')
-                                <button type="button" onclick="openScheduleModal({{ $d->id }})" class="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded text-xs font-bold transition hover:bg-indigo-200 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                      <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
-                                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-                                    </svg>
-                                    Schedule
-                                </button>
-                                @endif
 
-                                @if(in_array($d->status, ['confirmed_wa', 'scheduled']))
+                                @if(in_array($d->status, ['paid', 'confirmed_wa', 'scheduled']) && (auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama'))
                                 <form action="/customer-request/done/{{ $d->id }}" method="POST" onsubmit="return confirm('Tandai request ini sebagai Selesai (Done) di lapangan?')">
                                     @csrf
                                     <button class="bg-emerald-500 text-white px-2 py-1 rounded text-xs hover:bg-emerald-600 shadow-sm font-bold">Done ✓</button>
@@ -391,40 +386,7 @@
             </div>
         </div>
 
-        @if($d->status == 'paid')
-        <div id="scheduleModal-{{ $d->id }}" onclick="if(event.target === this) closeScheduleModal({{ $d->id }})" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
-            <div class="bg-white w-full max-w-md rounded-xl shadow-lg overflow-hidden flex flex-col animate-fade-in">
-                <!-- HEADER -->
-                <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
-                    <h2 class="text-base font-bold text-gray-800">Atur Jadwal Pengiriman</h2>
-                    <button type="button" onclick="closeScheduleModal({{ $d->id }})" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
-                </div>
-                <!-- BODY -->
-                <form action="/customer-request/schedule/{{ $d->id }}" method="POST">
-                    @csrf
-                    <div class="p-6 space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Kode Request</label>
-                            <div class="text-sm font-mono text-gray-800 bg-gray-50 p-2 rounded border">{{ $d->request_code }}</div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Customer</label>
-                            <div class="text-sm text-gray-800 bg-gray-50 p-2 rounded border">{{ $d->customer_name }}</div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Pengiriman</label>
-                            <input type="date" name="schedule_date" required class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500 bg-white">
-                        </div>
-                    </div>
-                    <!-- FOOTER -->
-                    <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
-                        <button type="button" onclick="closeScheduleModal({{ $d->id }})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Batal</button>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">Simpan Jadwal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
+
 
         {{-- ── MODAL KONFIRMASI PEMBAYARAN MANUAL ────────────────────── --}}
         @if($d->status == 'approved')
@@ -631,6 +593,18 @@
 
                         <textarea name="tax_address" placeholder="Alamat Pajak"
                             class="col-span-2 border p-2 rounded"></textarea>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- JADWAL -->
+                    <!-- ===================== -->
+                    <h3 class="font-semibold mb-2">Jadwal</h3>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Pengiriman</label>
+                            <input type="date" name="schedule_date" required class="border p-2 rounded w-full">
+                        </div>
                     </div>
 
                     <!-- ===================== -->
@@ -1305,21 +1279,7 @@
                 document.getElementById('detailModal-' + id).classList.remove('flex')
             }
 
-            window.openScheduleModal = function (id) {
-                const modal = document.getElementById('scheduleModal-' + id);
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                }
-            }
 
-            window.closeScheduleModal = function (id) {
-                const modal = document.getElementById('scheduleModal-' + id);
-                if (modal) {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                }
-            }
 
             // Klik background overlay = close modal
             document.getElementById('modalForm').addEventListener('click', function (e) {

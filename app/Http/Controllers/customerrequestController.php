@@ -17,8 +17,14 @@ class CustomerRequestController extends Controller
 {
     public function index(Request $request)
     {
-        if (Auth::check() && Auth::user()->position === 'kepala_plant') {
-            return redirect()->route('plant_schedule');
+        if (Auth::check() && Auth::user()->role !== 'superadmin') {
+            $pos = Auth::user()->position;
+            if ($pos === 'kepala_plant') {
+                return redirect()->route('plant_schedule');
+            }
+            if ($pos === 'logistik') {
+                abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+            }
         }
 
         $query = CustomerRequest::with('details.grade')->latest();
@@ -111,6 +117,10 @@ class CustomerRequestController extends Controller
 
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:30',
@@ -329,6 +339,10 @@ class CustomerRequestController extends Controller
 
     public function pay($id)
     {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         CustomerRequest::find($id)->update([
             'is_paid' => true,
             'status' => 'paid'
@@ -339,6 +353,10 @@ class CustomerRequestController extends Controller
 
     public function confirmWa($id)
     {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         CustomerRequest::find($id)->update([
             'is_wa_confirmed' => true,
             'status' => 'confirmed_wa'
@@ -367,6 +385,10 @@ class CustomerRequestController extends Controller
 
     public function schedule(Request $request, $id)
     {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         CustomerRequest::find($id)->update([
             'schedule_date' => $request->schedule_date,
             'status' => 'scheduled'
@@ -377,6 +399,10 @@ class CustomerRequestController extends Controller
 
     public function destroy($id)
     {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         $data = CustomerRequest::findOrFail($id);
         CustomerRequestDetail::where('customer_request_id', $id)->delete();
         CustomerRequestApproval::where('customer_request_id', $id)->delete();
@@ -387,6 +413,10 @@ class CustomerRequestController extends Controller
 
     public function markAsDone($id)
     {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         $cr = CustomerRequest::findOrFail($id);
         
         if (!in_array($cr->status, ['approved', 'paid', 'confirmed_wa', 'scheduled'])) {

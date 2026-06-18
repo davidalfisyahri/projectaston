@@ -25,8 +25,8 @@ class DeliveryTariffController extends Controller
     public function update(Request $request)
     {
         $user = auth()->user();
-        if (!$user || !($user->role === 'superadmin' || in_array($user->position, ['direktur_utama', 'wakil_direktur']))) {
-            abort(403, 'Anda tidak memiliki akses untuk mengubah tarif pengiriman.');
+        if (!$user || $user->role !== 'superadmin') {
+            abort(403, 'Hanya superadmin yang dapat mengubah tarif pengiriman.');
         }
 
         $request->validate([
@@ -55,8 +55,8 @@ class DeliveryTariffController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        if (!$user || !($user->role === 'superadmin' || in_array($user->position, ['direktur_utama', 'wakil_direktur']))) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah tarif pengiriman.');
+        if (!$user || $user->role !== 'superadmin') {
+            abort(403, 'Hanya superadmin yang dapat menambah tarif pengiriman.');
         }
 
         $request->validate([
@@ -82,8 +82,8 @@ class DeliveryTariffController extends Controller
     public function destroy($id)
     {
         $user = auth()->user();
-        if (!$user || !($user->role === 'superadmin' || in_array($user->position, ['direktur_utama', 'wakil_direktur']))) {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus tarif pengiriman.');
+        if (!$user || $user->role !== 'superadmin') {
+            abort(403, 'Hanya superadmin yang dapat menghapus tarif pengiriman.');
         }
 
         DeliveryTariff::findOrFail($id)->delete();

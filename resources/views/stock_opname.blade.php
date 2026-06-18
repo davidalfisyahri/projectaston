@@ -37,6 +37,7 @@
     <div id="importAlert" class="hidden mb-4 flex items-start gap-3 px-5 py-3.5 rounded-xl text-sm shadow-sm transition duration-300">
     </div>
 
+    @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
     {{-- FORM OPNAME --}}
     <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 overflow-hidden mb-8">
         <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -125,6 +126,7 @@
             </div>
         </form>
     </div>
+    @endif
 
     {{-- RIWAYAT OPNAME --}}
     <div class="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-gray-100 overflow-hidden">

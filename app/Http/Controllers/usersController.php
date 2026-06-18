@@ -13,6 +13,10 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
+        if (auth()->user()->role !== 'superadmin') {
+            abort(403, 'Hanya superadmin yang dapat mengakses halaman Setting.');
+        }
+
         $search = $request->search;
         $role = $request->role;
         $page = 5;
@@ -48,6 +52,10 @@ class UsersController extends Controller
      */
     public function store(Request $request)
 {
+    if (auth()->user()->role !== 'superadmin') {
+        abort(403, 'Hanya superadmin yang dapat mengelola user.');
+    }
+
     $validatedData = $request->validate([
         'name_user' => 'required',
         'username' => 'required|unique:users,username',
@@ -79,6 +87,10 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if (auth()->user()->role !== 'superadmin') {
+            abort(403, 'Hanya superadmin yang dapat mengelola user.');
+        }
+
         $validatedData = $request->validate([
             'name_user' => 'required',
             'username' => 'required|unique:users,username,' . $id . ',id_user',
@@ -116,6 +128,10 @@ class UsersController extends Controller
      */
     public function destroy($id)
     {
+        if (auth()->user()->role !== 'superadmin') {
+            abort(403, 'Hanya superadmin yang dapat mengelola user.');
+        }
+
         User::where('id_user', $id)->delete();
         return redirect('/setting');
     }

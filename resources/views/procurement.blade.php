@@ -4,6 +4,7 @@
 <h1 class="text-2xl font-bold mb-6">Procurement</h1>
 
 
+    @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
     <!-- FORM -->
     <div class="bg-white rounded-2xl shadow p-6">
         <form action="/procurement/store" method="POST">
@@ -107,7 +108,7 @@
                     </tr>
                 </tbody>
             
-            </table>
+                </table>
 
             <div class="flex justify-between mt-4">
                 <button type="button" onclick="addRow()" class="text-blue-600">
@@ -120,6 +121,7 @@
             </div>
         </form>
     </div>
+    @endif
 
     <!-- TABLE DATA -->
     <div class="mt-8 bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
@@ -167,6 +169,7 @@
                                 Download
                             </a>
                 
+                            @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                             <!-- DELETE -->
                             <form action="/procurement/delete/{{ $p->id_po }}" method="POST">
                                 @csrf
@@ -176,6 +179,7 @@
                                     Delete
                                 </button>
                             </form>
+                            @endif
 
                              <!-- TOGGLE -->
                              <button onclick="toggleDetail({{ $p->id_po }}, this)"

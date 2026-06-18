@@ -10,6 +10,11 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->role !== 'superadmin' && $user->position === 'logistik') {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
         $search = $request->search;
 
         $invQuery = Inventory::query();
@@ -37,6 +42,11 @@ class InventoryController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->role !== 'superadmin' && $user->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         Inventory::create([
             'name_material' => $request->name_material,
             'type' => $request->type,
@@ -48,6 +58,11 @@ class InventoryController extends Controller
 
     public function update(Request $request, $id)
 {
+    $user = auth()->user();
+    if ($user && $user->role !== 'superadmin' && $user->position === 'direktur_utama') {
+        abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+    }
+
     $inv = Inventory::find($id);
 
     $inv->update([
@@ -61,6 +76,11 @@ class InventoryController extends Controller
 
     public function destroy($id)
     {
+        $user = auth()->user();
+        if ($user && $user->role !== 'superadmin' && $user->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         Inventory::find($id)->delete();
         return back();
     }

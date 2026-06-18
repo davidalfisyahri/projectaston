@@ -15,6 +15,11 @@ class procurementcontroller extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        if ($user && $user->role !== 'superadmin' && in_array($user->position, ['sales_internal', 'sales_external', 'kepala_plant'])) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
         $suppliers = supplier::all();
         $po = purchase_order::with('details.inventory','supplier')->latest()->get();
         $inventories = Inventory::all();
@@ -24,6 +29,10 @@ class procurementcontroller extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'superadmin' && auth()->user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         DB::transaction(function () use ($request) {
             // 1. BUAT SUPPLIER OTOMATIS
             $supplier = supplier::create([
@@ -99,6 +108,10 @@ public function pdf($id)
 
     public function delete($id)
     {
+        if (auth()->user()->role !== 'superadmin' && auth()->user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         DB::transaction(function () use ($id) {
             $po = purchase_order::with('details')->findOrFail($id);
 

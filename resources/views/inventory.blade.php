@@ -28,10 +28,12 @@
 
             <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
                 <h2 class="text-xl font-semibold text-gray-800">Inventory Material</h2>
+                @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                 <button onclick="openModal('addInventory')" 
                     class="bg-[#E53E3E] text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition">
                     + Add Material
                 </button>
+                @endif
             </div>
 
             <div class="overflow-x-auto">
@@ -41,7 +43,9 @@
                             <th class="px-6 py-4 font-medium">Material Name</th>
                             <th class="px-6 py-4 font-medium">Type</th>
                             <th class="px-6 py-4 font-medium text-right">Stock</th>
+                            @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                             <th class="px-6 py-4 font-medium text-center">Action</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-700">
@@ -54,6 +58,7 @@
                                     {{ number_format($inv->stock, 0, ',', '.') }} {{ $inv->unit }}
                                 </span>
                             </td>
+                            @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                             <td class="px-6 py-4 text-center space-x-3">
                                 <button onclick="openModal('editInventory{{ $inv->id_inventory }}')" 
                                     class="text-yellow-500 hover:text-yellow-600 font-medium transition cursor-pointer">
@@ -65,6 +70,7 @@
                                     Delete
                                  </a>
                             </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>
@@ -127,6 +133,7 @@
 
             <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-white">
                 <h2 class="text-xl font-semibold text-gray-800">Grade Beton</h2>
+                @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                 <div class="flex gap-2">
                     <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-1.5 shadow-sm" title="Import file Excel berisi resep bahan (FA / NFA) atau harga FA / NFA">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -140,6 +147,7 @@
                         + Add Grade
                     </button>
                 </div>
+                @endif
             </div>
 
             <div class="overflow-x-auto">
@@ -149,7 +157,9 @@
                             <th class="px-6 py-4 font-medium text-center" colspan="2">GRADE</th>
                             <th class="px-6 py-4 font-medium text-right">FA</th>
                             <th class="px-6 py-4 font-medium text-right">NFA</th>
+                            @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                             <th class="px-6 py-4 font-medium text-center">Action</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-700">
@@ -172,6 +182,7 @@
                                     class="text-blue-500 hover:text-blue-600 font-medium transition cursor-pointer">
                                     Detail
                                 </button>
+                                @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                                 <button onclick="openModal('editGrade{{ $item->id_grade }}')" 
                                     class="text-yellow-500 hover:text-yellow-600 font-medium transition cursor-pointer">
                                     Edit
@@ -181,6 +192,7 @@
                                     class="text-red-500 hover:text-red-600 font-medium transition cursor-pointer">
                                     Delete
                                  </a>
+                                @endif
                             </td>
                         </tr>
                         @endforeach

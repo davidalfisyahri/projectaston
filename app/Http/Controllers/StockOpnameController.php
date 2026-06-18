@@ -35,6 +35,10 @@ class StockOpnameController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->user()->role !== 'superadmin' && $request->user()->position === 'direktur_utama') {
+            abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
+        }
+
         $request->validate([
             'items' => 'required|array|min:1',
             'items.*.inventory_id' => 'required|exists:inventory,id_inventory',

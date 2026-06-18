@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\grade;
-use App\Models\composition;
-use App\Models\gradebeton;
+use App\Models\GradeBeton;
+use App\Models\Composition;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class supplier extends Model
+class Supplier extends Model
 {
     protected $table = 'suppliers';
     protected $primaryKey = 'id_supplier';
@@ -18,6 +18,6 @@ class supplier extends Model
     // RELASI KE PO
     public function purchase_orders()
     {
-        return $this->hasMany(purchase_order::class, 'supplier_id');
+        return $this->hasMany(PurchaseOrder::class, 'supplier_id');
     }
 }

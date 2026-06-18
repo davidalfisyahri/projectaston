@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CustomerRequest;
 use App\Models\CustomerRequestDetail;
 use App\Models\CustomerRequestApproval;
-use App\Models\purchase_order;
+use App\Models\PurchaseOrder;
 use App\Models\Composition;
 use App\Models\Inventory;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +29,7 @@ class ApprovalController extends Controller
             });
         }
 
-        $poQuery = purchase_order::with(['supplier', 'details.inventory']);
+        $poQuery = PurchaseOrder::with(['supplier', 'details.inventory']);
         if ($search) {
             $poQuery->where(function ($q) use ($search) {
                 $q->where('no_po', 'like', "%{$search}%")
@@ -124,7 +124,7 @@ class ApprovalController extends Controller
      */
     public function approveProcurement(Request $request, $id)
     {
-        $po = purchase_order::findOrFail($id);
+        $po = PurchaseOrder::findOrFail($id);
 
         $po->update([
             'status' => $request->action, // approved / rejected

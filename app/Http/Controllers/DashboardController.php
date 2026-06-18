@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CustomerRequest;
 use App\Models\CustomerRequestDetail;
-use App\Models\purchase_order;
+use App\Models\PurchaseOrder;
 use App\Models\Inventory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ class DashboardController extends Controller
         // 1. KPIs
         $totalActiveCR = CustomerRequest::where('status', '!=', 'rejected')->count();
         $totalPendingCR = CustomerRequest::where('status', 'waiting_approval')->count();
-        $totalPendingPO = purchase_order::where('status', 'pending')->count();
+        $totalPendingPO = PurchaseOrder::where('status', 'pending')->count();
         $lowStockMaterials = Inventory::where('stock', '<=', 1000)->get();
         $lowStockCount = $lowStockMaterials->count();
 

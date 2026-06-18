@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class purchase_order_detail extends Model
+class PurchaseOrderDetail extends Model
 {
     protected $table = 'purchase_order_details';
     protected $primaryKey = 'id_detail';
@@ -21,7 +21,7 @@ class purchase_order_detail extends Model
     // RELASI KE PO
     public function po()
     {
-        return $this->belongsTo(purchase_order::class, 'po_id');
+        return $this->belongsTo(PurchaseOrder::class, 'po_id');
     }
 
     // RELASI KE INVENTORY

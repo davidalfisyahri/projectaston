@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\gradebeton;
+use App\Models\GradeBeton;
 use App\Models\Inventory;
 
 class InventoryController extends Controller
@@ -26,7 +26,7 @@ class InventoryController extends Controller
         }
         $inventories = $invQuery->paginate(10, ['*'], 'inventory_page')->appends($request->query());
 
-        $gradeQuery = gradebeton::with('composition.inventory');
+        $gradeQuery = GradeBeton::with('composition.inventory');
         if ($search) {
             $gradeQuery->where(function($q) use ($search) {
                 $q->where('name_grade', 'like', "%{$search}%")

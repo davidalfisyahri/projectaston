@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\purchase_order;
-use App\Models\purchase_order_detail;
-use App\Models\supplier;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderDetail;
+use App\Models\Supplier;
 use App\Models\Inventory;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -20,8 +20,8 @@ class ProcurementController extends Controller
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        $suppliers = supplier::all();
-        $po = purchase_order::with('details.inventory','supplier')->latest()->get();
+        $suppliers = Supplier::all();
+        $po = PurchaseOrder::with('details.inventory','supplier')->latest()->get();
         $inventories = Inventory::all();
 
         return view('procurement', compact('suppliers','po', 'inventories'));
@@ -35,14 +35,14 @@ class ProcurementController extends Controller
 
         DB::transaction(function () use ($request) {
             // 1. BUAT SUPPLIER OTOMATIS
-            $supplier = supplier::create([
+            $supplier = Supplier::create([
                 'name_pt' => $request->name_pt,
                 'name' => $request->supplier_name,
                 'address' => $request->supplier_address,
             ]);
 
             // 2. BUAT PO
-            $po = purchase_order::create([
+            $po = PurchaseOrder::create([
                 'no_po' => $request->no_po,
                 'supplier_id' => $supplier->id_supplier, // 🔥 FIX DISINI
                 'tanggal' => $request->tanggal,
@@ -67,7 +67,7 @@ class ProcurementController extends Controller
                 // 🔥 2. HITUNG TOTAL (PAKAI INPUT ASLI, BUKAN KG)
                 $subtotal = $qty_input * $price;
             
-                purchase_order_detail::create([
+                PurchaseOrderDetail::create([
                     'po_id' => $po->id_po,
                     'inventory_id' => $inv_id,
                     'unit' => 'kg', // 🔥 SIMPAN SELALU KG
@@ -93,7 +93,7 @@ class ProcurementController extends Controller
 
 public function pdf($id)
 {
-    $po = purchase_order::with(['details.inventory', 'supplier'])->findOrFail($id);
+    $po = PurchaseOrder::with(['details.inventory', 'supplier'])->findOrFail($id);
 
     $pdf = Pdf::loadView('pdf.procurement_pdf', compact('po'));
 
@@ -113,7 +113,7 @@ public function pdf($id)
         }
 
         DB::transaction(function () use ($id) {
-            $po = purchase_order::with('details')->findOrFail($id);
+            $po = PurchaseOrder::with('details')->findOrFail($id);
 
             // Kembalikan Stok (Kurangi stok yang tadinya ditambah)
             foreach ($po->details as $detail) {

@@ -50,16 +50,16 @@ Route::post('/inventory/store', [InventoryController::class, 'store']);
 Route::post('/inventory/update/{id}', [InventoryController::class, 'update']);
 Route::get('/inventory/delete/{id}', [InventoryController::class, 'destroy']);
 
-Route::post('/grade/store', [gradebetonController::class, 'store']);
-Route::post('/grade/update/{id}', [gradebetonController::class, 'update']);
-Route::get('/grade/delete/{id}', [gradebetonController::class, 'destroy']);
-Route::post('/grade/bulk-store', [gradebetonController::class, 'bulkStore']);
+Route::post('/grade/store', [GradebetonController::class, 'store']);
+Route::post('/grade/update/{id}', [GradebetonController::class, 'update']);
+Route::get('/grade/delete/{id}', [GradebetonController::class, 'destroy']);
+Route::post('/grade/bulk-store', [GradebetonController::class, 'bulkStore']);
 
-Route::get('/procurement', [procurementcontroller::class, 'index']) ->name('procurement');
-Route::post('/procurement/store', [procurementcontroller::class, 'store']);
-Route::post('/procurement/store-pdf', [procurementcontroller::class, 'storePdf']);
-Route::get('/procurement/pdf/{id}', [procurementcontroller::class, 'pdf']);
-Route::delete('/procurement/delete/{id}', [procurementcontroller::class, 'delete']);
+Route::get('/procurement', [ProcurementController::class, 'index']) ->name('procurement');
+Route::post('/procurement/store', [ProcurementController::class, 'store']);
+Route::post('/procurement/store-pdf', [ProcurementController::class, 'storePdf']);
+Route::get('/procurement/pdf/{id}', [ProcurementController::class, 'pdf']);
+Route::delete('/procurement/delete/{id}', [ProcurementController::class, 'delete']);
 
 Route::get('/setting', [UsersController::class, 'index'])->middleware('auth')->name('setting');
 

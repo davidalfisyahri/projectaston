@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class purchase_order extends Model
+class PurchaseOrder extends Model
 {
     protected $table = 'purchase_orders';
     protected $primaryKey = 'id_po';
@@ -23,13 +23,13 @@ class purchase_order extends Model
     // RELASI KE SUPPLIER
     public function supplier()
     {
-        return $this->belongsTo(supplier::class, 'supplier_id');
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
     // RELASI KE DETAIL
     public function details()
     {
-        return $this->hasMany(purchase_order_detail::class, 'po_id');
+        return $this->hasMany(PurchaseOrderDetail::class, 'po_id');
     }
 
     public function approvedBy()

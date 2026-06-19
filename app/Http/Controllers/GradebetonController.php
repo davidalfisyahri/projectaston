@@ -19,15 +19,13 @@ class GradebetonController extends Controller
     $request->validate([
         'name_grade' => 'required',
         'mpa' => 'required|string',
-        'harga_fa' => 'required',
-        'harga_nfa' => 'required',
+        'harga' => 'required',
     ]);
 
     $grade = GradeBeton::create([
         'name_grade' => $request->name_grade,
         'mpa' => $request->mpa,
-        'harga_fa' => str_replace('.', '', $request->harga_fa),
-        'harga_nfa' => str_replace('.', '', $request->harga_nfa),
+        'harga' => str_replace('.', '', $request->harga),
     ]);
 
     // ✅ CEK DULU ADA COMPOSITION ATAU TIDAK
@@ -59,8 +57,7 @@ public function update(Request $request, $id)
     $grade->update([
         'name_grade' => $request->name_grade,
         'mpa' => $request->mpa,
-        'harga_fa' => str_replace('.', '', $request->harga_fa),
-        'harga_nfa' => str_replace('.', '', $request->harga_nfa),
+        'harga' => str_replace('.', '', $request->harga),
     ]);
 
     // hapus lama
@@ -104,8 +101,7 @@ public function update(Request $request, $id)
             'grades'                    => 'required|array',
             'grades.*.name_grade'       => 'required|string',
             'grades.*.mpa'              => 'nullable|string',
-            'grades.*.harga_fa'         => 'nullable|numeric',
-            'grades.*.harga_nfa'        => 'nullable|numeric',
+            'grades.*.harga'            => 'nullable|numeric',
             'grades.*.recipe_type'      => 'nullable|string',
             'grades.*.compositions'     => 'nullable|array',
         ]);
@@ -121,17 +117,15 @@ public function update(Request $request, $id)
                 $grade = GradeBeton::firstOrCreate(
                     ['name_grade' => $gradeData['name_grade']],
                     [
-                        'mpa'       => $gradeData['mpa'] ?? '-',
-                        'harga_fa'  => $gradeData['harga_fa']  ?? 0,
-                        'harga_nfa' => $gradeData['harga_nfa'] ?? 0,
+                        'mpa'   => $gradeData['mpa'] ?? '-',
+                        'harga' => $gradeData['harga'] ?? 0,
                     ]
                 );
 
                 // Always update prices / mpa if provided
                 $grade->update([
-                    'mpa'       => ($gradeData['mpa'] ?? '-') !== '-' ? $gradeData['mpa'] : $grade->mpa,
-                    'harga_fa'  => ($gradeData['harga_fa']  ?? 0) > 0 ? $gradeData['harga_fa']  : $grade->harga_fa,
-                    'harga_nfa' => ($gradeData['harga_nfa'] ?? 0) > 0 ? $gradeData['harga_nfa'] : $grade->harga_nfa,
+                    'mpa'   => ($gradeData['mpa'] ?? '-') !== '-' ? $gradeData['mpa'] : $grade->mpa,
+                    'harga' => ($gradeData['harga'] ?? 0) > 0 ? $gradeData['harga'] : $grade->harga,
                 ]);
 
                 // ── 2. Handle compositions ───────────────────────────────────────

@@ -13,8 +13,15 @@ return new class extends Migration {
         Schema::create('inventory', function (Blueprint $table) {
             $table->id('id_inventory');
             $table->string('name_material');
-            $table->enum('type', ['cement', 'FA', 'Sand', 'Aggregate', 'Admixture']);
-            $table->integer('stock')->default(0);
+            $table->enum('type', [
+                'cement',
+                'FA',
+                'Sand',
+                'Aggregate',
+                'Admixture',
+                'Water'
+            ]);
+            $table->decimal('stock', 12, 3)->default(0);
             $table->timestamps();
         });
     }

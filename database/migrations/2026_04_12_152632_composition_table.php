@@ -22,7 +22,7 @@ return new class extends Migration
                 ->constrained('inventory', 'id_inventory')
                 ->cascadeOnDelete();
         
-            $table->decimal('qty', 10, 2);
+            $table->decimal('qty', 12, 3);
         
             $table->timestamps();
         });

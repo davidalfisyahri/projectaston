@@ -494,15 +494,10 @@
 
             <!-- HARGA -->
             <div class="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                    <label class="text-sm">Harga FA</label>
-                    <input type="text" name="harga_fa" class="input number-format">
-                </div>
-
-                <div>
-                    <label class="text-sm">Harga NFA</label>
-                    <input type="text" name="harga_nfa" class="input number-format">
-                </div>
+                <label>Harga Beton</label>
+            <input type="text"
+                name="harga"
+                class="input number-format">
             </div>
 
             <!-- COMPOSITION -->
@@ -533,7 +528,10 @@
                         </td>
 
                         <td class="p-2">
-                            <input type="number" step="0.01" name="qty[]" class="input">
+                        <input type="number"
+                            step="0.001"
+                            min="0"
+                            name="qty[]">
                         </td>
 
                         <td class="p-2 text-center">

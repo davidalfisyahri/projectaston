@@ -119,7 +119,9 @@ public function pdf($id)
             foreach ($po->details as $detail) {
                 $inventory = Inventory::find($detail->inventory_id);
                 if ($inventory) {
-                    $inventory->update(['stock' => $inventory->stock - $detail->qty]);
+                    if (!in_array(strtolower($inventory->type), ['water', 'slump'])) {
+                        $inventory->update(['stock' => $inventory->stock - $detail->qty]);
+                    }
                 }
             }
 

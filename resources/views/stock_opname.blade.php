@@ -100,10 +100,10 @@
                                 {{ $inv->stock }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <input type="number" name="items[{{ $inv->id_inventory }}][stock_actual]"
-                                    class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                                <input type="text" name="items[{{ $inv->id_inventory }}][stock_actual]"
+                                    class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition decimal-format"
                                     oninput="calcDiff({{ $inv->id_inventory }}, {{ $inv->stock }}, this.value)"
-                                    min="0" required>
+                                    required>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span id="diff_{{ $inv->id_inventory }}" class="font-semibold text-gray-400">—</span>
@@ -174,11 +174,11 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 font-medium">{{ $opname->opname_date->format('d M Y') }}</td>
                         <td class="px-6 py-4">{{ $opname->inventory->name_material ?? '-' }}</td>
-                        <td class="px-6 py-4 text-center">{{ $opname->stock_system }}</td>
-                        <td class="px-6 py-4 text-center">{{ $opname->stock_actual }}</td>
+                        <td class="px-6 py-4 text-center">{{ rtrim(rtrim(number_format($opname->stock_system, 3, ',', '.'), '0'), ',') }}</td>
+                        <td class="px-6 py-4 text-center">{{ rtrim(rtrim(number_format($opname->stock_actual, 3, ',', '.'), '0'), ',') }}</td>
                         <td class="px-6 py-4 text-center font-semibold
                             {{ $opname->difference == 0 ? 'text-green-600' : ($opname->difference > 0 ? 'text-blue-600' : 'text-red-600') }}">
-                            {{ $opname->difference > 0 ? '+' : '' }}{{ $opname->difference }}
+                            {{ $opname->difference > 0 ? '+' : '' }}{{ rtrim(rtrim(number_format($opname->difference, 3, ',', '.'), '0'), ',') }}
                         </td>
                         <td class="px-6 py-4 text-center">
                             @php
@@ -234,17 +234,19 @@
 <script>
 function calcDiff(id, systemStock, actualValue) {
     const diffEl = document.getElementById('diff_' + id);
-    if (actualValue === '' || isNaN(actualValue)) {
+    if (actualValue === '' || isNaN(parseFloat(actualValue.replace(',', '.')))) {
         diffEl.innerText = '—';
         diffEl.className = 'font-semibold text-gray-400';
         return;
     }
 
-    const diff = parseInt(actualValue) - systemStock;
+    const parsedActual = parseFloat(actualValue.replace(',', '.'));
+    const diff = parsedActual - systemStock;
     const absDiff = Math.abs(diff);
     const pct = systemStock > 0 ? (absDiff / systemStock) * 100 : 0;
 
-    diffEl.innerText = (diff > 0 ? '+' : '') + diff;
+    let formattedDiff = diff.toFixed(3).replace(/\.?0+$/, '');
+    diffEl.innerText = (diff > 0 ? '+' : '') + formattedDiff;
 
     if (diff === 0) {
         diffEl.className = 'font-semibold text-green-600';
@@ -264,6 +266,27 @@ if (sa) {
         setTimeout(() => sa.remove(), 500);
     }, 4000);
 }
+
+// Format decimal inputs (comma handling)
+document.body.addEventListener('input', function(e) {
+    if (e.target.classList.contains('decimal-format')) {
+        let val = e.target.value.replace(/[^0-9,.]/g, '');
+        val = val.replace(/\./g, ',');
+        let parts = val.split(',');
+        if (parts.length > 2) {
+            val = parts[0] + ',' + parts.slice(1).join('').replace(/,/g, '');
+        }
+        e.target.value = val;
+    }
+});
+
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function() {
+        this.querySelectorAll('.decimal-format').forEach(input => {
+            input.value = input.value.replace(/,/g, '.');
+        });
+    });
+});
 </script>
 
 <!-- SheetJS Library -->
@@ -285,7 +308,7 @@ function downloadOpnameTemplate() {
         const typeEl = tr.cells[1] ? tr.cells[1].querySelector('span') : null;
         const type = typeEl ? typeEl.innerText.trim() : '';
         const systemStockText = tr.querySelector('td[id^="system_"]');
-        const systemStock = systemStockText ? parseInt(systemStockText.innerText.trim()) : 0;
+        const systemStock = systemStockText ? parseFloat(systemStockText.innerText.trim()) : 0;
 
         templateData.push([name, type, systemStock, '', '']);
     });
@@ -383,7 +406,7 @@ function importExcel(input) {
                 
                 if (actualInput) {
                     const id = actualInput.name.match(/items\[(\d+)\]/)[1];
-                    const systemStock = parseInt(systemStockText ? systemStockText.innerText.trim() : 0);
+                    const systemStock = parseFloat(systemStockText ? systemStockText.innerText.trim() : 0);
                     materialInputs[name.toLowerCase()] = {
                         id: id,
                         actualInput: actualInput,
@@ -412,20 +435,20 @@ function importExcel(input) {
                 // Cari kecocokan material
                 const targetMaterial = materialInputs[materialName];
                 if (targetMaterial) {
-                    const stockValInt = parseInt(stockValRaw);
-                    if (isNaN(stockValInt) || stockValInt < 0) {
+                    const stockValFloat = parseFloat(stockValRaw);
+                    if (isNaN(stockValFloat) || stockValFloat < 0) {
                         invalidValuesCount++;
                         continue;
                     }
                     
                     // Isi form input
-                    targetMaterial.actualInput.value = stockValInt;
+                    targetMaterial.actualInput.value = stockValFloat;
                     if (targetMaterial.notesInput && notesVal) {
                         targetMaterial.notesInput.value = notesVal;
                     }
 
                     // Picu fungsi calcDiff bawaan
-                    calcDiff(targetMaterial.id, targetMaterial.systemStock, stockValInt);
+                    calcDiff(targetMaterial.id, targetMaterial.systemStock, stockValFloat);
                     matchedCount++;
                 } else {
                     unmatchedMaterials.push(String(materialNameRaw).trim());

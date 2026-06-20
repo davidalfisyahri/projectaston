@@ -725,8 +725,7 @@
                                     <td class="p-2">
                                         <select name="grade_id[]" class="border rounded px-2 py-1 w-full gradeSelect">
                                             @foreach($grades as $g)
-                                                <option value="{{ $g->id_grade }}" data-fa="{{ $g->harga_fa }}"
-                                                    data-nfa="{{ $g->harga_nfa }}">
+                                                <option value="{{ $g->id_grade }}" data-harga="{{ $g->harga }}">
                                                     {{ $g->name_grade }}
                                                 </option>
                                             @endforeach
@@ -966,7 +965,7 @@
                 if (!grade || !type) return
 
                 let selected = grade.options[grade.selectedIndex]
-                let harga = type.value === 'fa' ? selected.dataset.fa : selected.dataset.nfa
+                let harga = selected.dataset.harga
 
                 harga = parseFloat(harga) || 0
                 let qtyVal = parseFloat(qty.value) || 0

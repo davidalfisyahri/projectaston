@@ -86,7 +86,7 @@
                         <td class="p-2">
                             <input type="number" name="qty[]" 
                                 class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full"
-                                step="1" min="1" placeholder="0">
+                                step="any" min="0.001" placeholder="0">
                         </td>
             
                         <!-- HARGA -->
@@ -342,11 +342,31 @@ document.addEventListener('input', function(e){
 
 if(e.target.name === 'qty[]'){
     let value = e.target.value;
+    let tr = e.target.closest('tr');
+    let unitSelect = tr ? tr.querySelector('select[name="unit[]"]') : null;
+    let isLiter = unitSelect && (unitSelect.value === 'L');
 
-    // cegah koma & karakter aneh
-    e.target.value = value.replace(/[^0-9]/g, '');
+    if (isLiter) {
+        let val = value.replace(/[^0-9\.,]/g, '');
+        let sep = val.includes(',') ? ',' : '.';
+        let parts = val.split(sep);
+        if (parts.length > 2) {
+            val = parts[0] + sep + parts.slice(1).join('').replace(/[\.,]/g, '');
+        }
+        e.target.value = val;
+    } else {
+        e.target.value = value.replace(/[^0-9]/g, '');
+    }
 }
 
+});
+
+$(document).ready(function() {
+    $('form').on('submit', function() {
+        $('input[name="qty[]"]').each(function() {
+            this.value = this.value.replace(/,/g, '.');
+        });
+    });
 });
 
 function addRow(){
@@ -384,7 +404,7 @@ function addRow(){
                         <td class="p-2">
                             <input type="number" name="qty[]" 
                                 class="input text-center text-sm bg-gray-50 border border-gray-200 rounded-lg h-9 w-full"
-                                step="1" min="1" placeholder="0">
+                                step="any" min="0.001" placeholder="0">
                         </td>
             
                         <!-- HARGA -->

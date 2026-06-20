@@ -110,8 +110,10 @@ class ApprovalController extends Controller
             foreach ($required_stock as $inv_id => $needed) {
                 $inventory = Inventory::find($inv_id);
                 if ($inventory) {
-                    $inventory->stock -= $needed;
-                    $inventory->save();
+                    if (!in_array(strtolower($inventory->type), ['water', 'slump'])) {
+                        $inventory->stock -= $needed;
+                        $inventory->save();
+                    }
                 }
             }
         }

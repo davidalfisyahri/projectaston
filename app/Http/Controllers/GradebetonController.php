@@ -35,10 +35,15 @@ class GradebetonController extends Controller
             // skip kalau kosong
             if (!$inv || !$request->qty[$key]) continue;
 
+            $qty = $request->qty[$key];
+            if (is_string($qty)) {
+                $qty = str_replace(',', '.', $qty);
+            }
+
             Composition::create([
                 'grade_id' => $grade->id_grade,
                 'inventory_id' => $inv,
-                'qty' => $request->qty[$key],
+                'qty' => $qty,
             ]);
         }
     }
@@ -69,10 +74,15 @@ public function update(Request $request, $id)
 
             if (!$inv || !$request->qty[$key]) continue;
 
+            $qty = $request->qty[$key];
+            if (is_string($qty)) {
+                $qty = str_replace(',', '.', $qty);
+            }
+
             Composition::create([
                 'grade_id' => $id,
                 'inventory_id' => $inv,
-                'qty' => $request->qty[$key],
+                'qty' => $qty,
             ]);
         }
     }
@@ -150,12 +160,18 @@ public function update(Request $request, $id)
                     $lowerName = strtolower(trim($materialName));
                     if (str_contains($lowerName, 'semen') || str_contains($lowerName, 'cement')) {
                         $invType = 'cement';
+                    } elseif (str_contains($lowerName, 'nfa') || str_contains($lowerName, 'non fly ash')) {
+                        $invType = 'NFA';
                     } elseif (str_contains($lowerName, 'fly ash') || preg_match('/\bfa\b/', $lowerName)) {
                         $invType = 'FA';
                     } elseif (str_contains($lowerName, 'pasir') || str_contains($lowerName, 'sand')) {
                         $invType = 'Sand';
                     } elseif (str_contains($lowerName, 'split') || str_contains($lowerName, 'batu') || str_contains($lowerName, 'aggregate')) {
                         $invType = 'Aggregate';
+                    } elseif (str_contains($lowerName, 'air') || str_contains($lowerName, 'water')) {
+                        $invType = 'Water';
+                    } elseif (str_contains($lowerName, 'slump')) {
+                        $invType = 'Slump';
                     }
 
                     $inventory = Inventory::firstOrCreate(

@@ -47,10 +47,15 @@ class InventoryController extends Controller
             abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
         }
 
+        $stock = $request->stock ?? 0;
+        if (is_string($stock)) {
+            $stock = str_replace(',', '.', $stock);
+        }
+
         Inventory::create([
             'name_material' => $request->name_material,
             'type' => $request->type,
-            'stock' => $request->stock ?? 0,
+            'stock' => $stock,
         ]);
 
         return redirect('/inventory');
@@ -65,10 +70,15 @@ class InventoryController extends Controller
 
     $inv = Inventory::find($id);
 
+    $stock = $request->stock ?? 0;
+    if (is_string($stock)) {
+        $stock = str_replace(',', '.', $stock);
+    }
+
     $inv->update([
         'name_material' => $request->name_material,
         'type' => $request->type,
-        'stock' => $request->stock ?? 0,
+        'stock' => $stock,
     ]);
 
     return redirect('/inventory');

@@ -54,9 +54,13 @@
                             <td class="px-6 py-4 font-medium text-gray-900">{{ $inv->name_material }}</td>
                             <td class="px-6 py-4">{{ $inv->type }}</td>
                             <td class="px-6 py-4 text-right">
-                                <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
-                                    {{ number_format($inv->stock, 0, ',', '.') }} {{ $inv->unit }}
-                                </span>
+                                @if(in_array(strtolower($inv->type), ['water', 'slump']))
+                                    <span class="font-bold text-blue-600 text-lg">∞</span>
+                                @else
+                                    <span class="font-semibold {{ $inv->stock == 0 ? 'text-red-500' : 'text-green-600' }}">
+                                        {{ rtrim(rtrim(number_format($inv->stock, 3, ',', '.'), '0'), ',') }} {{ $inv->unit }}
+                                    </span>
+                                @endif
                             </td>
                             @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                             <td class="px-6 py-4 text-center space-x-3">
@@ -110,12 +114,15 @@
                         <select name="type" class="input mt-2">
                             <option {{ $inv->type=='cement'?'selected':'' }}>cement</option>
                             <option {{ $inv->type=='FA'?'selected':'' }}>FA</option>
+                            <option {{ $inv->type=='NFA'?'selected':'' }}>NFA</option>
                             <option {{ $inv->type=='Sand'?'selected':'' }}>Sand</option>
                             <option {{ $inv->type=='Aggregate'?'selected':'' }}>Aggregate</option>
                             <option {{ $inv->type=='Admixture'?'selected':'' }}>Admixture</option>
+                            <option {{ $inv->type=='Water'?'selected':'' }}>Water</option>
+                            <option {{ $inv->type=='Slump'?'selected':'' }}>Slump</option>
                         </select>
                         
-                        <input type="text" name="stock" value="0" class="input mt-2 number-format" placeholder="Stock">
+                        <input type="text" name="stock" value="{{ number_format($inv->stock, 3, ',', '') }}" class="input mt-2 decimal-format" placeholder="Stock (Bisa Desimal 0,xxx)">
 
                         <div class="mt-4 flex justify-end gap-2">
                             <button type="button" onclick="closeModal('editInventory{{ $inv->id_inventory }}')" class="btn-cancel">Cancel</button>
@@ -155,8 +162,7 @@
                     <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
                         <tr>
                             <th class="px-6 py-4 font-medium text-center" colspan="2">GRADE</th>
-                            <th class="px-6 py-4 font-medium text-right">FA</th>
-                            <th class="px-6 py-4 font-medium text-right">NFA</th>
+                            <th class="px-6 py-4 font-medium text-right">Harga</th>
                             @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
                             <th class="px-6 py-4 font-medium text-center">Action</th>
                             @endif
@@ -171,11 +177,8 @@
                             <td class="px-6 py-4 font-semibold text-gray-900 text-center w-24">
                                 {{ $item->mpa }}
                             </td>
-                            <td class="px-6 py-4 text-right w-32">
-                                {{ number_format($item->harga_fa, 0, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 text-right w-32">
-                                {{ number_format($item->harga_nfa, 0, ',', '.') }}
+                            <td class="px-6 py-4 text-right w-32" colspan="2">
+                                {{ number_format($item->harga, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 text-center space-x-3">
                                 <button onclick="openModal('detail{{ $item->id_grade }}')" 
@@ -239,16 +242,9 @@
                         </div>
             
                         <div class="flex justify-between border-b pb-2">
-                            <span class="text-gray-600">FA 15%</span>
+                            <span class="text-gray-600">Harga</span>
                             <span class="font-semibold text-gray-900">
-                                Rp {{ number_format($item->harga_fa, 0, ',', '.') }}
-                            </span>
-                        </div>
-            
-                        <div class="flex justify-between border-b pb-2">
-                            <span class="text-gray-600">NFA</span>
-                            <span class="font-semibold text-gray-900">
-                                Rp {{ number_format($item->harga_nfa, 0, ',', '.') }}
+                                Rp {{ number_format($item->harga, 0, ',', '.') }}
                             </span>
                         </div>
                     </div>
@@ -349,20 +345,11 @@
                         </div>
 
                         <!-- HARGA -->
-                        <div class="grid grid-cols-2 gap-3 mb-3">
-                            <div>
-                                <label class="text-sm">Harga FA</label>
-                                <input type="text" name="harga_fa" 
-                                    value="{{ number_format($item->harga_fa, 0, ',', '.') }}"
-                                    class="input number-format">
-                            </div>
-
-                            <div>
-                                <label class="text-sm">Harga NFA</label>
-                                <input type="text" name="harga_nfa" 
-                                    value="{{ number_format($item->harga_nfa, 0, ',', '.') }}"
-                                    class="input number-format">
-                            </div>
+                        <div class="mb-3">
+                            <label class="text-sm">Harga</label>
+                            <input type="text" name="harga" 
+                                value="{{ number_format($item->harga, 0, ',', '.') }}"
+                                class="input mt-1 number-format">
                         </div>
 
                         <!-- COMPOSITION -->
@@ -395,9 +382,9 @@
                                         </td>
 
                                         <td class="p-2">
-                                            <input type="number" step="0.01" name="qty[]" 
-                                                value="{{ $c->qty }}" 
-                                                class="input py-1 px-2 h-auto text-sm">
+                                            <input type="text" name="qty[]" 
+                                                value="{{ rtrim(rtrim(number_format($c->qty, 3, ',', ''), '0'), ',') }}" 
+                                                class="input py-1 px-2 h-auto text-sm decimal-format" placeholder="Qty">
                                         </td>
 
                                         <td class="p-2 text-center">
@@ -454,12 +441,15 @@
             <select name="type" class="input mt-2">
                 <option>cement</option>
                 <option>FA</option>
+                <option>NFA</option>
                 <option>Sand</option>
                 <option>Aggregate</option>
                 <option>Admixture</option>
+                <option>Water</option>
+                <option>Slump</option>
             </select>
 
-            {{-- <input type="number" name="stock" placeholder="Stock" class="input mt-2"> --}}
+            <input type="text" name="stock" placeholder="Stock (Bisa Desimal 0,xxx)" class="input mt-2 decimal-format">
 
             <div class="mt-4 flex justify-end gap-2">
                 <button type="button" onclick="closeModal('addInventory')" class="btn-cancel">Cancel</button>
@@ -493,11 +483,9 @@
             </div>
 
             <!-- HARGA -->
-            <div class="grid grid-cols-2 gap-3 mb-3">
-                <label>Harga Beton</label>
-            <input type="text"
-                name="harga"
-                class="input number-format">
+            <div class="mb-3">
+                <label class="text-sm">Harga</label>
+                <input type="text" name="harga" class="input mt-1 number-format" placeholder="Harga">
             </div>
 
             <!-- COMPOSITION -->
@@ -528,10 +516,7 @@
                         </td>
 
                         <td class="p-2">
-                        <input type="number"
-                            step="0.001"
-                            min="0"
-                            name="qty[]">
+                            <input type="text" name="qty[]" class="input decimal-format" placeholder="Qty">
                         </td>
 
                         <td class="p-2 text-center">
@@ -607,7 +592,25 @@ document.querySelectorAll('form').forEach(form => {
             input.value = input.value.replace(/\./g, '');
         });
 
+        this.querySelectorAll('.decimal-format').forEach(input => {
+            input.value = input.value.replace(/,/g, '.');
+        });
+
     });
+});
+
+document.body.addEventListener('input', function(e) {
+    if (e.target.classList.contains('decimal-format')) {
+        // Allow comma and dot for input, then we can sanitize
+        let val = e.target.value.replace(/[^0-9,.]/g, '');
+        // automatically convert dot to comma for uniformity in the frontend
+        val = val.replace(/\./g, ',');
+        let parts = val.split(',');
+        if (parts.length > 2) {
+            val = parts[0] + ',' + parts.slice(1).join('').replace(/,/g, '');
+        }
+        e.target.value = val;
+    }
 });
 
 function addRow(){
@@ -645,7 +648,7 @@ function addRow() {
         </td>
 
         <td class="p-2">
-            <input type="number" step="0.01" name="qty[]" class="input">
+            <input type="text" name="qty[]" class="input decimal-format" placeholder="Qty">
         </td>
 
         <td class="p-2 text-center">
@@ -681,7 +684,7 @@ function addRowEdit(id) {
         </td>
 
         <td class="p-2">
-            <input type="number" name="qty[]" class="input">
+            <input type="text" name="qty[]" class="input decimal-format" placeholder="Qty">
         </td>
 
         <td class="p-2 text-center">
@@ -729,18 +732,16 @@ function importRecipeExcel(input) {
             const headerRow = rows[0].map(cell => String(cell || '').trim());
 
             // ── Detect column indices ──────────────────────────────────────────
-            let hargaFAIndex  = -1;
-            let hargaNFAIndex = -1;
+            let hargaIndex  = -1;
             let typeColIndex  = -1;
             for (let i = 0; i < headerRow.length; i++) {
                 const h = headerRow[i].toUpperCase();
-                if (h === 'FA'   || h === 'HARGA FA')   hargaFAIndex  = i;
-                if (h === 'NFA'  || h === 'HARGA NFA')  hargaNFAIndex = i;
+                if (h === 'HARGA' || h === 'PRICE')   hargaIndex  = i;
                 if (h === 'TYPE' || h === 'TIPE' || h === 'RECIPE TYPE') typeColIndex = i;
             }
 
-            // Price Excel = has dedicated FA / NFA price columns
-            const isPriceExcel = (hargaFAIndex !== -1 || hargaNFAIndex !== -1);
+            // Price Excel = has dedicated price column
+            const isPriceExcel = (hargaIndex !== -1);
 
             const IGNORE_COLS = ['slump', 'w/c', 'keterangan', 'total', 'volume'];
 
@@ -756,8 +757,7 @@ function importRecipeExcel(input) {
 
                 let nameGrade  = '';
                 let mpa        = '-';
-                let harga_fa   = 0;
-                let harga_nfa  = 0;
+                let harga      = 0;
                 let recipe_type = '';
                 let compositions = {};
 
@@ -772,11 +772,8 @@ function importRecipeExcel(input) {
 
                     if (isPriceExcel) {
                         // ── Price Excel: grab harga only, send empty compositions ──
-                        if (hargaFAIndex !== -1) {
-                            harga_fa  = parseInt(String(row[hargaFAIndex]  || '0').replace(/[^0-9]/g, '')) || 0;
-                        }
-                        if (hargaNFAIndex !== -1) {
-                            harga_nfa = parseInt(String(row[hargaNFAIndex] || '0').replace(/[^0-9]/g, '')) || 0;
+                        if (hargaIndex !== -1) {
+                            harga  = parseInt(String(row[hargaIndex]  || '0').replace(/[^0-9]/g, '')) || 0;
                         }
                         // compositions stays {}, recipe_type stays ''
                     } else {
@@ -832,7 +829,7 @@ function importRecipeExcel(input) {
                     }
                 }
 
-                parsedGrades.push({ name_grade: nameGrade, mpa, harga_fa, harga_nfa, recipe_type, compositions });
+                parsedGrades.push({ name_grade: nameGrade, mpa, harga, recipe_type, compositions });
             }
 
             if (parsedGrades.length > 0) {

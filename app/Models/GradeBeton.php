@@ -9,7 +9,7 @@ class GradeBeton extends Model
     protected $table = 'gradebeton';
     protected $primaryKey = 'id_grade';
 
-    protected $fillable = ['name_grade','mpa','harga_fa','harga_nfa'];
+    protected $fillable = ['name_grade','mpa','harga'];
 
     public function composition()
     {

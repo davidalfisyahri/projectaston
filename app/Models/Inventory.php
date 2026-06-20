@@ -21,8 +21,12 @@ class Inventory extends Model
         $name = strtolower($this->name_material ?? '');
         $type = strtolower($this->type ?? '');
         
-        if ($type === 'admixture' || str_contains($name, 'air') || str_contains($name, 'type d') || str_contains($name, 'type f') || str_contains($name, 'liter') || str_contains($name, 'water')) {
+        if ($type === 'admixture' || $type === 'water' || str_contains($name, 'air') || str_contains($name, 'type d') || str_contains($name, 'type f') || str_contains($name, 'liter') || str_contains($name, 'water')) {
             return 'L';
+        }
+        
+        if ($type === 'slump') {
+            return 'cm';
         }
         
         return 'Kg';

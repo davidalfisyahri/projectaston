@@ -12,7 +12,7 @@ class StockOpnameController extends Controller
 {
     public function index(Request $request)
     {
-        $inventories = Inventory::whereNotIn('type', ['utility'])
+        $inventories = Inventory::whereNotIn('type', ['utility', 'Water', 'Slump'])
             ->whereNotIn('name_material', ['Air', 'Air PAM', 'Water'])
             ->get();
 
@@ -39,15 +39,23 @@ class StockOpnameController extends Controller
             abort(403, 'Direktur Utama hanya memiliki akses lihat di halaman ini.');
         }
 
+        $items = $request->input('items', []);
+        foreach ($items as $key => $item) {
+            if (isset($item['stock_actual']) && is_string($item['stock_actual'])) {
+                $items[$key]['stock_actual'] = str_replace(',', '.', $item['stock_actual']);
+            }
+        }
+        $request->merge(['items' => $items]);
+
         $request->validate([
             'items' => 'required|array|min:1',
             'items.*.inventory_id' => 'required|exists:inventory,id_inventory',
-            'items.*.stock_actual' => 'required|integer|min:0',
+            'items.*.stock_actual' => 'required|numeric|min:0',
             'opname_date' => 'required|date',
         ], [
             'items.required' => 'Minimal 1 material harus diisi.',
             'items.*.stock_actual.required' => 'Stok aktual wajib diisi.',
-            'items.*.stock_actual.integer' => 'Stok aktual harus berupa angka.',
+            'items.*.stock_actual.numeric' => 'Stok aktual harus berupa angka.',
             'items.*.stock_actual.min' => 'Stok aktual tidak boleh negatif.',
             'opname_date.required' => 'Tanggal opname wajib diisi.',
         ]);
@@ -58,7 +66,7 @@ class StockOpnameController extends Controller
                 if (!$inventory) continue;
 
                 $stockSystem = $inventory->stock;
-                $stockActual = (int) $item['stock_actual'];
+                $stockActual = (float) $item['stock_actual'];
                 $difference = $stockActual - $stockSystem;
 
                 StockOpname::create([

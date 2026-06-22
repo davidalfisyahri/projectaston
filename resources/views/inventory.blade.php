@@ -162,22 +162,20 @@
                     <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
                         <tr>
                             <th class="px-6 py-4 font-medium text-center" colspan="2">GRADE</th>
-                            <th class="px-6 py-4 font-medium text-right">Harga</th>
-                            @if(auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama')
+                            <th class="px-6 py-4 font-medium text-center">Harga</th>
                             <th class="px-6 py-4 font-medium text-center">Action</th>
-                            @endif
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-700">
                         @foreach($grade as $item)
                         <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-semibold text-gray-900 text-center w-24">
+                            <td class="px-6 py-4 font-semibold text-gray-900 text-center">
                                 {{ $item->name_grade }}
                             </td>
-                            <td class="px-6 py-4 font-semibold text-gray-900 text-center w-24">
+                            <td class="px-6 py-4 font-semibold text-gray-900 text-center">
                                 {{ $item->mpa }}
                             </td>
-                            <td class="px-6 py-4 text-right w-32" colspan="2">
+                            <td class="px-6 py-4 text-center">
                                 {{ number_format($item->harga, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 text-center space-x-3">

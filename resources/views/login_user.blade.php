@@ -74,6 +74,14 @@
 
             </form>
 
+            <div class="mt-5 text-center">
+                <p class="text-gray-400 text-sm">Belum punya akun?</p>
+                <a href="{{ route('customer.register') }}" 
+                   class="text-red-400 hover:text-red-300 text-sm font-semibold transition">
+                    Daftar Akun Customer →
+                </a>
+            </div>
+
         </div>
 
     </div>

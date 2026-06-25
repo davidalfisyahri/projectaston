@@ -14,6 +14,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Redirect customer ke portal mereka
+        if (auth()->check() && auth()->user()->role === 'customer') {
+            return redirect('/customer/dashboard');
+        }
+
         if (auth()->check() && auth()->user()->position === 'kepala_plant') {
             return redirect()->route('plant_schedule');
         }

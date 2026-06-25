@@ -458,7 +458,31 @@
                         </div>
                     </div>
 
-                    <p class="text-xs text-gray-400 italic">Klik <strong>Tandai Lunas</strong> setelah transfer masuk dikonfirmasi.</p>
+                    {{-- Bukti Transfer dari Customer --}}
+                    @if($d->payment_receipt)
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                        <p class="font-semibold text-green-800 mb-2 text-sm">📎 Bukti Transfer dari Customer</p>
+                        @php
+                            $ext = strtolower(pathinfo($d->payment_receipt, PATHINFO_EXTENSION));
+                        @endphp
+                        @if(in_array($ext, ['jpg','jpeg','png','webp']))
+                            <a href="{{ asset($d->payment_receipt) }}" target="_blank">
+                                <img src="{{ asset($d->payment_receipt) }}" alt="Bukti Transfer" class="w-full max-w-xs rounded-lg border shadow-sm hover:opacity-90 transition">
+                            </a>
+                        @elseif($ext === 'pdf')
+                            <a href="{{ asset($d->payment_receipt) }}" target="_blank" class="inline-flex items-center gap-2 bg-white border px-3 py-2 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-50 transition">
+                                📄 Lihat PDF Bukti Transfer
+                            </a>
+                        @endif
+                        <p class="text-xs text-green-600 mt-2">✅ Customer sudah mengirim bukti transfer</p>
+                    </div>
+                    @else
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
+                        <p class="text-xs text-yellow-700">⏳ Customer belum mengunggah bukti transfer.</p>
+                    </div>
+                    @endif
+
+                    <p class="text-xs text-gray-400 italic mt-3">Klik <strong>Tandai Lunas</strong> setelah transfer masuk dikonfirmasi.</p>
                 </div>
 
                 {{-- Footer --}}
@@ -773,6 +797,16 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr id="deliveryFeeDisplayRow" class="hidden">
+                                    <td colspan="4" class="p-2 text-right font-semibold">
+                                        Biaya Pengiriman <span id="deliveryDistanceDisplay" class="font-normal text-xs text-gray-500"></span>
+                                        <span id="deliveryFeeBreakdown" class="text-[10px] text-gray-500 font-normal block"></span>
+                                    </td>
+                                    <td class="p-2 text-right font-semibold text-orange-600">
+                                        Rp <span id="deliveryFeeAmountDisplay">0</span>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 <tr>
                                     <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
                                     <td class="p-2 text-right font-bold text-green-700">
@@ -898,13 +932,36 @@
                 // 2. Hitung delivery fee (0-25km gratis, >25km Rp 20.000 per 5km × qty m³)
                 let distance = parseFloat(distanceInput.value) || 0;
                 let fee = getDeliveryFee(distance, totalQtyM3);
+                
+                const deliveryFeeDisplayRow = document.getElementById('deliveryFeeDisplayRow');
+                const deliveryDistanceDisplay = document.getElementById('deliveryDistanceDisplay');
+                const deliveryFeeBreakdown = document.getElementById('deliveryFeeBreakdown');
+                const deliveryFeeAmountDisplay = document.getElementById('deliveryFeeAmountDisplay');
 
-                if (distance <= 25) {
-                    feeAutoDisplay.innerText = distance > 0 ? 'GRATIS (≤ 25 km)' : 'Rp 0';
+                if (distance <= 0) {
+                    feeAutoDisplay.innerText = 'Rp 0';
+                    if (deliveryFeeDisplayRow) deliveryFeeDisplayRow.classList.add('hidden');
+                } else if (distance <= 25) {
+                    feeAutoDisplay.innerText = 'GRATIS (≤ 25 km)';
+                    if (deliveryFeeDisplayRow) {
+                        deliveryFeeDisplayRow.classList.remove('hidden');
+                        deliveryDistanceDisplay.innerText = `(${distance} km)`;
+                        deliveryFeeBreakdown.innerText = '';
+                        deliveryFeeAmountDisplay.innerText = '0 (Gratis)';
+                    }
                 } else {
                     const extraKm = distance - 25;
                     const increments = Math.ceil(extraKm / 5);
-                    feeAutoDisplay.innerText = 'Rp ' + formatNumber(fee) + ' (' + increments + ' × Rp 20.000 × ' + formatNumber(totalQtyM3) + ' m³)';
+                    const breakdownText = `(${increments} × Rp 20.000 × ${formatNumber(totalQtyM3)} m³)`;
+                    
+                    feeAutoDisplay.innerText = 'Rp ' + formatNumber(fee) + ' ' + breakdownText;
+                    
+                    if (deliveryFeeDisplayRow) {
+                        deliveryFeeDisplayRow.classList.remove('hidden');
+                        deliveryDistanceDisplay.innerText = `(${distance} km)`;
+                        deliveryFeeBreakdown.innerText = breakdownText;
+                        deliveryFeeAmountDisplay.innerText = formatNumber(fee);
+                    }
                 }
 
                 // 3. Hitung diskon

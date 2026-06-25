@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'isSuperAdmin' => \App\Http\Middleware\IsSuperAdmin::class,
             'isDirector'   => \App\Http\Middleware\IsDirector::class,
+            'isCustomer'   => \App\Http\Middleware\IsCustomer::class,
         ]);
         //
     })

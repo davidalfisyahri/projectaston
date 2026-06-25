@@ -65,6 +65,7 @@ class CustomerRequest extends Model
         // FILE UPLOADS
         'ktp_file',
         'npwp_file',
+        'payment_receipt',
 
         // DISCOUNTS
         'discount_type',

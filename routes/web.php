@@ -99,3 +99,18 @@ Route::get('/api/delivery-tariffs', [DeliveryTariffController::class, 'getTariff
 // API: resolve Google Maps short URL to coordinates
 Route::post('/api/resolve-maps-url', [CustomerRequestController::class, 'resolveMapsUrl']);
 
+// =====================
+// CUSTOMER PORTAL
+// =====================
+use App\Http\Controllers\CustomerPortalController;
+
+Route::get('/customer/register', [CustomerPortalController::class, 'showRegister'])->name('customer.register');
+Route::post('/customer/register', [CustomerPortalController::class, 'register']);
+
+Route::middleware(['auth', 'isCustomer'])->prefix('customer')->group(function () {
+    Route::get('/dashboard', [CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
+    Route::get('/history', [CustomerPortalController::class, 'history'])->name('customer.history');
+    Route::get('/orders/status', [CustomerPortalController::class, 'getActiveStatuses'])->name('customer.orders.status');
+    Route::post('/order', [CustomerPortalController::class, 'storeOrder'])->name('customer.order.store');
+    Route::post('/order/{id}/pay', [CustomerPortalController::class, 'uploadReceipt'])->name('customer.order.pay');
+});

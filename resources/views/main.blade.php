@@ -61,6 +61,38 @@
 
             <div class="space-y-4">
 
+                @if($role === 'customer')
+                {{-- MENU CUSTOMER --}}
+                <a href="{{ route('customer.dashboard') }}"
+                class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-6 h-6 flex-shrink-0"
+                                    fill="currentColor"
+                                    viewBox="0 0 16 16">
+                                    <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>    
+                    </svg>
+                    <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-300 whitespace-nowrap">
+                        Dashboard
+                    </span>
+                </a>
+
+                <a href="{{ route('customer.history') }}"
+                class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-6 h-6 flex-shrink-0"
+                                    fill="currentColor"
+                                    viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>
+                    <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-300 whitespace-nowrap">
+                        Riwayat Pesanan
+                    </span>
+                </a>
+
+                @else
+                {{-- MENU INTERNAL STAFF --}}
+
                 @if($role === 'superadmin' || ($position !== 'kepala_plant' && $position !== 'logistik'))
                 <a href="{{ route('dashboard') }}"
                 class="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-red-800 transition justify-start">
@@ -186,6 +218,8 @@
                     </span>
                 </a>
                 @endif
+
+                @endif {{-- end customer/internal check --}}
 
             </div>
 

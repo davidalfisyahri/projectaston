@@ -17,6 +17,11 @@ class CustomerRequestController extends Controller
 {
     public function index(Request $request)
     {
+        // Redirect customer ke portal mereka
+        if (Auth::check() && Auth::user()->role === 'customer') {
+            return redirect('/customer/dashboard');
+        }
+
         if (Auth::check() && Auth::user()->role !== 'superadmin') {
             $pos = Auth::user()->position;
             if ($pos === 'kepala_plant') {

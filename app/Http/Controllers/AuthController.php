@@ -15,6 +15,11 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // Redirect customer ke portal customer
+            if (Auth::user()->role === 'customer') {
+                return redirect('/customer/dashboard');
+            }
+
             return redirect()->route('dashboard');
         }
 

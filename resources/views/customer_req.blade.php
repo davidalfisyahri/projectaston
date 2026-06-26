@@ -160,7 +160,7 @@
                                 @endif
 
                                 @if($d->status == 'approved' && (auth()->user()->role === 'superadmin' || auth()->user()->position !== 'direktur_utama'))
-                                <button type="button" onclick="openPayModal({{ $d->id }})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs hover:bg-emerald-700 shadow-sm font-bold">💳 Info Rekening & Bayar</button>
+                                <button type="button" onclick="openPayModal({{ $d->id }})" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs hover:bg-emerald-700 shadow-sm font-bold">💳 Info Pembayaran</button>
                                 @endif
 
 
@@ -736,7 +736,6 @@
                             <thead class="bg-gray-100 text-gray-700">
                                 <tr>
                                     <th class="p-2 text-left">Grade</th>
-                                    <th class="p-2 text-center">Type</th>
                                     <th class="p-2 text-center">Qty</th>
                                     <th class="p-2 text-right">Harga</th>
                                     <th class="p-2 text-right">Total</th>
@@ -754,13 +753,7 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                    </td>
-
-                                    <td class="p-2">
-                                        <select name="type[]" class="border rounded px-2 py-1 w-full typeSelect">
-                                            <option value="fa">FA</option>
-                                            <option value="nfa">NFA</option>
-                                        </select>
+                                        <input type="hidden" name="type[]" value="fa">
                                     </td>
 
                                     <td class="p-2">
@@ -784,21 +777,30 @@
                             </tbody>
                             <tfoot class="bg-gray-100 text-gray-800">
                                 <tr>
-                                    <td colspan="4" class="p-2 text-right font-semibold">Subtotal Item (Beton)</td>
+                                    <td colspan="3" class="p-2 text-right font-semibold">Subtotal Item (Beton)</td>
                                     <td class="p-2 text-right font-semibold text-gray-700">
                                         Rp <span id="subtotalDisplay">0</span>
                                     </td>
                                     <td></td>
                                 </tr>
                                 <tr id="discountDisplayRow" class="hidden text-red-600 font-semibold">
-                                    <td colspan="4" class="p-2 text-right">Potongan Diskon</td>
+                                    <td colspan="3" class="p-2 text-right">
+                                        Potongan Diskon <span id="discountLabelDetail" class="text-xs font-normal"></span>
+                                    </td>
                                     <td class="p-2 text-right" id="discountAmountDisplay">
                                         - Rp 0
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr id="discountedPriceRow" class="hidden">
+                                    <td colspan="3" class="p-2 text-right font-semibold text-green-700">Harga Setelah Diskon</td>
+                                    <td class="p-2 text-right font-semibold text-green-700" id="discountedPriceDisplay">
+                                        Rp 0
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 <tr id="deliveryFeeDisplayRow" class="hidden">
-                                    <td colspan="4" class="p-2 text-right font-semibold">
+                                    <td colspan="3" class="p-2 text-right font-semibold">
                                         Biaya Pengiriman <span id="deliveryDistanceDisplay" class="font-normal text-xs text-gray-500"></span>
                                         <span id="deliveryFeeBreakdown" class="text-[10px] text-gray-500 font-normal block"></span>
                                     </td>
@@ -808,7 +810,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="p-2 text-right font-bold">Grand Total</td>
+                                    <td colspan="3" class="p-2 text-right font-bold">Grand Total</td>
                                     <td class="p-2 text-right font-bold text-green-700">
                                         Rp <span id="grandTotalDisplay">0</span>
                                         <input type="hidden" name="grand_total" id="grandTotalInput" value="0">
@@ -981,12 +983,34 @@
 
                 // Tampilkan diskon jika ada
                 const discountDisplayEl = document.getElementById('discountDisplayRow');
+                const discountedPriceRow = document.getElementById('discountedPriceRow');
+                const discountLabelDetail = document.getElementById('discountLabelDetail');
                 if (discountDisplayEl) {
                     if (discountAmount > 0) {
                         discountDisplayEl.classList.remove('hidden');
                         document.getElementById('discountAmountDisplay').innerText = '- Rp ' + formatNumber(discountAmount);
+
+                        // Tampilkan label detail diskon
+                        if (discountLabelDetail) {
+                            if (discountType === 'percentage') {
+                                discountLabelDetail.innerText = '(' + discountValue + '%)';
+                            } else if (discountType === 'fixed') {
+                                discountLabelDetail.innerText = '(Rp ' + formatNumber(discountValue) + ')';
+                            } else {
+                                discountLabelDetail.innerText = '';
+                            }
+                        }
+
+                        // Tampilkan harga setelah diskon
+                        if (discountedPriceRow) {
+                            discountedPriceRow.classList.remove('hidden');
+                            let afterDiscount = itemsTotal - discountAmount;
+                            document.getElementById('discountedPriceDisplay').innerText = 'Rp ' + formatNumber(afterDiscount);
+                        }
                     } else {
                         discountDisplayEl.classList.add('hidden');
+                        if (discountedPriceRow) discountedPriceRow.classList.add('hidden');
+                        if (discountLabelDetail) discountLabelDetail.innerText = '';
                     }
                 }
 
@@ -1014,12 +1038,11 @@
                 if (!row) return
 
                 let grade = row.querySelector('.gradeSelect')
-                let type = row.querySelector('.typeSelect')
                 let qty = row.querySelector('.qtyInput')
                 let price = row.querySelector('.priceInput')
                 let total = row.querySelector('.totalInput')
 
-                if (!grade || !type) return
+                if (!grade) return
 
                 let selected = grade.options[grade.selectedIndex]
                 let harga = selected.dataset.harga

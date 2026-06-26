@@ -2,10 +2,14 @@
 <html>
 <head>
 <style>
+@page {
+    margin: 15px 30px;
+}
 
 body {
     font-family: Arial, sans-serif;
-    font-size: 11px;
+    font-size: 10px;
+    line-height: 1.2;
 }
 
 table {
@@ -15,20 +19,21 @@ table {
 
 td, th {
     border: 1px solid #000;
-    padding: 4px;
-    vertical-align: top;
+    padding: 3px;
+    vertical-align: middle;
 }
 
 .title {
     text-align: center;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .section {
     background: #e5e5e5;
     font-weight: bold;
     text-align: center;
+    padding: 3px;
 }
 
 .label {
@@ -69,7 +74,7 @@ td, th {
 </tr>
 </table>
 
-<br>
+<div style="height: 5px;"></div>
 
 <!-- ================= IDENTITAS SALES ================= -->
 <table class="table-clean">
@@ -117,22 +122,25 @@ td, th {
     <td class="label">Sales Code</td>
     <td><span class="value-line">{{ $data->user->id_user ?? '-' }}</span></td>
 
-    <td class="label">Delivery Distance</td>
-    <td><span class="value-line">{{ $data->delivery_distance ? $data->delivery_distance . ' km' : '-' }}</span></td>
-</tr>
-
-<tr>
-    <td class="label">Delivery Fee</td>
+    <td class="label">Delivery</td>
     <td>
-        <span class="value-line">{{ $data->delivery_fee > 0 ? 'Rp ' . number_format($data->delivery_fee, 0, ',', '.') : 'Rp 0' }}</span>
+        <span class="value-line">
+            {{ $data->delivery_distance ? $data->delivery_distance . ' km' : '-' }} 
+            @if($data->delivery_fee > 0)
+                / Rp {{ number_format($data->delivery_fee, 0, ',', '.') }}
+            @else
+                / Rp 0
+            @endif
+        </span>
         @if($data->delivery_distance > 25)
-            <br>
-            <span style="font-size: 8px; color: #666; font-weight: normal; font-style: italic;">
+            <span style="font-size: 8px; color: #666; font-weight: normal; font-style: italic; display: block; margin-top: 2px;">
                 ({{ ceil(($data->delivery_distance - 25) / 5) }} &times; Rp 20.000 &times; {{ number_format($data->details->sum('qty'), 0, ',', '.') }} m³)
             </span>
         @endif
     </td>
+</tr>
 
+<tr>
     <td class="label">Discount</td>
     <td>
         @if($data->discount_amount > 0)
@@ -146,16 +154,16 @@ td, th {
             <span class="value-line">-</span>
         @endif
     </td>
-</tr>
 
-<tr>
     <td class="label">Grand Total</td>
-    <td colspan="3"><span class="value-line" style="font-weight: bold;">Rp {{ number_format($data->grand_total > 0 ? $data->grand_total : $data->details->sum('total'), 0, ',', '.') }}</span></td>
+    <td>
+        <span class="value-line" style="font-weight: bold;">Rp {{ number_format($data->grand_total > 0 ? $data->grand_total : $data->details->sum('total'), 0, ',', '.') }}</span>
+    </td>
 </tr>
 
 </table>
 
-<br>
+<div style="height: 5px;"></div>
 
 <!-- ================= CUSTOMER PROFILE ================= -->
 <table class="table-clean">
@@ -287,7 +295,7 @@ td, th {
 
 </table>
 
-<br>
+<div style="height: 5px;"></div>
 
 <!-- ================= APPROVAL ================= -->
 <table class="table-border">
@@ -308,12 +316,12 @@ td, th {
     <!-- CONTENT AREA -->
     <tr>
         <!-- REMARK -->
-        <td rowspan="3" style="height:120px;">
+        <td rowspan="3" style="height:90px;">
             {{ $data->note ?? '-' }}
         </td>
 
         <!-- CREATED -->
-        <td style="height:100px;">
+        <td style="height:70px;">
             Date: {{ $data->created_at ? date('d-m-Y', strtotime($data->created_at)) : '-' }}
         </td>
 
@@ -329,7 +337,7 @@ td, th {
             @if(($wadir && $wadir->approved_at) || ($dirut && $dirut->approved_at))
                 <br>
                 <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/Qr_wadir.jpeg'))) }}" 
-                     style="width:80px; margin-top:5px;">
+                     style="width:65px; margin-top:5px;">
             @endif
         </td>
 
@@ -345,22 +353,22 @@ td, th {
             @if(($wadir && $wadir->approved_at) || ($dirut && $dirut->approved_at))
                 <br>
                 <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('asset/image/QR_dirut.jpeg'))) }}" 
-                     style="width:80px; margin-top:5px;">
+                     style="width:65px; margin-top:5px;">
             @endif
         </td>
     </tr>
 
     <!-- TANDA TANGAN -->
     <tr>
-        <td align="center" style="height:45px; vertical-align:bottom;">
+        <td align="center" style="height:30px; vertical-align:bottom;">
         <div class="nama">{{ $data->user->name_user ?? '(    )' }}</div>
     </td>
 
-    <td align="center" style="height:45px; vertical-align:bottom;">
+    <td align="center" style="height:30px; vertical-align:bottom;">
         <div class="nama">Ronald Asmerico Marpaung, S.T</div>
     </td>
 
-    <td align="center" style="height:45px; vertical-align:bottom;">
+    <td align="center" style="height:30px; vertical-align:bottom;">
         <div class="nama">ASEP AS'ARY, S.Sos</div>
     </td>
     </tr>
@@ -385,7 +393,8 @@ td, th {
 <style>
     body {
         font-family: Arial, sans-serif;
-        font-size: 11px;
+        font-size: 10px;
+        line-height: 1.2;
     }
     
     /* ===================== */
@@ -400,7 +409,7 @@ td, th {
     .table-clean td,
     .table-clean th {
         border: none;
-        padding: 4px;
+        padding: 3px;
         vertical-align: top;
     }
     
@@ -415,14 +424,14 @@ td, th {
     .table-border td,
     .table-border th {
         border: 1px solid #000;
-        padding: 4px;
+        padding: 3px;
     }
     
     /* ===================== */
     .title {
         text-align: center;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 13px;
     }
     
     .section {
@@ -440,7 +449,7 @@ td, th {
     display: inline-block;
     width: 100%;
     border-bottom: 1px solid #000;
-    min-height: 14px;
+    min-height: 12px;
     }
     </style>
 

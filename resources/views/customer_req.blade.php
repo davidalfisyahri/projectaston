@@ -308,7 +308,6 @@
                                 <thead class="bg-gray-100 text-gray-600">
                                     <tr>
                                         <th class="p-2 text-left">Grade</th>
-                                        <th class="p-2 text-center">Type</th>
                                         <th class="p-2 text-center">Qty</th>
                                         <th class="p-2 text-right">Harga</th>
                                         <th class="p-2 text-right">Total</th>
@@ -318,8 +317,7 @@
                                     @foreach($d->details as $item)
                                         <tr class="border-t">
                                             <td class="p-2">{{ $item->grade->name_grade }}</td>
-                                            <td class="p-2 text-center uppercase">{{ $item->type }}</td>
-                                            <td class="p-2 text-center">{{ number_format($item->qty, 2, ',', '.') }}</td>
+                                            <td class="p-2 text-center">{{ number_format($item->qty, 2, ',', '.') }} m³</td>
                                             <td class="p-2 text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
                                             <td class="p-2 text-right font-semibold text-green-600">Rp {{ number_format($item->total, 0, ',', '.') }}</td>
                                         </tr>
@@ -327,12 +325,12 @@
                                 </tbody>
                                 <tfoot class="bg-gray-100 text-gray-800 text-xs">
                                     <tr>
-                                        <td colspan="4" class="p-2 text-right font-semibold">Subtotal Beton</td>
+                                        <td colspan="3" class="p-2 text-right font-semibold">Subtotal Beton</td>
                                         <td class="p-2 text-right font-semibold">Rp {{ number_format($d->details->sum('total'), 0, ',', '.') }}</td>
                                     </tr>
                                     @if($d->discount_amount > 0)
                                     <tr class="text-red-600">
-                                        <td colspan="4" class="p-2 text-right font-semibold">
+                                        <td colspan="3" class="p-2 text-right font-semibold">
                                             Diskon
                                             @if($d->discount_type == 'percentage')
                                                 ({{ number_format($d->discount_value, 0) }}%)
@@ -343,7 +341,7 @@
                                     @endif
                                     @if($d->delivery_distance > 0)
                                     <tr>
-                                        <td colspan="4" class="p-2 text-right font-semibold">
+                                        <td colspan="3" class="p-2 text-right font-semibold">
                                             Biaya Pengiriman ({{ $d->delivery_distance }} km)
                                             @if($d->delivery_distance > 25)
                                                 <span class="text-[10px] text-gray-500 font-normal block">
@@ -355,7 +353,7 @@
                                     </tr>
                                     @endif
                                     <tr class="border-t font-bold">
-                                        <td colspan="4" class="p-2 text-right text-sm">Grand Total</td>
+                                        <td colspan="3" class="p-2 text-right text-sm">Grand Total</td>
                                         <td class="p-2 text-right text-sm text-green-700">Rp {{ number_format($d->grand_total > 0 ? $d->grand_total : $d->details->sum('total'), 0, ',', '.') }}</td>
                                     </tr>
                                 </tfoot>

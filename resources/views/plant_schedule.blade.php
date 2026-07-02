@@ -210,7 +210,6 @@
                             <thead class="bg-gray-50 text-gray-700 font-medium border-b">
                                 <tr>
                                     <th class="p-3 text-left">Grade / Mutu</th>
-                                    <th class="p-3 text-center">Type Slump</th>
                                     <th class="p-3 text-center">Volume (m³)</th>
                                 </tr>
                             </thead>
@@ -218,7 +217,6 @@
                                 @foreach($d->details as $item)
                                     <tr class="border-t">
                                         <td class="p-3 font-semibold text-gray-800">{{ $item->grade->name_grade }}</td>
-                                        <td class="p-3 text-center uppercase">{{ $item->type }}</td>
                                         <td class="p-3 text-center font-bold text-blue-600">{{ number_format($item->qty, 1, ',', '.') }} m³</td>
                                     </tr>
                                 @endforeach

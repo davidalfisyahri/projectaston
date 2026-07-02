@@ -100,7 +100,6 @@ td, th {
     <td><span class="value-line">
         @forelse($data->details as $item)
             {{ $item->grade->name_grade ?? '-' }} 
-            ({{ strtoupper($item->type) }}) 
             - {{ number_format($item->qty) }}m³<br>
         @empty
             -

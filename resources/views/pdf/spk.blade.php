@@ -203,7 +203,6 @@ td, th {
     <tr>
         <th width="5%">No</th>
         <th width="55%">Mutu Beton / Grade</th>
-        <th width="20%">Tipe Slump</th>
         <th width="20%">Volume Kebutuhan (m³)</th>
     </tr>
 </thead>
@@ -214,16 +213,15 @@ td, th {
         <tr>
             <td class="text-center">{{ $index + 1 }}</td>
             <td style="font-weight: bold;">{{ $item->grade->name_grade ?? 'Mutu tidak diketahui' }}</td>
-            <td class="text-center uppercase">{{ $item->type }}</td>
             <td class="text-center font-semibold">{{ number_format($item->qty, 2, ',', '.') }} m³</td>
         </tr>
     @empty
         <tr>
-            <td colspan="4" class="text-center" style="font-style: italic; color: #999;">Tidak ada rincian beton.</td>
+            <td colspan="3" class="text-center" style="font-style: italic; color: #999;">Tidak ada rincian beton.</td>
         </tr>
     @endforelse
     <tr style="background-color: #f9f9f9; font-weight: bold;">
-        <td colspan="3" class="text-right">Total Volume Pengiriman:</td>
+        <td colspan="2" class="text-right">Total Volume Pengiriman:</td>
         <td class="text-center" style="font-size: 12px; color: #b91c1c;">{{ number_format($totalQty, 2, ',', '.') }} m³</td>
     </tr>
 </tbody>

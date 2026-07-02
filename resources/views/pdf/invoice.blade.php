@@ -187,14 +187,10 @@ $subtotal += $total;
     @else
         -
     @endif
-
-    @if($row->type)
-        ({{ strtoupper($row->type) }})
-    @endif
 </td>
 
 <td class="text-center">
-    {{ number_format($qty) }} cm³
+    {{ number_format($qty) }} m³
 </td>
 
 <td class="text-right">
